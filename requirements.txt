@@ -1,0 +1,42 @@
+# Core Framework
+Django==5.0.2
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+python-dotenv==1.0.0
+
+# Database (PostgreSQL support is here, but Django will use built-in SQLite by default)
+psycopg2-binary>=2.9.11
+
+# Authentication
+djangorestframework-simplejwt==5.3.0
+pyotp==2.9.0
+
+# AI/ML - Relaxed versions to find Windows Wheels automatically
+numpy>=1.26.0
+pandas>=2.2.0
+scikit-learn>=1.4.0
+statsmodels>=0.14.1
+# prophet==1.1.5  # COMMENTED OUT: Needs C++ Compiler. Uncomment only if needed.
+
+# API Integrations
+requests==2.31.0
+africastalking
+
+# Background Tasks
+celery==5.3.4
+redis==5.0.1
+
+# Utilities
+python-dateutil==2.8.2
+openpyxl==3.1.2
+reportlab==4.1.0
+# weasyprint==60.2  # COMMENTED OUT: Needs GTK+ Runtime. Uncomment only if needed.
+
+# Testing
+pytest==8.0.0
+pytest-django==4.8.0
+model-bakery==1.17.0
+
+# Development Tools
+python-decouple==3.8
+django-extensions==3.2.3
