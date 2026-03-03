@@ -1,10 +1,595 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Admin Panel | BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-pale: #d8f3dc; --gold: #e9c46a;
+            --error: #c1121f; --error-pale: #fce4e4; --warn: #d4860a;
+            --warn-pale: #fef3cd; --muted: #6b7280; --border: #e2e0d8;
+            --admin: #7c3aed; --admin-pale: #ede9fe; --admin-light: #6d28d9;
+            --sidebar-w: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; }
+
+        /* ── Sidebar ─────────────────────────────────────────── */
+        .sidebar { width: var(--sidebar-w); background: #1a0533; min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-badge { display: inline-block; background: var(--admin); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 8px; }
+        .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .brand-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 3px; }
+        .sidebar-nav { padding: 16px 0; flex: 1; }
+        .nav-section { padding: 12px 24px 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5); text-decoration: none; transition: all 0.15s; border-left: 2px solid transparent; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: #c4b5fd; background: rgba(124,58,237,0.15); border-left-color: var(--admin); }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .admin-pill { display: flex; align-items: center; gap: 10px; }
+        .admin-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--admin); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .admin-info { flex: 1; min-width: 0; }
+        .admin-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .admin-role { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+        .logout-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.3); font-size: 16px; padding: 4px; transition: color 0.15s; }
+        .logout-btn:hover { color: var(--error); }
+        .back-link { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,0.35); text-decoration: none; padding: 8px 24px 4px; transition: color 0.15s; }
+        .back-link:hover { color: rgba(255,255,255,0.7); }
+
+        /* ── Main ───────────────────────────────────────────── */
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-left h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+        .topbar-right { display: flex; gap: 8px; }
+        .content { padding: 28px 32px; flex: 1; }
+
+        /* ── Range buttons ───────────────────────────────────── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: #fff; color: var(--ink); transition: all 0.15s; }
+        .btn:hover { border-color: var(--admin); color: var(--admin); }
+        .btn.active { background: var(--admin); color: #fff; border-color: var(--admin); }
+
+        @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+        /* ── KPI grid ────────────────────────────────────────── */
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 20px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; position: relative; overflow: hidden; }
+        .kpi-card:nth-child(1){animation-delay:.05s} .kpi-card:nth-child(2){animation-delay:.1s} .kpi-card:nth-child(3){animation-delay:.15s} .kpi-card:nth-child(4){animation-delay:.2s}
+        .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: var(--admin); transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
+        .kpi-card:hover::before { transform: scaleX(1); }
+        .kpi-icon { font-size: 20px; margin-bottom: 10px; opacity: 0.8; }
+        .kpi-val { font-size: 26px; font-weight: 700; font-family: 'DM Mono', monospace; letter-spacing: -0.02em; line-height: 1; }
+        .kpi-val.loading { color: var(--border); animation: pulse 1.2s infinite; }
+        .kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-top: 8px; }
+        .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+        /* ── Insight strip ───────────────────────────────────── */
+        .insight-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+        .insight-card { border-radius: 4px; padding: 20px; color: #fff; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+        .insight-card:nth-child(1){background:var(--admin);animation-delay:.22s}
+        .insight-card:nth-child(2){background:var(--accent);animation-delay:.26s}
+        .insight-card:nth-child(3){background:#0369a1;animation-delay:.3s}
+        .insight-icon { font-size: 22px; margin-bottom: 8px; }
+        .insight-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.55); margin-bottom: 4px; }
+        .insight-val { font-size: 22px; font-weight: 700; font-family: 'DM Mono', monospace; }
+        .insight-sub { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+        /* ── Panel ───────────────────────────────────────────── */
+        .panel { background: #fff; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+        .panel-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .panel-header h3 { font-size: 13px; font-weight: 700; }
+        .panel-tag { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); background: var(--paper); padding: 3px 8px; border-radius: 2px; border: 1px solid var(--border); }
+
+        /* ── Grid layouts ────────────────────────────────────── */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .full-row { margin-bottom: 20px; }
+
+        /* ── Bar chart ───────────────────────────────────────── */
+        .chart-wrap { padding: 20px; }
+        .bar-chart { display: flex; align-items: flex-end; gap: 5px; height: 160px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+        .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+        .bar-pair { width: 100%; display: flex; gap: 2px; align-items: flex-end; justify-content: center; }
+        .bar { flex: 1; border-radius: 2px 2px 0 0; min-height: 3px; position: relative; cursor: pointer; transition: opacity 0.15s; }
+        .bar:hover { opacity: 0.75; }
+        .bar.revenue-bar { background: var(--admin-pale); }
+        .bar.revenue-bar:hover { background: var(--admin); }
+        .bar.expense-bar { background: var(--error-pale); }
+        .bar.expense-bar:hover { background: var(--error); }
+        .bar.user-bar { background: #bfdbfe; }
+        .bar.user-bar:hover { background: #3b82f6; }
+        .bar-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: 10px; font-family: 'DM Mono', monospace; padding: 3px 7px; border-radius: 2px; white-space: nowrap; z-index: 10; }
+        .bar:hover .bar-tip { display: block; }
+        .bar-label { font-size: 9px; font-family: 'DM Mono', monospace; color: var(--muted); margin-top: 6px; text-align: center; }
+        .chart-legend { display: flex; gap: 16px; margin-top: 12px; }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .legend-item { font-size: 11px; color: var(--muted); display: flex; align-items: center; }
+        .empty-chart { display: flex; align-items: center; justify-content: center; height: 160px; color: var(--muted); font-size: 13px; }
+
+        /* ── Top list ─────────────────────────────────────────── */
+        .top-list { padding: 0; }
+        .top-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+        .top-item:last-child { border-bottom: none; }
+        .top-rank { width: 22px; height: 22px; border-radius: 50%; background: var(--paper); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+        .top-rank.gold { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+        .top-name { flex: 1; font-size: 13px; font-weight: 500; }
+        .top-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+        .top-bar-wrap { width: 70px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .top-bar-fill { height: 100%; border-radius: 3px; background: var(--admin); }
+        .top-val { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; white-space: nowrap; }
+        .top-val.green { color: var(--accent); }
+        .top-val.purple { color: var(--admin); }
+
+        /* ── Donut ────────────────────────────────────────────── */
+        .donut-wrap { padding: 20px; display: flex; align-items: center; gap: 20px; }
+        .donut-legend { flex: 1; }
+        .donut-legend-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+        .donut-legend-item:last-child { border-bottom: none; }
+        .donut-cat { display: flex; align-items: center; gap: 8px; }
+        .donut-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .donut-pct { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+
+        /* ── Growth table ─────────────────────────────────────── */
+        .growth-table { width: 100%; border-collapse: collapse; }
+        .growth-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); padding: 10px 16px; text-align: left; background: var(--paper); border-bottom: 1px solid var(--border); }
+        .growth-table td { padding: 11px 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
+        .growth-table tr:last-child td { border-bottom: none; }
+        .growth-table tr:hover td { background: #fafaf8; }
+        .mono { font-family: 'DM Mono', monospace; font-size: 12px; }
+        .badge-type { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 2px; background: var(--admin-pale); color: var(--admin); }
+
+        @media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } .insight-strip { grid-template-columns: 1fr; } .two-col,.three-col { grid-template-columns: 1fr; } }
+        @media (max-width: 700px) { :root { --sidebar-w: 0px; } .sidebar { display: none; } .content { padding: 16px; } .kpi-grid { grid-template-columns: 1fr 1fr; } }
+    </style>
 </head>
 <body>
-$END$
+
+<!-- ── Sidebar ────────────────────────────────────────────────── -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-badge">⚡ Admin Panel</div>
+        <div class="brand-name">BiasharaSmart Hub</div>
+        <div class="brand-sub">System Administration</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Overview</div>
+        <a class="nav-item" href="/admin-panel/"><span class="nav-icon">📊</span> Dashboard</a>
+        <div class="nav-section">Management</div>
+        <a class="nav-item" href="/admin-panel/users/"><span class="nav-icon">👥</span> Users</a>
+        <a class="nav-item" href="/admin-panel/businesses/"><span class="nav-icon">🏢</span> Businesses</a>
+        <a class="nav-item" href="/admin-panel/transactions/"><span class="nav-icon">💰</span> Transactions</a>
+        <a class="nav-item" href="/admin-panel/subscriptions/"><span class="nav-icon">💳</span> Subscriptions</a>
+        <div class="nav-section">System</div>
+        <a class="nav-item active" href="/admin-panel/analytics/"><span class="nav-icon">📈</span> Analytics</a>
+        <a class="nav-item" href="/admin-panel/alerts/"><span class="nav-icon">🚨</span> Alerts</a>
+        <a class="nav-item" href="/admin-panel/logs/"><span class="nav-icon">📋</span> Logs</a>
+        <a class="nav-item" href="/admin-panel/settings/"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <a class="back-link" href="/admin-panel/dashboard/">← Back to Dashboard</a>
+    <div class="sidebar-footer">
+        <div class="admin-pill">
+            <div class="admin-avatar">{{ user.first_name|first|upper|default:"A" }}</div>
+            <div class="admin-info">
+                <div class="admin-name">{{ user.first_name|default:user.username }}</div>
+                <div class="admin-role">superadmin</div>
+            </div>
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn" title="Logout">✕</button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<!-- ── Main ──────────────────────────────────────────────────── -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <h2>Platform Analytics</h2>
+            <p id="topbarSub">Loading platform data…</p>
+        </div>
+        <div class="topbar-right">
+            <button class="btn active" data-range="30" onclick="setRange(this)">30 days</button>
+            <button class="btn" data-range="90" onclick="setRange(this)">90 days</button>
+            <button class="btn" data-range="365" onclick="setRange(this)">1 year</button>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon">💰</div>
+                <div class="kpi-val loading" id="kpiRevenue">—</div>
+                <div class="kpi-label">Platform Revenue</div>
+                <div class="kpi-sub" id="kpiRevenueSub">all businesses</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">🏢</div>
+                <div class="kpi-val loading" id="kpiBiz">—</div>
+                <div class="kpi-label">Active Businesses</div>
+                <div class="kpi-sub" id="kpiBizSub">registered</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">👥</div>
+                <div class="kpi-val loading" id="kpiUsers">—</div>
+                <div class="kpi-label">Total Users</div>
+                <div class="kpi-sub" id="kpiUsersSub">on platform</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">📊</div>
+                <div class="kpi-val loading" id="kpiTxns">—</div>
+                <div class="kpi-label">Transactions</div>
+                <div class="kpi-sub" id="kpiTxnsSub">in period</div>
+            </div>
+        </div>
+
+        <!-- Insights -->
+        <div class="insight-strip">
+            <div class="insight-card">
+                <div class="insight-icon">🏆</div>
+                <div class="insight-label">Top Business</div>
+                <div class="insight-val" id="insTopBiz">—</div>
+                <div class="insight-sub" id="insTopBizSub">by revenue</div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-icon">📈</div>
+                <div class="insight-label">Platform Net Profit</div>
+                <div class="insight-val" id="insProfit">—</div>
+                <div class="insight-sub" id="insProfitSub">across all businesses</div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-icon">⚡</div>
+                <div class="insight-label">Avg Revenue / Business</div>
+                <div class="insight-val" id="insAvgRev">—</div>
+                <div class="insight-sub">per business</div>
+            </div>
+        </div>
+
+        <!-- Platform revenue vs expenses chart -->
+        <div class="panel full-row" style="animation-delay:0.3s;">
+            <div class="panel-header">
+                <h3>Platform Revenue vs Expenses</h3>
+                <span class="panel-tag" id="chartLabel">Last 30 days</span>
+            </div>
+            <div class="chart-wrap">
+                <div class="bar-chart" id="mainChart"><div class="empty-chart">⏳ Loading…</div></div>
+                <div class="chart-legend">
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--admin);"></span>Revenue</div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--error);"></span>Expenses</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top businesses + Business type breakdown -->
+        <div class="two-col">
+            <div class="panel" style="animation-delay:0.35s;">
+                <div class="panel-header">
+                    <h3>Top Businesses by Revenue</h3>
+                    <span class="panel-tag">in period</span>
+                </div>
+                <div class="top-list" id="topBizList"><div class="empty-chart">Loading…</div></div>
+            </div>
+            <div class="panel" style="animation-delay:0.4s;">
+                <div class="panel-header">
+                    <h3>Business Types</h3>
+                    <span class="panel-tag" id="bizTypeTotal">—</span>
+                </div>
+                <div class="donut-wrap" id="bizTypeDonut"><div class="empty-chart">Loading…</div></div>
+            </div>
+        </div>
+
+        <!-- Payment methods + Expense categories -->
+        <div class="two-col">
+            <div class="panel" style="animation-delay:0.45s;">
+                <div class="panel-header">
+                    <h3>Payment Methods</h3>
+                    <span class="panel-tag">platform-wide</span>
+                </div>
+                <div class="top-list" id="paymentList"><div class="empty-chart">Loading…</div></div>
+            </div>
+            <div class="panel" style="animation-delay:0.5s;">
+                <div class="panel-header">
+                    <h3>Top Expense Categories</h3>
+                    <span class="panel-tag">platform-wide</span>
+                </div>
+                <div class="top-list" id="expenseCatList"><div class="empty-chart">Loading…</div></div>
+            </div>
+        </div>
+
+        <!-- Business performance table -->
+        <div class="panel full-row" style="animation-delay:0.55s;">
+            <div class="panel-header">
+                <h3>Business Performance</h3>
+                <span class="panel-tag" id="bizPerfCount">—</span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="growth-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Business</th>
+                            <th>Type</th>
+                            <th>Revenue</th>
+                            <th>Expenses</th>
+                            <th>Net Profit</th>
+                            <th>Transactions</th>
+                            <th>Margin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bizPerfBody">
+                        <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+async function apiFetch(url) {
+    return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+}
+
+let allTxns = [];
+let allBiz  = [];
+let allUsers = [];
+let currentRange = 30;
+
+const COLORS = ['#7c3aed','#2d6a4f','#c1121f','#d4860a','#0369a1','#be185d','#059669','#dc2626'];
+const typeLabels = { retail:'Retail', wholesale:'Wholesale', restaurant:'Restaurant', service:'Service', manufacturing:'Manufacturing', agriculture:'Agriculture', other:'Other' };
+
+// ── Range ─────────────────────────────────────────────────────────
+function setRange(el) {
+    document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    currentRange = parseInt(el.dataset.range);
+    renderAll();
+}
+
+// ── Load ──────────────────────────────────────────────────────────
+async function loadAll() {
+    try {
+        const [txnRes, bizRes, userRes] = await Promise.all([
+            apiFetch('/api/transactions/?page_size=2000'),
+            apiFetch('/api/businesses/?page_size=500'),
+            apiFetch('/api/auth/users/'),
+        ]);
+        if (txnRes.ok)  { const d = await txnRes.json();  allTxns  = d.results || d || []; }
+        if (bizRes.ok)  { const d = await bizRes.json();  allBiz   = d.results || d || []; }
+        if (userRes.ok) { const d = await userRes.json(); allUsers = d.results || d || []; }
+    } catch(e) {}
+    renderAll();
+}
+
+// ── Filter to range ───────────────────────────────────────────────
+function inRange(dateStr) {
+    if (!dateStr) return false;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - currentRange);
+    return new Date(dateStr) >= cutoff;
+}
+
+// ── Render all ────────────────────────────────────────────────────
+function renderAll() {
+    const txns = allTxns.filter(t => inRange(t.date || t.created_at));
+    const sales = txns.filter(t => t.transaction_type === 'sale');
+    const expenses = txns.filter(t => t.transaction_type === 'expense');
+    const revenue = sales.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const spent   = expenses.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const profit  = revenue - spent;
+    const activeBiz = allBiz.filter(b => b.is_active !== false).length;
+
+    const labels = { 30: 'Last 30 days', 90: 'Last 90 days', 365: 'Last year' };
+    document.getElementById('chartLabel').textContent = labels[currentRange];
+    document.getElementById('topbarSub').textContent  = `${allBiz.length} businesses · ${allUsers.length} users · ${txns.length} transactions in period`;
+
+    // KPIs
+    sl('kpiRevenue', fmt(revenue)); document.getElementById('kpiRevenueSub').textContent = `${sales.length} sales`;
+    sl('kpiBiz',     activeBiz);    document.getElementById('kpiBizSub').textContent    = `${allBiz.length} total`;
+    sl('kpiUsers',   allUsers.length); document.getElementById('kpiUsersSub').textContent = `${allUsers.filter(u=>u.is_active!==false).length} active`;
+    sl('kpiTxns',    txns.length);  document.getElementById('kpiTxnsSub').textContent   = `${expenses.length} expenses`;
+
+    // Insights
+    const bizRevenue = allBiz.map(b => {
+        const bSales = sales.filter(t => t.business === b.id || t.business_id === b.id);
+        return { ...b, revenue: bSales.reduce((s, t) => s + parseFloat(t.amount || 0), 0) };
+    }).sort((a, b) => b.revenue - a.revenue);
+
+    const topBiz = bizRevenue[0];
+    document.getElementById('insTopBiz').textContent    = topBiz?.name || '—';
+    document.getElementById('insTopBizSub').textContent = topBiz ? fmt(topBiz.revenue) : 'No data';
+
+    const profEl = document.getElementById('insProfit');
+    profEl.textContent = fmt(Math.abs(profit));
+    profEl.style.color = profit >= 0 ? '#6ee7b7' : '#fca5a5';
+    document.getElementById('insProfitSub').textContent = profit >= 0 ? 'net profit' : 'operating at a loss';
+
+    document.getElementById('insAvgRev').textContent = allBiz.length ? fmt(revenue / allBiz.length) : '—';
+
+    // Charts
+    renderMainChart(sales, expenses);
+    renderTopBiz(bizRevenue);
+    renderBizTypeDonut();
+    renderPaymentMethods(sales);
+    renderExpenseCategories(expenses);
+    renderBizPerfTable(bizRevenue, expenses, txns);
+}
+
+function sl(id, v) { const e = document.getElementById(id); if(e){e.textContent=v;e.classList.remove('loading');} }
+function fmt(n) { return 'KES ' + Number(n).toLocaleString('en-KE', { maximumFractionDigits: 0 }); }
+
+// ── Main chart ────────────────────────────────────────────────────
+function renderMainChart(sales, expenses) {
+    const wrap = document.getElementById('mainChart');
+    const buckets = [];
+    const now = new Date();
+
+    if (currentRange <= 90) {
+        const weeks = currentRange <= 30 ? 4 : 13;
+        for (let i = weeks - 1; i >= 0; i--) {
+            const end = new Date(now); end.setDate(now.getDate() - i * 7);
+            const start = new Date(end); start.setDate(end.getDate() - 6);
+            const label = start.toLocaleDateString('en-KE', { month:'short', day:'numeric' });
+            const s = sales.filter(t => { const d = new Date(t.date||t.created_at); return d >= start && d <= end; }).reduce((a,t) => a+parseFloat(t.amount||0), 0);
+            const e = expenses.filter(t => { const d = new Date(t.date||t.created_at); return d >= start && d <= end; }).reduce((a,t) => a+parseFloat(t.amount||0), 0);
+            buckets.push({ label, sales: s, expenses: e });
+        }
+    } else {
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const label = d.toLocaleDateString('en-KE', { month:'short' });
+            const s = sales.filter(t => { const td = new Date(t.date||t.created_at); return td.getMonth()===d.getMonth()&&td.getFullYear()===d.getFullYear(); }).reduce((a,t) => a+parseFloat(t.amount||0), 0);
+            const e = expenses.filter(t => { const td = new Date(t.date||t.created_at); return td.getMonth()===d.getMonth()&&td.getFullYear()===d.getFullYear(); }).reduce((a,t) => a+parseFloat(t.amount||0), 0);
+            buckets.push({ label, sales: s, expenses: e });
+        }
+    }
+
+    const maxVal = Math.max(...buckets.map(b => Math.max(b.sales, b.expenses)), 1);
+    const hasData = buckets.some(b => b.sales > 0 || b.expenses > 0);
+
+    if (!hasData) { wrap.innerHTML = '<div class="empty-chart">📭 No transactions in this period</div>'; return; }
+
+    wrap.innerHTML = buckets.map(b => {
+        const sp = Math.max(Math.round((b.sales / maxVal) * 100), b.sales > 0 ? 3 : 0);
+        const ep = Math.max(Math.round((b.expenses / maxVal) * 100), b.expenses > 0 ? 3 : 0);
+        return `<div class="bar-group">
+            <div class="bar-pair">
+                <div class="bar revenue-bar" style="height:${sp}%"><div class="bar-tip">${fmt(b.sales)}</div></div>
+                <div class="bar expense-bar" style="height:${ep}%"><div class="bar-tip">${fmt(b.expenses)}</div></div>
+            </div>
+            <div class="bar-label">${b.label}</div>
+        </div>`;
+    }).join('');
+}
+
+// ── Top businesses ────────────────────────────────────────────────
+function renderTopBiz(sorted) {
+    const wrap = document.getElementById('topBizList');
+    const top5 = sorted.filter(b => b.revenue > 0).slice(0, 6);
+    if (!top5.length) { wrap.innerHTML = '<div class="empty-chart">No revenue data</div>'; return; }
+    const max = top5[0].revenue;
+    wrap.innerHTML = top5.map((b, i) => `
+        <div class="top-item">
+            <div class="top-rank ${i===0?'gold':''}">${i+1}</div>
+            <div>
+                <div class="top-name">${b.name}</div>
+                <div class="top-sub" style="text-transform:capitalize;">${typeLabels[b.business_type]||b.business_type||'—'}</div>
+            </div>
+            <div class="top-bar-wrap"><div class="top-bar-fill" style="width:${(b.revenue/max*100).toFixed(0)}%"></div></div>
+            <div class="top-val green">${fmt(b.revenue)}</div>
+        </div>`).join('');
+}
+
+// ── Business type donut ───────────────────────────────────────────
+function renderBizTypeDonut() {
+    const wrap = document.getElementById('bizTypeDonut');
+    const total = allBiz.length;
+    document.getElementById('bizTypeTotal').textContent = `${total} businesses`;
+    if (!total) { wrap.innerHTML = '<div class="empty-chart">No businesses</div>'; return; }
+
+    const byCat = {};
+    allBiz.forEach(b => { const t = b.business_type || 'other'; byCat[t] = (byCat[t]||0) + 1; });
+    const sorted = Object.entries(byCat).sort((a,b) => b[1]-a[1]);
+
+    const size = 100; const r = 35; const cx = 50; const cy = 50;
+    let startAngle = -Math.PI/2;
+    let paths = '';
+    sorted.forEach(([cat, count], i) => {
+        const pct = count / total;
+        const angle = pct * 2 * Math.PI;
+        const endAngle = startAngle + angle;
+        const x1 = cx + r * Math.cos(startAngle); const y1 = cy + r * Math.sin(startAngle);
+        const x2 = cx + r * Math.cos(endAngle);   const y2 = cy + r * Math.sin(endAngle);
+        const largeArc = angle > Math.PI ? 1 : 0;
+        paths += `<path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z" fill="${COLORS[i%COLORS.length]}" opacity="0.85"/>`;
+        startAngle = endAngle;
+    });
+    paths += `<circle cx="${cx}" cy="${cy}" r="22" fill="white"/>`;
+
+    const legend = sorted.map(([cat, count], i) => `
+        <div class="donut-legend-item">
+            <div class="donut-cat"><div class="donut-dot" style="background:${COLORS[i%COLORS.length]};"></div><span style="text-transform:capitalize;">${typeLabels[cat]||cat}</span></div>
+            <span class="donut-pct">${(count/total*100).toFixed(0)}% (${count})</span>
+        </div>`).join('');
+
+    wrap.innerHTML = `
+        <svg width="100" height="100" viewBox="0 0 100 100" style="flex-shrink:0;">${paths}</svg>
+        <div class="donut-legend">${legend}</div>`;
+}
+
+// ── Payment methods ───────────────────────────────────────────────
+function renderPaymentMethods(sales) {
+    const wrap = document.getElementById('paymentList');
+    if (!sales.length) { wrap.innerHTML = '<div class="empty-chart">No sales data</div>'; return; }
+    const byMethod = {};
+    sales.forEach(t => { const m = t.payment_method||'other'; byMethod[m] = (byMethod[m]||0)+parseFloat(t.amount||0); });
+    const sorted = Object.entries(byMethod).sort((a,b)=>b[1]-a[1]);
+    const max = sorted[0][1];
+    const icons = { cash:'💵', mpesa:'📱', bank:'🏦', credit:'📋', other:'💳' };
+    wrap.innerHTML = sorted.map(([method, amt], i) => `
+        <div class="top-item">
+            <div class="top-rank ${i===0?'gold':''}">${icons[method]||'💳'}</div>
+            <div class="top-name" style="text-transform:capitalize;">${method}</div>
+            <div class="top-bar-wrap"><div class="top-bar-fill" style="width:${(amt/max*100).toFixed(0)}%"></div></div>
+            <div class="top-val purple">${fmt(amt)}</div>
+        </div>`).join('');
+}
+
+// ── Expense categories ────────────────────────────────────────────
+function renderExpenseCategories(expenses) {
+    const wrap = document.getElementById('expenseCatList');
+    if (!expenses.length) { wrap.innerHTML = '<div class="empty-chart">No expenses</div>'; return; }
+    const byCat = {};
+    expenses.forEach(t => { const c = t.category||'other'; byCat[c] = (byCat[c]||0)+parseFloat(t.amount||0); });
+    const sorted = Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const max = sorted[0][1];
+    wrap.innerHTML = sorted.map(([cat, amt], i) => `
+        <div class="top-item">
+            <div class="top-rank ${i===0?'gold':''}">${i+1}</div>
+            <div class="top-name" style="text-transform:capitalize;">${cat}</div>
+            <div class="top-bar-wrap"><div class="top-bar-fill" style="width:${(amt/max*100).toFixed(0)}%;background:var(--error);"></div></div>
+            <div class="top-val" style="color:var(--error);">${fmt(amt)}</div>
+        </div>`).join('');
+}
+
+// ── Business performance table ─────────────────────────────────────
+function renderBizPerfTable(bizRevenue, expenses, txns) {
+    const body = document.getElementById('bizPerfBody');
+    document.getElementById('bizPerfCount').textContent = `${allBiz.length} businesses`;
+
+    if (!allBiz.length) { body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">No businesses</td></tr>'; return; }
+
+    const rows = bizRevenue.map((b, i) => {
+        const bizExp = expenses.filter(t => t.business === b.id || t.business_id === b.id).reduce((s,t)=>s+parseFloat(t.amount||0),0);
+        const bizTxn = txns.filter(t => t.business === b.id || t.business_id === b.id).length;
+        const profit = b.revenue - bizExp;
+        const margin = b.revenue > 0 ? (profit / b.revenue * 100) : 0;
+        return { ...b, expenses: bizExp, profit, margin, txns: bizTxn };
+    });
+
+    body.innerHTML = rows.map((b, i) => `
+        <tr>
+            <td class="mono" style="color:var(--muted);">${i+1}</td>
+            <td style="font-weight:600;">${b.name}</td>
+            <td><span class="badge-type" style="font-size:9px;text-transform:capitalize;">${typeLabels[b.business_type]||b.business_type||'—'}</span></td>
+            <td class="mono" style="color:var(--accent);">${fmt(b.revenue)}</td>
+            <td class="mono" style="color:var(--error);">${fmt(b.expenses)}</td>
+            <td class="mono" style="color:${b.profit>=0?'var(--accent)':'var(--error)'};">${b.profit>=0?'+':'−'}${fmt(Math.abs(b.profit))}</td>
+            <td class="mono" style="color:var(--muted);">${b.txns}</td>
+            <td class="mono" style="color:${b.margin>=0?'var(--accent)':'var(--error)'};">${b.margin.toFixed(1)}%</td>
+        </tr>`).join('');
+}
+
+// ── Boot ──────────────────────────────────────────────────────────
+loadAll();
+</script>
 </body>
 </html>

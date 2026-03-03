@@ -4,7 +4,87 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="689f2a90-d0f7-42cf-8dee-73e6ed77c657" name="Changes" comment="" />
+    <list default="true" id="689f2a90-d0f7-42cf-8dee-73e6ed77c657" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/backends.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/backends.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/logger.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/managers.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/managers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/middleware.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/middleware.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/alerts.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/alerts.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/analytics.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/analytics.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/businesses.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/businesses.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/customers.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/customers.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/logs.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/logs.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/pos.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/pos.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/settings.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/settings.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/subscriptions.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/subscriptions.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/suppliers.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/suppliers.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/transactions.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/transactions.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/templates/admin_panel/users.html" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/templates/admin_panel/users.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin_panel/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin_panel/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analytics/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/analytics/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analytics/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/analytics/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analytics/services.py" beforeDir="false" afterPath="$PROJECT_DIR$/analytics/services.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analytics/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/analytics/tasks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analytics/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/analytics/tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analytics/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/analytics/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analytics/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/analytics/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/biasharasmart_hub/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/biasharasmart_hub/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/biasharasmart_hub/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/biasharasmart_hub/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/businesses/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/businesses/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/businesses/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/businesses/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/businesses/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/businesses/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/businesses/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/businesses/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/businesses/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/businesses/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/home/templates/home/help.html" beforeDir="false" afterPath="$PROJECT_DIR$/home/templates/home/help.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/home/templates/home/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/home/templates/home/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/home/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/home/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/integrations/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/integrations/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/integrations/ussd.py" beforeDir="false" afterPath="$PROJECT_DIR$/integrations/ussd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/integrations/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/integrations/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/integrations/whatsapp.py" beforeDir="false" afterPath="$PROJECT_DIR$/integrations/whatsapp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/inventory/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/inventory/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/inventory/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/inventory/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/inventory/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mpesa/mpesa.py" beforeDir="false" afterPath="$PROJECT_DIR$/mpesa/mpesa.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mpesa/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/mpesa/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notifications/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notifications/tasks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/services.py" beforeDir="false" afterPath="$PROJECT_DIR$/reports/services.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/reports/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reports/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/reports/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/add_expense.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/add_expense.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/add_sale.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/add_sale.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/alerts.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/alerts.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/analytics.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/analytics.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/business.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/business.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/chat.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/chat.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/inventory.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/inventory.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/reports.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/reports.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/settings.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/settings.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/transactions.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/transactions.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/verify_otp.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/verify_otp.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/home/onboarding.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/home/onboarding.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/reports/sales_report.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/reports/sales_report.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transactions/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/transactions/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transactions/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/transactions/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transactions/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/transactions/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transactions/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/transactions/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transactions/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/transactions/views.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,6 +93,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="HTML File" />
         <option value="Python Script" />
       </list>
     </option>
@@ -20,9 +101,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 6
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
   <component name="ProjectId" id="39so7i2FbBnFGVJADT3NQe62MbY" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -31,14 +112,24 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "DefaultHtmlFileTemplate": "HTML File",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true"
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/USER/PycharmProjects/biasharasmart_hub/static/docs",
+    "settings.editor.selected.configurable": "preferences.lookFeel"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\USER\PycharmProjects\biasharasmart_hub\static\docs" />
+      <recent name="C:\Users\USER\PycharmProjects\biasharasmart_hub\businesses" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

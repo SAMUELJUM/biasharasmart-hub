@@ -1,10 +1,153 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>Sales Report - {{ business.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #333;
+        }
+        .business-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .report-title {
+            font-size: 20px;
+            color: #7f8c8d;
+            margin-top: 10px;
+        }
+        .period {
+            font-size: 16px;
+            color: #95a5a6;
+            margin-top: 5px;
+        }
+        .summary {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .summary-item {
+            text-align: center;
+        }
+        .summary-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .summary-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+    </style>
 </head>
 <body>
-$END$
+    <div class="header">
+        <div class="business-name">{{ business.name }}</div>
+        <div class="report-title">Sales Report</div>
+        <div class="period">{{ start_date }} to {{ end_date }}</div>
+    </div>
+
+    <div class="summary">
+        <div class="summary-item">
+            <div class="summary-label">Total Sales</div>
+            <div class="summary-value">KES {{ total_sales|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Transactions</div>
+            <div class="summary-value">{{ transaction_count }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Average Sale</div>
+            <div class="summary-value">KES {{ avg_sale|floatformat:2|intcomma }}</div>
+        </div>
+    </div>
+
+    <h3>Sales by Category</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Transactions</th>
+                <th>Total</th>
+                <th>% of Sales</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in by_category %}
+            <tr>
+                <td>{{ category.category__name|default:"Uncategorized" }}</td>
+                <td>{{ category.count }}</td>
+                <td>KES {{ category.total|floatformat:2|intcomma }}</td>
+                <td>{{ category.total|div:total_sales|mul:100|floatformat:1 }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Transaction Details</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Payment Mode</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in transactions %}
+            <tr>
+                <td>{{ transaction.date }}</td>
+                <td>KES {{ transaction.amount|floatformat:2|intcomma }}</td>
+                <td>{{ transaction.category.name|default:"-" }}</td>
+                <td>{{ transaction.get_payment_mode_display }}</td>
+                <td>{{ transaction.description|truncatechars:50 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Generated on {{ generated_at|date:"F j, Y H:i" }} by BiasharaSmart Hub
+    </div>
 </body>
 </html>

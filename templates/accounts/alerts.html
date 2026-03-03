@@ -1,10 +1,504 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerts - BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-light: #40916c; --accent-pale: #d8f3dc; --gold: #e9c46a;
+            --error: #c1121f; --error-pale: #fce4e4; --warn: #d4860a;
+            --warn-pale: #fef3cd; --muted: #6b7280; --border: #e2e0d8;
+            --sidebar-w: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; }
+
+        /* ── Sidebar ─────────────────────────────────────────── */
+        .sidebar { width: var(--sidebar-w); background: var(--ink); min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-badge { display: inline-block; background: var(--gold); color: var(--ink); font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 8px; }
+        .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .brand-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+        .sidebar-nav { padding: 16px 0; flex: 1; }
+        .nav-section { padding: 12px 24px 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.15s, background 0.15s; border-left: 2px solid transparent; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: var(--gold); background: rgba(233,196,106,0.08); border-left-color: var(--gold); }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .user-pill { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+        .logout-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.35); font-size: 16px; padding: 4px; transition: color 0.15s; flex-shrink: 0; }
+        .logout-btn:hover { color: var(--error); }
+
+        /* ── Main ───────────────────────────────────────────── */
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-left h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+        .topbar-right { display: flex; gap: 10px; }
+        .content { padding: 28px 32px; flex: 1; }
+
+        /* ── Buttons ─────────────────────────────────────────── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--ink); }
+        .btn-sm { padding: 5px 11px; font-size: 11px; }
+
+        @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Stats row ──────────────────────────────────────── */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+        .stat-card:nth-child(1){animation-delay:.05s} .stat-card:nth-child(2){animation-delay:.1s} .stat-card:nth-child(3){animation-delay:.15s} .stat-card:nth-child(4){animation-delay:.2s}
+        .stat-icon-wrap { width: 40px; height: 40px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .stat-icon-wrap.red { background: var(--error-pale); }
+        .stat-icon-wrap.yellow { background: var(--warn-pale); }
+        .stat-icon-wrap.green { background: var(--accent-pale); }
+        .stat-icon-wrap.grey { background: var(--paper); border: 1px solid var(--border); }
+        .stat-val { font-size: 22px; font-weight: 700; font-family: 'DM Mono', monospace; }
+        .stat-val.loading { color: var(--border); animation: pulse 1.2s infinite; }
+        .stat-lbl { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+        /* ── Tabs ────────────────────────────────────────────── */
+        .tabs { display: flex; gap: 4px; background: #fff; border: 1px solid var(--border); border-radius: 3px; padding: 4px; margin-bottom: 16px; width: fit-content; }
+        .tab { padding: 7px 18px; border-radius: 2px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; border: none; background: none; color: var(--muted); font-family: 'Sora', sans-serif; display: flex; align-items: center; gap: 6px; }
+        .tab:hover { color: var(--ink); }
+        .tab.active { background: var(--ink); color: #fff; }
+        .tab-count { font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 700; }
+        .tab.active .tab-count { background: rgba(255,255,255,0.2); }
+        .tab:not(.active) .tab-count { background: var(--border); color: var(--muted); }
+
+        /* ── Alert cards ─────────────────────────────────────── */
+        .alerts-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .alert-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 18px 20px; display: flex; align-items: flex-start; gap: 16px; animation: rise 0.3s cubic-bezier(0.16,1,0.3,1) both; transition: box-shadow 0.15s; }
+        .alert-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+        .alert-card.resolved { opacity: 0.5; }
+
+        .severity-bar { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; min-height: 40px; }
+        .severity-bar.high { background: var(--error); }
+        .severity-bar.medium { background: var(--warn); }
+        .severity-bar.low { background: var(--accent); }
+        .severity-bar.info { background: #0369a1; }
+
+        .alert-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+
+        .alert-body { flex: 1; min-width: 0; }
+        .alert-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .alert-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+        .alert-meta { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+
+        .severity-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .severity-badge.high { background: var(--error-pale); color: var(--error); }
+        .severity-badge.medium { background: var(--warn-pale); color: var(--warn); }
+        .severity-badge.low { background: var(--accent-pale); color: var(--accent); }
+        .severity-badge.info { background: #dbeafe; color: #0369a1; }
+
+        .alert-time { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); }
+        .alert-biz { font-size: 11px; color: var(--muted); }
+
+        .alert-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: flex-start; }
+
+        /* ── Generate alerts section ─────────────────────────── */
+        .generate-panel { background: var(--ink); border-radius: 4px; padding: 24px 28px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+        .generate-text h3 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .generate-text p { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .btn-generate { background: var(--gold); color: var(--ink); border: none; padding: 10px 20px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+        .btn-generate:hover { background: #d4a832; transform: translateY(-1px); }
+        .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* ── Empty state ─────────────────────────────────────── */
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); background: #fff; border: 1px solid var(--border); border-radius: 4px; }
+        .empty-icon { font-size: 40px; margin-bottom: 12px; }
+        .empty-state h4 { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+        .empty-state p { font-size: 13px; }
+
+        /* ── Toast ───────────────────────────────────────────── */
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 3px; font-size: 13px; font-weight: 500; z-index: 300; display: none; animation: rise 0.3s ease; }
+        .toast.show { display: block; }
+
+        @media (max-width: 1100px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 700px) { :root { --sidebar-w: 0px; } .sidebar { display: none; } .content { padding: 16px; } .topbar { padding: 12px 16px; } .stats-row { grid-template-columns: 1fr 1fr; } .generate-panel { flex-direction: column; align-items: flex-start; } }
+    </style>
 </head>
 <body>
-$END$
+
+<!-- ── Sidebar ────────────────────────────────────────────────── -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-badge">🇰🇪 SME Platform</div>
+        <div class="brand-name">BiasharaSmart Hub</div>
+        <div class="brand-sub">Business Dashboard</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Main</div>
+        <a class="nav-item" href="/dashboard/"><span class="nav-icon">📊</span> Overview</a>
+        <a class="nav-item" href="/transactions/"><span class="nav-icon">💰</span> Transactions</a>
+        <a class="nav-item" href="/inventory/"><span class="nav-icon">📦</span> Inventory</a>
+        <div class="nav-section">Insights</div>
+        <a class="nav-item" href="/analytics/"><span class="nav-icon">📈</span> Analytics</a>
+        <a class="nav-item" href="/reports/"><span class="nav-icon">📋</span> Reports</a>
+        <a class="nav-item active" href="/alerts/"><span class="nav-icon">⚠️</span> Alerts</a>
+        <div class="nav-section">Account</div>
+        <a class="nav-item" href="/business/"><span class="nav-icon">🏢</span> My Business</a>
+        <a class="nav-item" href="/settings/"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-pill">
+            <div class="user-avatar">{{ user.first_name|first|upper|default:"U" }}</div>
+            <div class="user-info">
+                <div class="user-name">{{ user.first_name|default:user.username }}</div>
+                <div class="user-role">{{ user.phone_number }}</div>
+            </div>
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn" title="Logout">✕</button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<!-- ── Main ──────────────────────────────────────────────────── -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <h2>Alerts</h2>
+            <p id="topbarSub">Loading…</p>
+        </div>
+        <div class="topbar-right">
+            <button class="btn btn-outline" onclick="resolveAll()" id="resolveAllBtn" style="display:none;">✓ Resolve All</button>
+            <button class="btn btn-outline" onclick="loadAlerts()">↺ Refresh</button>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon-wrap red">🔴</div>
+                <div><div class="stat-val loading" id="statHigh">—</div><div class="stat-lbl">High / Critical</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap yellow">🟡</div>
+                <div><div class="stat-val loading" id="statMedium">—</div><div class="stat-lbl">Medium</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap green">🟢</div>
+                <div><div class="stat-val loading" id="statLow">—</div><div class="stat-lbl">Low / Info</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap grey">✅</div>
+                <div><div class="stat-val loading" id="statResolved">—</div><div class="stat-lbl">Resolved</div></div>
+            </div>
+        </div>
+
+        <!-- Generate alerts banner -->
+        <div class="generate-panel">
+            <div class="generate-text">
+                <h3>🤖 Smart Alert Detection</h3>
+                <p>Scan your inventory and transactions to automatically detect low stock, unusual expenses, and cash flow risks.</p>
+            </div>
+            <button class="btn-generate" id="generateBtn" onclick="generateSmartAlerts()">
+                <span id="genSpinner" style="display:none;width:14px;height:14px;border:2px solid rgba(15,17,23,0.3);border-top-color:var(--ink);border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+                ⚡ Scan Now
+            </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-filter="active" onclick="switchTab(this)">Active <span class="tab-count" id="countActive">0</span></button>
+            <button class="tab" data-filter="high" onclick="switchTab(this)">High <span class="tab-count" id="countHigh">0</span></button>
+            <button class="tab" data-filter="medium" onclick="switchTab(this)">Medium <span class="tab-count" id="countMedium">0</span></button>
+            <button class="tab" data-filter="low" onclick="switchTab(this)">Low <span class="tab-count" id="countLow">0</span></button>
+            <button class="tab" data-filter="resolved" onclick="switchTab(this)">Resolved <span class="tab-count" id="countResolved">0</span></button>
+        </div>
+
+        <!-- Alert list -->
+        <div id="alertsList"></div>
+
+    </div>
+</div>
+
+<!-- ── Toast ──────────────────────────────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Auth handled server-side by @login_required ───────────────────
+function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
+async function apiFetch(url, opts = {}) {
+    return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest', ...opts.headers }, ...opts });
+}
+
+let allAlerts = [];
+let activeFilter = 'active';
+
+const severityOrder = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
+const severityIcon  = { critical: '🚨', high: '⚠️', medium: '⚡', low: 'ℹ️', info: '💡' };
+
+// ── Load alerts ───────────────────────────────────────────────────
+async function loadAlerts() {
+    try {
+        const res = await apiFetch('/api/analytics/alerts/');
+        if (res.ok) {
+            const data = await res.json();
+            allAlerts = data.results || data || [];
+        } else {
+            allAlerts = [];
+        }
+    } catch(e) {
+        allAlerts = [];
+    }
+    updateStats();
+    renderAlerts();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────
+function updateStats() {
+    const active   = allAlerts.filter(a => !a.is_resolved);
+    const resolved = allAlerts.filter(a => a.is_resolved);
+    const high     = active.filter(a => ['high','critical'].includes(a.severity || a.alert_type));
+    const medium   = active.filter(a => (a.severity || a.alert_type) === 'medium');
+    const low      = active.filter(a => ['low','info'].includes(a.severity || a.alert_type));
+
+    stopLoading('statHigh',     high.length);
+    stopLoading('statMedium',   medium.length);
+    stopLoading('statLow',      low.length);
+    stopLoading('statResolved', resolved.length);
+
+    document.getElementById('countActive').textContent   = active.length;
+    document.getElementById('countHigh').textContent     = high.length;
+    document.getElementById('countMedium').textContent   = medium.length;
+    document.getElementById('countLow').textContent      = low.length;
+    document.getElementById('countResolved').textContent = resolved.length;
+
+    document.getElementById('topbarSub').textContent = `${active.length} active · ${high.length} high priority`;
+    document.getElementById('resolveAllBtn').style.display = active.length ? 'inline-flex' : 'none';
+}
+
+function stopLoading(id, val) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = val; el.classList.remove('loading'); }
+}
+
+// ── Tab switching ─────────────────────────────────────────────────
+function switchTab(el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    activeFilter = el.dataset.filter;
+    renderAlerts();
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function renderAlerts() {
+    const wrap = document.getElementById('alertsList');
+
+    let filtered = allAlerts.filter(a => {
+        const severity = a.severity || a.alert_type || 'low';
+        const resolved = a.is_resolved || false;
+        if (activeFilter === 'active')   return !resolved;
+        if (activeFilter === 'resolved') return resolved;
+        if (activeFilter === 'high')     return !resolved && ['high','critical'].includes(severity);
+        if (activeFilter === 'medium')   return !resolved && severity === 'medium';
+        if (activeFilter === 'low')      return !resolved && ['low','info'].includes(severity);
+        return true;
+    });
+
+    // Sort by severity then date
+    filtered.sort((a, b) => {
+        const sa = severityOrder[a.severity || a.alert_type] ?? 5;
+        const sb = severityOrder[b.severity || b.alert_type] ?? 5;
+        if (sa !== sb) return sa - sb;
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    });
+
+    if (!filtered.length) {
+        const msgs = {
+            active: ['✅', 'No active alerts', 'Your business looks healthy right now.'],
+            high: ['🎉', 'No high priority alerts', 'No critical issues detected.'],
+            medium: ['👍', 'No medium alerts', 'Nothing requiring immediate attention.'],
+            low: ['✨', 'No low priority alerts', ''],
+            resolved: ['📋', 'No resolved alerts', 'Resolved alerts will appear here.'],
+        };
+        const [icon, title, sub] = msgs[activeFilter] || ['📭', 'No alerts', ''];
+        wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">${icon}</div><h4>${title}</h4>${sub ? `<p>${sub}</p>` : ''}</div>`;
+        return;
+    }
+
+    wrap.innerHTML = '';
+    const list = document.createElement('div');
+    list.className = 'alerts-list';
+
+    filtered.forEach((a, idx) => {
+        const severity = a.severity || a.alert_type || 'low';
+        const level    = ['critical','high'].includes(severity) ? 'high' : severity === 'medium' ? 'medium' : severity === 'info' ? 'info' : 'low';
+        const resolved = a.is_resolved || false;
+        const time     = a.created_at
+            ? new Date(a.created_at).toLocaleDateString('en-KE', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+            : '—';
+
+        const card = document.createElement('div');
+        card.className = `alert-card${resolved ? ' resolved' : ''}`;
+        card.style.animationDelay = `${idx * 0.04}s`;
+        card.innerHTML = `
+            <div class="severity-bar ${level}"></div>
+            <div class="alert-icon">${severityIcon[severity] || '⚠️'}</div>
+            <div class="alert-body">
+                <div class="alert-title">${a.title || a.message || 'Alert'}</div>
+                <div class="alert-desc">${a.description || a.business_name || ''}</div>
+                <div class="alert-meta">
+                    <span class="severity-badge ${level}">${severity}</span>
+                    <span class="alert-time">🕒 ${time}</span>
+                    ${a.business_name ? `<span class="alert-biz">🏢 ${a.business_name}</span>` : ''}
+                    ${resolved ? '<span style="font-size:11px;color:var(--accent);font-weight:600;">✓ Resolved</span>' : ''}
+                </div>
+            </div>
+            <div class="alert-actions">
+                ${!resolved ? `<button class="btn btn-outline btn-sm" onclick="resolveAlert(${a.id}, this)">✓ Resolve</button>` : ''}
+                <button class="btn btn-outline btn-sm" onclick="dismissAlert(${a.id}, this)" style="color:var(--muted);">✕</button>
+            </div>`;
+        list.appendChild(card);
+    });
+
+    wrap.appendChild(list);
+}
+
+// ── Resolve single alert ──────────────────────────────────────────
+async function resolveAlert(id, btn) {
+    btn.disabled = true;
+    btn.textContent = '…';
+    try {
+        const res = await apiFetch(`/api/analytics/alerts/${id}/resolve/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCsrf() }
+        });
+
+        if (res.ok || res.status === 200) {
+            const alert = allAlerts.find(a => a.id === id);
+            if (alert) alert.is_resolved = true;
+        } else {
+            // Fallback: try PATCH
+            await apiFetch(`/api/analytics/alerts/${id}/`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+                body: JSON.stringify({ is_resolved: true })
+            });
+            const alert = allAlerts.find(a => a.id === id);
+            if (alert) alert.is_resolved = true;
+        }
+        updateStats();
+        renderAlerts();
+        showToast('Alert resolved ✓');
+    } catch(e) {
+        btn.disabled = false;
+        btn.textContent = '✓ Resolve';
+        showToast('Could not resolve alert');
+    }
+}
+
+// ── Dismiss (remove from view) ────────────────────────────────────
+function dismissAlert(id, btn) {
+    allAlerts = allAlerts.filter(a => a.id !== id);
+    updateStats();
+    renderAlerts();
+    showToast('Alert dismissed');
+}
+
+// ── Resolve all ───────────────────────────────────────────────────
+async function resolveAll() {
+    const active = allAlerts.filter(a => !a.is_resolved);
+    for (const a of active) {
+        try {
+            await apiFetch(`/api/analytics/alerts/${a.id}/resolve/`, {
+                method: 'POST', headers: { 'X-CSRFToken': getCsrf() }
+            });
+            a.is_resolved = true;
+        } catch(e) { a.is_resolved = true; }
+    }
+    updateStats();
+    renderAlerts();
+    showToast(`${active.length} alerts resolved ✓`);
+}
+
+// ── Smart alert generation ────────────────────────────────────────
+// Scans inventory for low stock and transactions for anomalies
+// and posts generated alerts to the API (or shows them locally)
+async function generateSmartAlerts() {
+    const btn = document.getElementById('generateBtn');
+    const spinner = document.getElementById('genSpinner');
+    btn.disabled = true;
+    spinner.style.display = 'inline-block';
+
+    const generated = [];
+
+    try {
+        // Check inventory for low stock
+        const invRes = await apiFetch('/api/inventory/');
+        if (invRes.ok) {
+            const data = await invRes.json();
+            const products = data.results || data || [];
+            products.forEach(p => {
+                const qty = p.quantity || 0;
+                const reorder = p.reorder_level || 5;
+                if (qty <= 0) {
+                    generated.push({ title: `Out of Stock: ${p.name}`, description: `${p.name} has 0 units remaining. Restock immediately.`, severity: 'high', alert_type: 'high', is_resolved: false, created_at: new Date().toISOString(), business_name: '' });
+                } else if (qty <= reorder) {
+                    generated.push({ title: `Low Stock: ${p.name}`, description: `Only ${qty} units left (reorder level: ${reorder}).`, severity: 'medium', alert_type: 'medium', is_resolved: false, created_at: new Date().toISOString(), business_name: '' });
+                }
+            });
+        }
+
+        // Check transactions for high single expenses
+        const txnRes = await apiFetch('/api/transactions/?page_size=100&transaction_type=expense');
+        if (txnRes.ok) {
+            const data = await txnRes.json();
+            const expenses = (data.results || data || []).filter(t => t.transaction_type === 'expense');
+            const avg = expenses.length ? expenses.reduce((s,t) => s + parseFloat(t.amount||0), 0) / expenses.length : 0;
+            expenses.forEach(e => {
+                if (avg > 0 && parseFloat(e.amount) > avg * 3) {
+                    generated.push({ title: `Unusual Expense Detected`, description: `${e.description || 'Expense'} of KES ${Number(e.amount).toLocaleString()} is significantly above your average.`, severity: 'medium', alert_type: 'medium', is_resolved: false, created_at: new Date().toISOString(), business_name: '' });
+                }
+            });
+        }
+
+        if (generated.length === 0) {
+            showToast('✅ No issues detected — business looks healthy!');
+        } else {
+            // Add generated alerts with temp IDs (negative so they don't clash)
+            generated.forEach((a, i) => { a.id = -(Date.now() + i); });
+            allAlerts = [...generated, ...allAlerts];
+            updateStats();
+            renderAlerts();
+            showToast(`⚡ ${generated.length} alert${generated.length > 1 ? 's' : ''} generated`);
+        }
+    } catch(e) {
+        showToast('Scan failed. Please try again.');
+    } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+    }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Boot ──────────────────────────────────────────────────────────
+loadAlerts();
+</script>
 </body>
 </html>

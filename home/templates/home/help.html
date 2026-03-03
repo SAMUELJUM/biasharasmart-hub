@@ -1,10 +1,592 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide - BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #1a7a4a;
+            --accent-pale: #d4f5e3; --purple: #7c3aed; --purple-pale: #ede9fe;
+            --gold: #d4a017; --gold-pale: #fef3c7;
+            --muted: #6b7280; --border: #e5e3dc;
+            --sidebar-w: 260px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); display: flex; min-height: 100vh; }
+
+        /* ── Sidebar TOC ── */
+        .toc-sidebar {
+            width: var(--sidebar-w); position: fixed; top: 0; left: 0; height: 100vh;
+            background: #0a0f1e; overflow-y: auto; z-index: 100;
+            display: flex; flex-direction: column;
+        }
+        .toc-brand { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .toc-brand-name { font-size: 14px; font-weight: 700; color: #fff; }
+        .toc-brand-sub { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 3px; font-family: 'DM Mono', monospace; }
+        .toc-title { padding: 14px 20px 6px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+        .toc-link {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 20px; font-size: 12px; font-weight: 500;
+            color: rgba(255,255,255,0.45); text-decoration: none;
+            border-left: 2px solid transparent; transition: all 0.15s;
+        }
+        .toc-link:hover { color: #fff; background: rgba(255,255,255,0.04); }
+        .toc-link.active { color: #a3e6c1; background: rgba(26,122,74,0.12); border-left-color: #1a7a4a; }
+        .toc-num { font-family: 'DM Mono', monospace; font-size: 10px; opacity: 0.5; min-width: 20px; }
+        .toc-footer { padding: 16px 20px; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.08); }
+
+        /* ── Main content ── */
+        .main { margin-left: var(--sidebar-w); flex: 1; }
+        .topbar {
+            background: #fff; border-bottom: 1px solid var(--border);
+            padding: 14px 40px; display: flex; align-items: center;
+            justify-content: space-between; position: sticky; top: 0; z-index: 50;
+        }
+        .topbar h1 { font-size: 16px; font-weight: 700; }
+        .topbar p { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+        .topbar-actions { display: flex; gap: 10px; align-items: center; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.15s; border: none; }
+        .btn-green { background: var(--accent); color: #fff; }
+        .btn-green:hover { background: #2d9e65; }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--ink); }
+
+        .content { padding: 48px 40px; max-width: 860px; }
+
+        /* ── Sections ── */
+        .section { margin-bottom: 64px; scroll-margin-top: 80px; }
+
+        .section-banner {
+            display: flex; align-items: stretch; border-radius: 4px;
+            overflow: hidden; margin-bottom: 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .section-num {
+            background: var(--accent); color: #fff; font-size: 32px; font-weight: 800;
+            font-family: 'DM Mono', monospace; min-width: 80px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .section-info { background: #0a0f1e; padding: 20px 28px; flex: 1; }
+        .section-info h2 { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .section-info p { font-size: 12px; color: #a3e6c1; margin-top: 6px; font-family: 'DM Mono', monospace; }
+
+        .section > p { font-size: 14px; line-height: 1.75; color: var(--ink); margin-bottom: 20px; }
+
+        h3 { font-size: 15px; font-weight: 700; color: var(--accent); margin: 28px 0 14px;
+             padding-bottom: 8px; border-bottom: 2px solid var(--accent-pale); }
+
+        /* ── Steps ── */
+        .steps-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
+        .steps-table thead tr { background: #0a0f1e; }
+        .steps-table thead th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #fff; letter-spacing: 0.06em; text-transform: uppercase; }
+        .steps-table tbody tr:nth-child(even) { background: #f0fdf8; }
+        .steps-table tbody tr:hover { background: #e8faf0; }
+        .steps-table td { padding: 11px 14px; border: 1px solid var(--border); vertical-align: top; }
+        .step-num-cell { font-size: 16px; font-weight: 800; color: var(--accent); font-family: 'DM Mono', monospace; text-align: center; width: 40px; }
+        .step-action { font-weight: 700; width: 160px; }
+        .step-detail { color: #374151; line-height: 1.6; }
+
+        /* ── Fields table ── */
+        .fields-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 13px; }
+        .fields-table thead tr { background: var(--accent); }
+        .fields-table thead th { padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #fff; letter-spacing: 0.06em; text-transform: uppercase; }
+        .fields-table tbody tr:nth-child(even) { background: #f0fdf8; }
+        .fields-table td { padding: 9px 14px; border: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+        .field-name { font-weight: 700; }
+        .req-yes { color: var(--purple); font-weight: 700; font-family: 'DM Mono', monospace; font-size: 11px; }
+        .req-no { color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; }
+
+        /* ── Info boxes ── */
+        .tip-box { display: flex; gap: 12px; background: var(--accent-pale); border-left: 4px solid var(--accent); border-radius: 0 3px 3px 0; padding: 14px 16px; margin: 16px 0; font-size: 13px; line-height: 1.6; }
+        .tip-box .icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+        .tip-box strong { color: var(--accent); }
+
+        .warn-box { display: flex; gap: 12px; background: var(--gold-pale); border-left: 4px solid var(--gold); border-radius: 0 3px 3px 0; padding: 14px 16px; margin: 16px 0; font-size: 13px; line-height: 1.6; }
+        .warn-box .icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+        .warn-box strong { color: var(--gold); }
+
+        /* ── Plan comparison ── */
+        .plan-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
+        .plan-table thead tr { background: #0a0f1e; }
+        .plan-table thead th { padding: 12px 14px; text-align: center; font-size: 12px; font-weight: 700; color: #fff; }
+        .plan-table thead th:first-child { text-align: left; }
+        .plan-table thead th.featured { background: var(--accent); }
+        .plan-table tbody tr:nth-child(even) { background: #f8f7f2; }
+        .plan-table td { padding: 9px 14px; border: 1px solid var(--border); text-align: center; }
+        .plan-table td:first-child { text-align: left; font-weight: 600; }
+        .check { color: var(--accent); font-weight: 700; }
+        .cross { color: #c1121f; }
+
+        /* ── FAQ ── */
+        .faq-item { border: 1px solid var(--border); border-radius: 3px; margin-bottom: 8px; overflow: hidden; }
+        .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; cursor: pointer; font-size: 13px; font-weight: 600; background: #fff; transition: background 0.15s; }
+        .faq-q:hover { background: #fafaf8; }
+        .faq-q.open { background: #0a0f1e; color: #fff; }
+        .faq-a { display: none; padding: 14px 18px; font-size: 13px; line-height: 1.7; color: var(--ink); background: #fafaf8; border-top: 1px solid var(--border); }
+        .faq-a.show { display: block; }
+        .faq-toggle { font-size: 18px; transition: transform 0.2s; }
+        .faq-q.open .faq-toggle { transform: rotate(45deg); }
+
+        /* ── Channel cards ── */
+        .channels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 20px 0; }
+        .channel-card { border: 1px solid var(--border); border-radius: 4px; padding: 24px 20px; text-align: center; }
+        .channel-card .icon { font-size: 36px; margin-bottom: 12px; }
+        .channel-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+        .channel-card p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+        .channel-code { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent); background: var(--accent-pale); padding: 6px 12px; border-radius: 2px; display: inline-block; margin-top: 10px; }
+
+        @media (max-width: 900px) {
+            :root { --sidebar-w: 0px; }
+            .toc-sidebar { display: none; }
+            .content { padding: 24px 20px; }
+            .topbar { padding: 14px 20px; }
+            .channels { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-$END$
+
+<!-- ── TOC Sidebar ── -->
+<aside class="toc-sidebar" id="tocSidebar">
+    <div class="toc-brand">
+        <div class="toc-brand-name">BiasharaSmart Hub</div>
+        <div class="toc-brand-sub">User Guide</div>
+    </div>
+    <div class="toc-title">Contents</div>
+    {% for item in toc_items %}
+    <a href="#section-{{ item.id }}" class="toc-link" data-section="{{ item.id }}">
+        <span class="toc-num">{{ item.num }}</span>
+        {{ item.title }}
+    </a>
+    {% endfor %}
+    <div class="toc-footer">
+        <a href="/help/download/" class="btn btn-green" style="width:100%;justify-content:center;">⬇ Download PDF Guide</a>
+    </div>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main">
+    <div class="topbar">
+        <div>
+            <h1>📖 User Guide</h1>
+            <p>How to use BiasharaSmart Hub · {{ total_sections }} sections</p>
+        </div>
+        <div class="topbar-actions">
+            <a href="/dashboard/" class="btn btn-outline">← Back to Dashboard</a>
+            <a href="/help/download/" class="btn btn-green">⬇ Download Guide</a>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- SECTION 1: REGISTRATION -->
+        <div class="section" id="section-1">
+            <div class="section-banner">
+                <div class="section-num">01</div>
+                <div class="section-info">
+                    <h2>Getting Started — Registration</h2>
+                    <p>Create your account in under 3 minutes</p>
+                </div>
+            </div>
+            <p>Before you can use BiasharaSmart Hub, you need to create a free account. Registration only requires your phone number.</p>
+            <h3>How to Register</h3>
+            <table class="steps-table">
+                <thead><tr><th>#</th><th>Action</th><th>What to do</th></tr></thead>
+                <tbody>
+                    <tr><td class="step-num-cell">1</td><td class="step-action">Open the website</td><td class="step-detail">Go to the BiasharaSmart Hub website and click "Get Started" or "Register".</td></tr>
+                    <tr><td class="step-num-cell">2</td><td class="step-action">Choose your plan</td><td class="step-detail">Select Free, Pro, or Enterprise on the pricing page. You can upgrade later.</td></tr>
+                    <tr><td class="step-num-cell">3</td><td class="step-action">Fill in your details</td><td class="step-detail">Enter your First Name, Last Name, Username, Phone Number (format: 254XXXXXXXXX), and optional email.</td></tr>
+                    <tr><td class="step-num-cell">4</td><td class="step-action">Set a password</td><td class="step-detail">Create a password of at least 8 characters. Re-enter it to confirm.</td></tr>
+                    <tr><td class="step-num-cell">5</td><td class="step-action">Submit</td><td class="step-detail">Click "Create Account". You will be taken to the OTP verification page.</td></tr>
+                </tbody>
+            </table>
+            <div class="tip-box"><span class="icon">💡</span><div><strong>Pro Tip:</strong> If you arrived from the pricing page by clicking a plan, your plan is pre-selected and shown in a banner at the top of the form.</div></div>
+            <div class="warn-box"><span class="icon">⚠️</span><div><strong>Important:</strong> Your phone number (254XXXXXXXXX) is your login username. It cannot be changed after registration.</div></div>
+        </div>
+
+        <!-- SECTION 2: OTP -->
+        <div class="section" id="section-2">
+            <div class="section-banner">
+                <div class="section-num">02</div>
+                <div class="section-info"><h2>Verifying Your Phone (OTP)</h2><p>Confirm your identity with a one-time code</p></div>
+            </div>
+            <p>After registration, a 6-digit OTP is sent to your phone via SMS. You must verify before accessing the dashboard.</p>
+            <h3>OTP Verification Steps</h3>
+            <table class="steps-table">
+                <thead><tr><th>#</th><th>Action</th><th>What to do</th></tr></thead>
+                <tbody>
+                    <tr><td class="step-num-cell">1</td><td class="step-action">Check SMS</td><td class="step-detail">Look for a 6-digit code from BiasharaSmart Hub on your phone.</td></tr>
+                    <tr><td class="step-num-cell">2</td><td class="step-action">Enter the code</td><td class="step-detail">Type the 6-digit OTP on the verification page. It expires in 5 minutes.</td></tr>
+                    <tr><td class="step-num-cell">3</td><td class="step-action">Submit</td><td class="step-detail">Click "Verify". If successful, you are logged in and taken to your dashboard.</td></tr>
+                    <tr><td class="step-num-cell">4</td><td class="step-action">Resend if needed</td><td class="step-detail">Did not receive the SMS? Click "Resend OTP". Check your number was entered correctly.</td></tr>
+                </tbody>
+            </table>
+            <div class="warn-box"><span class="icon">⚠️</span><div><strong>Security:</strong> Never share your OTP with anyone. BiasharaSmart Hub staff will never ask for your OTP.</div></div>
+        </div>
+
+        <!-- SECTION 3: LOGIN -->
+        <div class="section" id="section-3">
+            <div class="section-banner">
+                <div class="section-num">03</div>
+                <div class="section-info"><h2>Logging In</h2><p>Access your account every day</p></div>
+            </div>
+            <table class="steps-table">
+                <thead><tr><th>#</th><th>Action</th><th>What to do</th></tr></thead>
+                <tbody>
+                    <tr><td class="step-num-cell">1</td><td class="step-action">Go to Login</td><td class="step-detail">Click "Login" in the top navigation of the BiasharaSmart Hub website.</td></tr>
+                    <tr><td class="step-num-cell">2</td><td class="step-action">Enter phone number</td><td class="step-detail">Type your registered phone number: 254XXXXXXXXX (e.g. 254712345678).</td></tr>
+                    <tr><td class="step-num-cell">3</td><td class="step-action">Enter password</td><td class="step-detail">Type your password. Click the eye icon to show/hide.</td></tr>
+                    <tr><td class="step-num-cell">4</td><td class="step-action">Click Sign In</td><td class="step-detail">You will be directed to your dashboard.</td></tr>
+                </tbody>
+            </table>
+            <div class="tip-box"><span class="icon">💡</span><div><strong>Forgot Password?</strong> Use the "Forgot Password" link on the login page.</div></div>
+        </div>
+
+        <!-- SECTION 4: BUSINESS SETUP -->
+        <div class="section" id="section-4">
+            <div class="section-banner">
+                <div class="section-num">04</div>
+                <div class="section-info"><h2>Setting Up Your Business Profile</h2><p>Tell the system about your business</p></div>
+            </div>
+            <p>After your first login, set up your business profile so BiasharaSmart Hub can personalise your analytics and reports.</p>
+            <h3>Steps to Set Up Your Business</h3>
+            <table class="steps-table">
+                <thead><tr><th>#</th><th>Action</th><th>What to do</th></tr></thead>
+                <tbody>
+                    <tr><td class="step-num-cell">1</td><td class="step-action">Go to Business</td><td class="step-detail">Click "Business" in the left sidebar.</td></tr>
+                    <tr><td class="step-num-cell">2</td><td class="step-action">Enter name & sector</td><td class="step-detail">Add your business name and select your sector (Retail, Restaurant, Services, etc.).</td></tr>
+                    <tr><td class="step-num-cell">3</td><td class="step-action">Add location</td><td class="step-detail">Enter your Town and County for regional analytics.</td></tr>
+                    <tr><td class="step-num-cell">4</td><td class="step-action">Add M-Pesa details</td><td class="step-detail">Enter your Till Number, Paybill, or Account Number to enable M-Pesa tracking.</td></tr>
+                    <tr><td class="step-num-cell">5</td><td class="step-action">Save</td><td class="step-detail">Click "Save Business". Your profile is ready.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECTION 5: DASHBOARD -->
+        <div class="section" id="section-5">
+            <div class="section-banner">
+                <div class="section-num">05</div>
+                <div class="section-info"><h2>Understanding Your Dashboard</h2><p>Your business at a glance</p></div>
+            </div>
+            <p>The Dashboard is your home screen showing real-time business performance.</p>
+            <h3>What Each Section Shows</h3>
+            <table class="fields-table">
+                <thead><tr><th>Section</th><th>What it shows</th></tr></thead>
+                <tbody>
+                    <tr><td class="field-name">📊 KPI Stats</td><td>Total Revenue, Expenses, Net Profit, and Transaction Count for the current period.</td></tr>
+                    <tr><td class="field-name">📈 Revenue Chart</td><td>Line graph of your sales over time — spot trends and peak periods.</td></tr>
+                    <tr><td class="field-name">🛒 Point of Sale</td><td>Quick-access panel to record sales without leaving the dashboard.</td></tr>
+                    <tr><td class="field-name">📦 Inventory Alerts</td><td>Products running low on stock that need restocking.</td></tr>
+                    <tr><td class="field-name">💰 Recent Transactions</td><td>Your most recent sales and expense entries.</td></tr>
+                    <tr><td class="field-name">🚨 Business Alerts</td><td>Smart notifications about unusual activity or events that need attention.</td></tr>
+                    <tr><td class="field-name">👥 Top Customers</td><td>Your highest-spending customers ranked by total amount.</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Access Channels</h3>
+            <div class="channels">
+                <div class="channel-card">
+                    <div class="icon">🌐</div>
+                    <h4>Web Dashboard</h4>
+                    <p>Full features on any browser. Analytics, reports, inventory, POS, and more.</p>
+                    <span class="channel-code">biasharasmarthub.co.ke</span>
+                </div>
+                <div class="channel-card">
+                    <div class="icon">📱</div>
+                    <h4>USSD Access</h4>
+                    <p>Record sales and check stats from any phone — no internet needed.</p>
+                    <span class="channel-code">Dial *123#</span>
+                </div>
+                <div class="channel-card">
+                    <div class="icon">💬</div>
+                    <h4>WhatsApp Bot</h4>
+                    <p>Chat with your business data. Record sales and get reports via WhatsApp.</p>
+                    <span class="channel-code">Send "Hi" to start</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 6: RECORDING SALES -->
+        <div class="section" id="section-6">
+            <div class="section-banner">
+                <div class="section-num">06</div>
+                <div class="section-info"><h2>Recording Sales</h2><p>Track every shilling you earn</p></div>
+            </div>
+            <p>Every sale should be recorded. Use the Add Sale form for detailed records, or the POS panel on your dashboard for quick counter sales.</p>
+            <h3>Method 1: Add Sale Form</h3>
+            <table class="steps-table">
+                <thead><tr><th>#</th><th>Action</th><th>What to do</th></tr></thead>
+                <tbody>
+                    <tr><td class="step-num-cell">1</td><td class="step-action">Click "Add Sale"</td><td class="step-detail">Click "Add Sale" in the left sidebar.</td></tr>
+                    <tr><td class="step-num-cell">2</td><td class="step-action">Select business</td><td class="step-detail">Choose which business this sale belongs to.</td></tr>
+                    <tr><td class="step-num-cell">3</td><td class="step-action">Enter amount</td><td class="step-detail">Type the total sale amount in KES.</td></tr>
+                    <tr><td class="step-num-cell">4</td><td class="step-action">Select payment mode</td><td class="step-detail">Choose Cash, M-Pesa, Bank Transfer, Credit, or Other.</td></tr>
+                    <tr><td class="step-num-cell">5</td><td class="step-action">Add description</td><td class="step-detail">Write what was sold, e.g. "3 bags of maize flour".</td></tr>
+                    <tr><td class="step-num-cell">6</td><td class="step-action">Save</td><td class="step-detail">Click "Record Sale". Dashboard stats update immediately.</td></tr>
+                </tbody>
+            </table>
+            <h3>Method 2: Point of Sale (POS)</h3>
+            <table class="steps-table">
+                <thead><tr><th>#</th><th>Action</th><th>What to do</th></tr></thead>
+                <tbody>
+                    <tr><td class="step-num-cell">1</td><td class="step-action">Open POS</td><td class="step-detail">The POS panel is on your dashboard. Search for a product or click "Add to Cart".</td></tr>
+                    <tr><td class="step-num-cell">2</td><td class="step-action">Adjust quantities</td><td class="step-detail">Use + and - buttons to set how many units the customer is buying.</td></tr>
+                    <tr><td class="step-num-cell">3</td><td class="step-action">Choose payment</td><td class="step-detail">Select Cash or M-Pesa.</td></tr>
+                    <tr><td class="step-num-cell">4</td><td class="step-action">Complete Sale</td><td class="step-detail">Click "Complete Sale". Stock is automatically deducted from inventory.</td></tr>
+                </tbody>
+            </table>
+            <div class="tip-box"><span class="icon">💡</span><div><strong>No internet?</strong> Record sales via USSD by dialling *123# from any phone.</div></div>
+        </div>
+
+        <!-- SECTION 7: EXPENSES -->
+        <div class="section" id="section-7">
+            <div class="section-banner">
+                <div class="section-num">07</div>
+                <div class="section-info"><h2>Recording Expenses</h2><p>Track what you spend to know your true profit</p></div>
+            </div>
+            <p>Record every business cost: rent, stock purchases, salaries, utilities, transport, etc. Without expenses, your profit figure will be wrong.</p>
+            <h3>How to Record an Expense</h3>
+            <table class="steps-table">
+                <thead><tr><th>#</th><th>Action</th><th>What to do</th></tr></thead>
+                <tbody>
+                    <tr><td class="step-num-cell">1</td><td class="step-action">Click "Add Expense"</td><td class="step-detail">Click "Add Expense" in the left sidebar.</td></tr>
+                    <tr><td class="step-num-cell">2</td><td class="step-action">Enter amount</td><td class="step-detail">Type the expense amount in KES.</td></tr>
+                    <tr><td class="step-num-cell">3</td><td class="step-action">Select category</td><td class="step-detail">Choose: Rent, Stock Purchase, Utilities, Salaries, Transport, Marketing, or Other.</td></tr>
+                    <tr><td class="step-num-cell">4</td><td class="step-action">Add description</td><td class="step-detail">Describe clearly, e.g. "Monthly shop rent — January 2026".</td></tr>
+                    <tr><td class="step-num-cell">5</td><td class="step-action">Save</td><td class="step-detail">Click "Record Expense". Profit calculations update immediately.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECTION 8: INVENTORY -->
+        <div class="section" id="section-8">
+            <div class="section-banner">
+                <div class="section-num">08</div>
+                <div class="section-info"><h2>Managing Inventory (Stock)</h2><p>Always know what you have in stock</p></div>
+            </div>
+            <h3>Adding a New Product</h3>
+            <table class="steps-table">
+                <thead><tr><th>#</th><th>Action</th><th>What to do</th></tr></thead>
+                <tbody>
+                    <tr><td class="step-num-cell">1</td><td class="step-action">Go to Inventory</td><td class="step-detail">Click "Inventory" in the left sidebar.</td></tr>
+                    <tr><td class="step-num-cell">2</td><td class="step-action">Click Add Product</td><td class="step-detail">Click the "+ Add Product" button.</td></tr>
+                    <tr><td class="step-num-cell">3</td><td class="step-action">Enter details</td><td class="step-detail">Name, selling price, buying price, current quantity, and unit (pieces, kg, etc.).</td></tr>
+                    <tr><td class="step-num-cell">4</td><td class="step-action">Set reorder level</td><td class="step-detail">The minimum quantity that triggers a low-stock alert (e.g. set 5 to alert when stock drops below 5).</td></tr>
+                    <tr><td class="step-num-cell">5</td><td class="step-action">Save</td><td class="step-detail">Click "Save Product". It now appears in inventory and the POS panel.</td></tr>
+                </tbody>
+            </table>
+            <div class="tip-box"><span class="icon">💡</span><div><strong>POS Integration:</strong> Products in Inventory automatically appear in the POS panel. Completing a POS sale auto-deducts stock.</div></div>
+        </div>
+
+        <!-- SECTION 9: TRANSACTIONS -->
+        <div class="section" id="section-9">
+            <div class="section-banner">
+                <div class="section-num">09</div>
+                <div class="section-info"><h2>Viewing Transactions</h2><p>Your complete financial history</p></div>
+            </div>
+            <p>The Transactions page shows all your recorded sales and expenses. Filter, search, and export your history.</p>
+            <table class="steps-table">
+                <thead><tr><th>#</th><th>Action</th><th>What to do</th></tr></thead>
+                <tbody>
+                    <tr><td class="step-num-cell">1</td><td class="step-action">Go to Transactions</td><td class="step-detail">Click "Transactions" in the left sidebar.</td></tr>
+                    <tr><td class="step-num-cell">2</td><td class="step-action">Filter by type</td><td class="step-detail">Use tabs to show All, Sales only, or Expenses only.</td></tr>
+                    <tr><td class="step-num-cell">3</td><td class="step-action">Filter by date</td><td class="step-detail">Set a date range to view a specific period.</td></tr>
+                    <tr><td class="step-num-cell">4</td><td class="step-action">Search</td><td class="step-detail">Find a transaction by description, amount, or reference.</td></tr>
+                    <tr><td class="step-num-cell">5</td><td class="step-action">Export</td><td class="step-detail">Click "Export CSV" to download as a spreadsheet.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECTION 10: ANALYTICS -->
+        <div class="section" id="section-10">
+            <div class="section-banner">
+                <div class="section-num">10</div>
+                <div class="section-info"><h2>Analytics & Reports</h2><p>AI-powered insights for your business</p></div>
+            </div>
+            <p>Analytics turns your data into charts and AI forecasts. Reports lets you generate professional PDF/CSV documents.</p>
+            <table class="fields-table">
+                <thead><tr><th>Feature</th><th>What it does</th></tr></thead>
+                <tbody>
+                    <tr><td class="field-name">Revenue Trend</td><td>Line chart showing sales over time — spot peak days and slow periods.</td></tr>
+                    <tr><td class="field-name">Expense Breakdown</td><td>Pie chart of expenses by category. See where your money goes.</td></tr>
+                    <tr><td class="field-name">AI Sales Forecast</td><td>ML prediction of expected sales for the next 7–30 days based on your history.</td></tr>
+                    <tr><td class="field-name">Top Products</td><td>Best-selling products by revenue and quantity.</td></tr>
+                    <tr><td class="field-name">Customer Analysis</td><td>Most valuable customers and their purchase frequency.</td></tr>
+                </tbody>
+            </table>
+            <div class="tip-box"><span class="icon">💡</span><div><strong>Loan Applications:</strong> The Full Business Report (PDF) is accepted by many Kenyan banks as proof of revenue. Keep 6+ months of records for best results.</div></div>
+        </div>
+
+        <!-- SECTION 11-13: QUICK SECTIONS -->
+        <div class="section" id="section-11">
+            <div class="section-banner">
+                <div class="section-num">11</div>
+                <div class="section-info"><h2>Managing Customers</h2><p>Track your best buyers</p></div>
+            </div>
+            <p>Add customers to your database, link them to sales, and track spending, purchase frequency, and outstanding credit balances. Go to <strong>Dashboard → Customers → Add Customer</strong> to get started.</p>
+        </div>
+
+        <div class="section" id="section-12">
+            <div class="section-banner">
+                <div class="section-num">12</div>
+                <div class="section-info"><h2>Managing Suppliers</h2><p>Track where your stock comes from</p></div>
+            </div>
+            <p>Keep a database of suppliers with their contacts and categories. Go to <strong>Dashboard → Suppliers → Add Supplier</strong>. Link suppliers to expense records for complete tracking.</p>
+        </div>
+
+        <div class="section" id="section-13">
+            <div class="section-banner">
+                <div class="section-num">13</div>
+                <div class="section-info"><h2>Understanding Alerts</h2><p>Stay ahead of problems</p></div>
+            </div>
+            <table class="fields-table">
+                <thead><tr><th>Alert Type</th><th>What it means</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr><td class="field-name" style="color:#c1121f;">🔴 Out of Stock</td><td>A product has 0 units remaining.</td><td>Restock immediately.</td></tr>
+                    <tr><td class="field-name" style="color:#d4a017;">🟡 Low Stock</td><td>Stock at or below your reorder level.</td><td>Order more stock.</td></tr>
+                    <tr><td class="field-name" style="color:#d4a017;">🟡 Revenue Drop</td><td>Sales significantly below your average.</td><td>Investigate cause.</td></tr>
+                    <tr><td class="field-name" style="color:#2563eb;">🔵 Unusual Transaction</td><td>Amount much higher or lower than normal.</td><td>Verify the entry.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECTION 14: SETTINGS -->
+        <div class="section" id="section-14">
+            <div class="section-banner">
+                <div class="section-num">14</div>
+                <div class="section-info"><h2>Account Settings</h2><p>Manage your profile and security</p></div>
+            </div>
+            <p>Go to <strong>Settings</strong> in the sidebar to update your profile, change your password, and edit business details.</p>
+            <div class="warn-box"><span class="icon">⚠️</span><div><strong>Security:</strong> Change your password if you suspect it has been compromised. Never share your password with anyone.</div></div>
+        </div>
+
+        <!-- SECTION 15: USSD -->
+        <div class="section" id="section-15">
+            <div class="section-banner">
+                <div class="section-num">15</div>
+                <div class="section-info"><h2>USSD Access — Dial *123#</h2><p>Use BiasharaSmart Hub from any phone, no internet needed</p></div>
+            </div>
+            <table class="fields-table">
+                <thead><tr><th>Menu Option</th><th>What it does</th></tr></thead>
+                <tbody>
+                    <tr><td class="field-name">1 — Record Sale</td><td>Enter amount and payment method. Saved to your account instantly.</td></tr>
+                    <tr><td class="field-name">2 — Record Expense</td><td>Enter amount, category, and description.</td></tr>
+                    <tr><td class="field-name">3 — Check Balance</td><td>Today's total sales, expenses, and net profit as text.</td></tr>
+                    <tr><td class="field-name">4 — Stock Check</td><td>Current stock levels and low-stock items.</td></tr>
+                    <tr><td class="field-name">5 — Daily Summary</td><td>Receive an SMS with your business summary for the day.</td></tr>
+                </tbody>
+            </table>
+            <div class="tip-box"><span class="icon">💡</span><div><strong>USSD is free:</strong> No data required. Works on any Kenyan network (Safaricom, Airtel, Telkom) from any phone.</div></div>
+        </div>
+
+        <!-- SECTION 16: WHATSAPP -->
+        <div class="section" id="section-16">
+            <div class="section-banner">
+                <div class="section-num">16</div>
+                <div class="section-info"><h2>WhatsApp Bot</h2><p>Manage your business through chat</p></div>
+            </div>
+            <p>Send "Hi" to the BiasharaSmart Hub WhatsApp number to get started. Common commands:</p>
+            <table class="fields-table">
+                <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+                <tbody>
+                    <tr><td><code>sale 2000 mpesa</code></td><td>Records a KES 2,000 M-Pesa sale</td></tr>
+                    <tr><td><code>sale 500 cash</code></td><td>Records a KES 500 cash sale</td></tr>
+                    <tr><td><code>expense 3000 rent</code></td><td>Records a KES 3,000 rent expense</td></tr>
+                    <tr><td><code>summary today</code></td><td>Today's sales, expenses, and profit</td></tr>
+                    <tr><td><code>summary week</code></td><td>This week's performance</td></tr>
+                    <tr><td><code>stock</code></td><td>Lists all products and stock levels</td></tr>
+                    <tr><td><code>help</code></td><td>Lists all available commands</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECTION 17: SUBSCRIPTIONS -->
+        <div class="section" id="section-17">
+            <div class="section-banner">
+                <div class="section-num">17</div>
+                <div class="section-info"><h2>Subscription Plans</h2><p>Understanding your plan</p></div>
+            </div>
+            <table class="plan-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Free</th>
+                        <th class="featured">Pro ⚡</th>
+                        <th>Enterprise ★</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Monthly Price</td><td>KES 0</td><td>KES 999</td><td>KES 2,499</td></tr>
+                    <tr><td>Transactions/month</td><td>50</td><td>Unlimited</td><td>Unlimited</td></tr>
+                    <tr><td>Business Profiles</td><td>1</td><td>3</td><td>Unlimited</td></tr>
+                    <tr><td>AI Forecasting</td><td><span class="cross">✗</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+                    <tr><td>PDF/CSV Reports</td><td><span class="cross">✗</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+                    <tr><td>WhatsApp Bot</td><td><span class="cross">✗</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+                    <tr><td>Priority Support</td><td><span class="cross">✗</span></td><td><span class="cross">✗</span></td><td><span class="check">✓</span></td></tr>
+                </tbody>
+            </table>
+            <p>Your current plan: <strong>{{ user.subscription_plan|title }}</strong> ({{ user.subscription_status|title }})</p>
+        </div>
+
+        <!-- SECTION 18: FAQ -->
+        <div class="section" id="section-18">
+            <div class="section-banner">
+                <div class="section-num">18</div>
+                <div class="section-info"><h2>Troubleshooting & FAQs</h2><p>Common issues and how to fix them</p></div>
+            </div>
+            {% for faq in faqs %}
+            <div class="faq-item">
+                <div class="faq-q" onclick="toggleFaq(this)">
+                    {{ faq.q }}
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-a">{{ faq.a }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ── Smooth scroll + active TOC ──
+document.querySelectorAll('.toc-link').forEach(link => {
+    link.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(link.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+});
+
+const sections = document.querySelectorAll('.section');
+const tocLinks = document.querySelectorAll('.toc-link');
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            tocLinks.forEach(l => l.classList.remove('active'));
+            const id = entry.target.id.replace('section-', '');
+            const active = document.querySelector(`.toc-link[data-section="${id}"]`);
+            if (active) active.classList.add('active');
+        }
+    });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+
+// ── FAQ toggle ──
+function toggleFaq(el) {
+    const answer = el.nextElementSibling;
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.faq-q.open').forEach(q => {
+        q.classList.remove('open');
+        q.nextElementSibling.classList.remove('show');
+    });
+    if (!isOpen) {
+        el.classList.add('open');
+        answer.classList.add('show');
+    }
+}
+</script>
 </body>
 </html>

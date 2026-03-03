@@ -14,6 +14,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS += ['.ngrok-free.app', '.ngrok-free.dev', '.ngrok.io']
 
 # Application definition
 INSTALLED_APPS = [
@@ -23,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     
     # Third-party apps
     'rest_framework',
@@ -30,6 +32,7 @@ INSTALLED_APPS = [
     'django_extensions',
     
     # Local apps
+    'home',
     'accounts',
     'businesses',
     'transactions',
@@ -38,6 +41,8 @@ INSTALLED_APPS = [
     'reports',
     'notifications',
     'integrations',
+    'admin_panel',
+    'mpesa',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +54,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'accounts.middleware.OnboardingMiddleware',
+
 ]
 
 ROOT_URLCONF = 'biasharasmart_hub.urls'
@@ -111,6 +118,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/admin-panel/'
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -120,6 +131,7 @@ AUTH_USER_MODEL = 'accounts.User'
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
@@ -158,3 +170,21 @@ AFRICASTALKING_USERNAME = os.getenv('AFRICASTALKING_USERNAME', 'sandbox')
 SAFARICOM_CONSUMER_KEY = os.getenv('SAFARICOM_CONSUMER_KEY')
 SAFARICOM_CONSUMER_SECRET = os.getenv('SAFARICOM_CONSUMER_SECRET')
 SAFARICOM_ENVIRONMENT = 'sandbox'  # Change to 'production' for live
+# M-Pesa Settings
+MPESA_CONSUMER_KEY     = os.getenv('SAFARICOM_CONSUMER_KEY')
+MPESA_CONSUMER_SECRET  = os.getenv('SAFARICOM_CONSUMER_SECRET')
+MPESA_SHORTCODE        = os.getenv('MPESA_SHORTCODE', '174379')
+MPESA_PASSKEY          = os.getenv('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')
+MPESA_ENV              = os.getenv('MPESA_ENV', 'sandbox')
+MPESA_CALLBACK_URL     = os.getenv('MPESA_CALLBACK_URL', '')
+
+
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.PhoneNumberAuthBackend',  # Custom backend
+    'django.contrib.auth.backends.ModelBackend',  # Default backend
+]
+
+# settings.py
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+GEMINI_MODEL_NAME = 'gemini-1.5-flash'
+#ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')

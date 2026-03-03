@@ -1,10 +1,681 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerts - Admin Panel | BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-pale: #d8f3dc; --gold: #e9c46a;
+            --error: #c1121f; --error-pale: #fce4e4; --warn: #d4860a;
+            --warn-pale: #fef3cd; --muted: #6b7280; --border: #e2e0d8;
+            --admin: #7c3aed; --admin-pale: #ede9fe;
+            --sidebar-w: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; }
+
+        /* ── Sidebar ─────────────────────────────────────────── */
+        .sidebar { width: var(--sidebar-w); background: #1a0533; min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-badge { display: inline-block; background: var(--admin); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 8px; }
+        .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .brand-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 3px; }
+        .sidebar-nav { padding: 16px 0; flex: 1; }
+        .nav-section { padding: 12px 24px 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5); text-decoration: none; transition: all 0.15s; border-left: 2px solid transparent; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: #c4b5fd; background: rgba(124,58,237,0.15); border-left-color: var(--admin); }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .admin-pill { display: flex; align-items: center; gap: 10px; }
+        .admin-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--admin); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .admin-info { flex: 1; min-width: 0; }
+        .admin-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .admin-role { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+        .logout-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.3); font-size: 16px; padding: 4px; transition: color 0.15s; }
+        .logout-btn:hover { color: var(--error); }
+        .back-link { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,0.35); text-decoration: none; padding: 8px 24px 4px; transition: color 0.15s; }
+        .back-link:hover { color: rgba(255,255,255,0.7); }
+
+        /* ── Main ───────────────────────────────────────────── */
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-left h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+        .topbar-right { display: flex; gap: 10px; }
+        .content { padding: 28px 32px; flex: 1; }
+
+        /* ── Buttons ─────────────────────────────────────────── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+        .btn-admin { background: var(--admin); color: #fff; }
+        .btn-admin:hover { background: #6d28d9; box-shadow: 0 4px 12px rgba(124,58,237,0.3); }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--ink); }
+        .btn-warn { background: var(--warn); color: #fff; border: none; }
+        .btn-warn:hover { background: #b8730a; }
+        .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+        @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+        /* ── Stats ──────────────────────────────────────────── */
+        .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+        .stat-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 16px 18px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; display: flex; align-items: center; gap: 12px; }
+        .stat-card:nth-child(1){animation-delay:.04s} .stat-card:nth-child(2){animation-delay:.08s} .stat-card:nth-child(3){animation-delay:.12s} .stat-card:nth-child(4){animation-delay:.16s} .stat-card:nth-child(5){animation-delay:.2s}
+        .stat-icon { font-size: 20px; }
+        .stat-val { font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; }
+        .stat-val.loading { color: var(--border); animation: pulse 1.2s infinite; }
+        .stat-lbl { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+        /* ── Scan banner ─────────────────────────────────────── */
+        .scan-banner { background: var(--ink); border-radius: 4px; padding: 20px 28px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) 0.15s both; }
+        .scan-text h3 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+        .scan-text p { font-size: 12px; color: rgba(255,255,255,0.45); }
+        .scan-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .btn-scan { background: var(--gold); color: var(--ink); border: none; padding: 9px 18px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 7px; }
+        .btn-scan:hover { background: #d4a832; transform: translateY(-1px); }
+        .btn-scan:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* ── Tabs ────────────────────────────────────────────── */
+        .tabs { display: flex; gap: 4px; background: #fff; border: 1px solid var(--border); border-radius: 3px; padding: 4px; margin-bottom: 16px; width: fit-content; }
+        .tab { padding: 7px 16px; border-radius: 2px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; border: none; background: none; color: var(--muted); font-family: 'Sora', sans-serif; display: flex; align-items: center; gap: 6px; }
+        .tab:hover { color: var(--ink); }
+        .tab.active { background: var(--ink); color: #fff; }
+        .tab-count { font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 700; }
+        .tab.active .tab-count { background: rgba(255,255,255,0.2); }
+        .tab:not(.active) .tab-count { background: var(--border); color: var(--muted); }
+
+        /* ── Toolbar ─────────────────────────────────────────── */
+        .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .search-wrap { position: relative; flex: 1; min-width: 220px; }
+        .search-wrap input { width: 100%; padding: 9px 14px 9px 36px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'Sora', sans-serif; background: #fff; }
+        .search-wrap input:focus { outline: none; border-color: var(--admin); }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
+        .filter-select { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'Sora', sans-serif; background: #fff; cursor: pointer; color: var(--ink); }
+        .filter-select:focus { outline: none; border-color: var(--admin); }
+
+        /* ── Alert cards ─────────────────────────────────────── */
+        .alerts-list { display: flex; flex-direction: column; gap: 10px; }
+        .alert-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 18px 20px; display: flex; align-items: flex-start; gap: 14px; transition: box-shadow 0.15s; animation: rise 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+        .alert-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+        .alert-card.resolved { opacity: 0.45; }
+
+        .sev-bar { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; min-height: 40px; }
+        .sev-bar.critical, .sev-bar.high { background: var(--error); }
+        .sev-bar.medium { background: var(--warn); }
+        .sev-bar.low { background: var(--accent); }
+        .sev-bar.info { background: #0369a1; }
+
+        .alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+        .alert-body { flex: 1; min-width: 0; }
+        .alert-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+        .alert-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+        .alert-meta { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+
+        .sev-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .sev-badge.critical, .sev-badge.high { background: var(--error-pale); color: var(--error); }
+        .sev-badge.medium { background: var(--warn-pale); color: var(--warn); }
+        .sev-badge.low { background: var(--accent-pale); color: var(--accent); }
+        .sev-badge.info { background: #dbeafe; color: #0369a1; }
+
+        .alert-time { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--muted); }
+        .alert-biz { font-size: 11px; color: var(--muted); }
+        .alert-user { font-size: 11px; color: var(--admin); font-weight: 600; }
+
+        .alert-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: flex-start; }
+
+        /* ── Empty ───────────────────────────────────────────── */
+        .empty-state { text-align: center; padding: 60px 20px; background: #fff; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); }
+        .empty-icon { font-size: 40px; margin-bottom: 12px; }
+        .empty-state h4 { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+
+        /* ── Create alert modal ──────────────────────────────── */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,23,0.55); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; animation: fade-in 0.2s ease; }
+        .modal { background: #fff; border-radius: 4px; width: 100%; max-width: 480px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.2), 4px 4px 0 0 var(--admin); animation: rise 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .modal-header h3 { font-size: 15px; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--muted); }
+        .modal-close:hover { color: var(--ink); }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); background: var(--paper); display: flex; gap: 10px; justify-content: flex-end; }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        .form-group:last-child { margin-bottom: 0; }
+        label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink); }
+        input, select, textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--ink); background: var(--paper); transition: border-color 0.15s; }
+        select { font-family: 'Sora', sans-serif; cursor: pointer; }
+        textarea { font-family: 'Sora', sans-serif; font-size: 13px; resize: vertical; min-height: 80px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--admin); background: #fff; box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
+        input::placeholder, textarea::placeholder { color: #b0aca0; }
+
+        .modal-alert { display: none; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 3px; font-size: 12px; margin-bottom: 16px; }
+        .modal-alert.show { display: flex; }
+        .modal-alert-error { background: var(--error-pale); color: var(--error); border-left: 3px solid var(--error); }
+
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 3px; font-size: 13px; z-index: 300; display: none; }
+        .toast.show { display: block; animation: rise 0.3s ease; }
+
+        @media (max-width: 1100px) { .stats-row { grid-template-columns: repeat(3,1fr); } }
+        @media (max-width: 700px) { :root { --sidebar-w: 0px; } .sidebar { display: none; } .content { padding: 16px; } .stats-row { grid-template-columns: 1fr 1fr; } .scan-banner { flex-direction: column; align-items: flex-start; } }
+    </style>
 </head>
 <body>
-$END$
+
+<!-- ── Sidebar ────────────────────────────────────────────────── -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-badge">⚡ Admin Panel</div>
+        <div class="brand-name">BiasharaSmart Hub</div>
+        <div class="brand-sub">System Administration</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Overview</div>
+        <a class="nav-item" href="/admin-panel/"><span class="nav-icon">📊</span> Dashboard</a>
+        <div class="nav-section">Management</div>
+        <a class="nav-item" href="/admin-panel/users/"><span class="nav-icon">👥</span> Users</a>
+        <a class="nav-item" href="/admin-panel/businesses/"><span class="nav-icon">🏢</span> Businesses</a>
+        <a class="nav-item" href="/admin-panel/transactions/"><span class="nav-icon">💰</span> Transactions</a>
+        <a class="nav-item" href="/admin-panel/subscriptions/"><span class="nav-icon">💳</span> Subscriptions</a>
+        <div class="nav-section">System</div>
+        <a class="nav-item" href="/admin-panel/analytics/"><span class="nav-icon">📈</span> Analytics</a>
+        <a class="nav-item active" href="/admin-panel/alerts/"><span class="nav-icon">🚨</span> Alerts</a>
+        <a class="nav-item" href="/admin-panel/logs/"><span class="nav-icon">📋</span> Logs</a>
+        <a class="nav-item" href="/admin-panel/settings/"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <a class="back-link" href="/admin-panel/dashboard/">← Back to Dashboard</a>
+    <div class="sidebar-footer">
+        <div class="admin-pill">
+            <div class="admin-avatar">{{ user.first_name|first|upper|default:"A" }}</div>
+            <div class="admin-info">
+                <div class="admin-name">{{ user.first_name|default:user.username }}</div>
+                <div class="admin-role">superadmin</div>
+            </div>
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn" title="Logout">✕</button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<!-- ── Main ──────────────────────────────────────────────────── -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <h2>Alerts</h2>
+            <p id="topbarSub">Loading…</p>
+        </div>
+        <div class="topbar-right">
+            <button class="btn btn-outline" onclick="resolveAll()">✓ Resolve All</button>
+            <button class="btn btn-admin" onclick="openModal('createAlertModal')">＋ Create Alert</button>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon">🚨</div>
+                <div><div class="stat-val loading" id="statCritical">—</div><div class="stat-lbl">Critical</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div><div class="stat-val loading" id="statHigh">—</div><div class="stat-lbl">High</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div><div class="stat-val loading" id="statMedium">—</div><div class="stat-lbl">Medium</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div><div class="stat-val loading" id="statResolved">—</div><div class="stat-lbl">Resolved</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div><div class="stat-val loading" id="statTotal">—</div><div class="stat-lbl">Total</div></div>
+            </div>
+        </div>
+
+        <!-- Scan banner -->
+        <div class="scan-banner">
+            <div class="scan-text">
+                <h3>🤖 System-wide Alert Scan</h3>
+                <p>Scan all businesses for low stock, unusual activity, and cash flow risks across the platform.</p>
+            </div>
+            <div class="scan-actions">
+                <button class="btn btn-outline" style="color:#fff;border-color:rgba(255,255,255,0.2);" onclick="loadAlerts()">↺ Refresh</button>
+                <button class="btn-scan" id="scanBtn" onclick="runScan()">
+                    <span id="scanSpinner" style="display:none;width:13px;height:13px;border:2px solid rgba(15,17,23,0.3);border-top-color:var(--ink);border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+                    ⚡ Scan All Businesses
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-filter="active" onclick="switchTab(this)">Active <span class="tab-count" id="cntActive">0</span></button>
+            <button class="tab" data-filter="critical" onclick="switchTab(this)">Critical <span class="tab-count" id="cntCritical">0</span></button>
+            <button class="tab" data-filter="high" onclick="switchTab(this)">High <span class="tab-count" id="cntHigh">0</span></button>
+            <button class="tab" data-filter="medium" onclick="switchTab(this)">Medium <span class="tab-count" id="cntMedium">0</span></button>
+            <button class="tab" data-filter="resolved" onclick="switchTab(this)">Resolved <span class="tab-count" id="cntResolved">0</span></button>
+            <button class="tab" data-filter="all" onclick="switchTab(this)">All <span class="tab-count" id="cntAll">0</span></button>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search alerts…" oninput="renderAlerts()">
+            </div>
+            <select class="filter-select" id="bizFilter" onchange="renderAlerts()">
+                <option value="all">All businesses</option>
+            </select>
+            <select class="filter-select" id="typeFilter" onchange="renderAlerts()">
+                <option value="all">All types</option>
+                <option value="low_stock">Low Stock</option>
+                <option value="out_of_stock">Out of Stock</option>
+                <option value="high_expense">High Expense</option>
+                <option value="cash_flow">Cash Flow</option>
+                <option value="system">System</option>
+            </select>
+            <button class="btn btn-outline" onclick="clearFilters()">✕ Clear</button>
+        </div>
+
+        <!-- Alert list -->
+        <div id="alertsList"></div>
+    </div>
+</div>
+
+<!-- ── Create Alert Modal ─────────────────────────────────────── -->
+<div class="modal-overlay" id="createAlertModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Create Manual Alert</h3>
+            <button class="modal-close" onclick="closeModal('createAlertModal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div id="createAlertError" class="modal-alert modal-alert-error"></div>
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="newTitle" placeholder="e.g. System maintenance scheduled">
+            </div>
+            <div class="form-group">
+                <label>Description *</label>
+                <textarea id="newDesc" placeholder="Describe the alert in detail…"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Severity *</label>
+                <select id="newSeverity">
+                    <option value="critical">🚨 Critical</option>
+                    <option value="high">⚠️ High</option>
+                    <option value="medium" selected>⚡ Medium</option>
+                    <option value="low">ℹ️ Low</option>
+                    <option value="info">💡 Info</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Alert Type</label>
+                <select id="newType">
+                    <option value="system">System</option>
+                    <option value="low_stock">Low Stock</option>
+                    <option value="out_of_stock">Out of Stock</option>
+                    <option value="high_expense">High Expense</option>
+                    <option value="cash_flow">Cash Flow</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Business <span style="font-weight:400;font-size:10px;text-transform:none;letter-spacing:0;color:var(--muted);">(optional — leave blank for system-wide)</span></label>
+                <select id="newBiz">
+                    <option value="">All businesses (system-wide)</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('createAlertModal')">Cancel</button>
+            <button class="btn btn-admin" onclick="createAlert()">
+                <span id="createSpinner" style="display:none;width:13px;height:13px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+                Create Alert
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
+async function apiFetch(url, opts = {}) {
+    return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest', ...opts.headers }, ...opts });
+}
+
+let allAlerts = [];
+let allBiz    = [];
+let activeFilter = 'active';
+
+const sevOrder = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
+const sevIcon  = { critical: '🚨', high: '⚠️', medium: '⚡', low: 'ℹ️', info: '💡' };
+const sevLevel = s => ['critical','high'].includes(s) ? s : s === 'medium' ? 'medium' : s === 'info' ? 'info' : 'low';
+
+// ── Load ──────────────────────────────────────────────────────────
+async function loadAll() {
+    try {
+        const [alertRes, bizRes, invRes, txnRes] = await Promise.all([
+            apiFetch('/api/analytics/alerts/'),
+            apiFetch('/api/businesses/?page_size=500'),
+            apiFetch('/api/inventory/?page_size=500'),
+            apiFetch('/api/transactions/?page_size=1000'),
+        ]);
+        if (alertRes.ok) { const d = await alertRes.json(); allAlerts = d.results || d || []; }
+        if (bizRes.ok)   { const d = await bizRes.json(); allBiz = d.results || d || []; populateBizFilters(); }
+
+        // Auto-generate alerts from inventory + transactions if API returned nothing
+        if (!allAlerts.length) {
+            if (invRes.ok && txnRes.ok) {
+                const inv  = (await invRes.json()).results || [];
+                const txns = (await txnRes.json()).results || [];
+                allAlerts = generateAlerts(inv, txns);
+            }
+        }
+    } catch(e) {}
+    updateStats();
+    renderAlerts();
+}
+
+function loadAlerts() { allAlerts = []; updateStats(); renderAlerts(); loadAll(); }
+
+function populateBizFilters() {
+    const filters = [document.getElementById('bizFilter'), document.getElementById('newBiz')];
+    allBiz.forEach(b => {
+        filters.forEach(sel => { sel.innerHTML += `<option value="${b.id}">${b.name}</option>`; });
+    });
+}
+
+// ── Generate alerts from data ─────────────────────────────────────
+function generateAlerts(products, txns) {
+    const alerts = [];
+    let id = -1;
+
+    products.forEach(p => {
+        const qty     = p.quantity || 0;
+        const reorder = p.reorder_level || 5;
+        const biz     = allBiz.find(b => b.id === p.business || b.id === p.business_id);
+        if (qty <= 0) {
+            alerts.push({ id: id--, title: `Out of Stock: ${p.name}`, description: `${p.name} has 0 units remaining. Immediate restock required.`, severity: 'critical', alert_type: 'out_of_stock', is_resolved: false, created_at: new Date().toISOString(), business_name: biz?.name || '' });
+        } else if (qty <= reorder) {
+            alerts.push({ id: id--, title: `Low Stock: ${p.name}`, description: `Only ${qty} units left (reorder level: ${reorder}).`, severity: 'high', alert_type: 'low_stock', is_resolved: false, created_at: new Date().toISOString(), business_name: biz?.name || '' });
+        }
+    });
+
+    // High expense anomalies per business
+    allBiz.forEach(b => {
+        const bizTxns  = txns.filter(t => (t.business === b.id || t.business_id === b.id) && t.transaction_type === 'expense');
+        if (!bizTxns.length) return;
+        const avg = bizTxns.reduce((s, t) => s + parseFloat(t.amount || 0), 0) / bizTxns.length;
+        bizTxns.forEach(t => {
+            if (parseFloat(t.amount) > avg * 3) {
+                alerts.push({ id: id--, title: `Unusual Expense: ${b.name}`, description: `Expense of KES ${Number(t.amount).toLocaleString()} is 3x above average for ${b.name}.`, severity: 'medium', alert_type: 'high_expense', is_resolved: false, created_at: new Date().toISOString(), business_name: b.name });
+            }
+        });
+
+        // Cash flow risk
+        const sales    = txns.filter(t => (t.business === b.id || t.business_id === b.id) && t.transaction_type === 'sale').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+        const expenses = bizTxns.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+        if (expenses > sales * 1.2 && expenses > 0) {
+            alerts.push({ id: id--, title: `Cash Flow Risk: ${b.name}`, description: `Expenses (KES ${Number(expenses).toLocaleString()}) exceed revenue (KES ${Number(sales).toLocaleString()}) for ${b.name}.`, severity: 'high', alert_type: 'cash_flow', is_resolved: false, created_at: new Date().toISOString(), business_name: b.name });
+        }
+    });
+
+    return alerts;
+}
+
+// ── Stats ─────────────────────────────────────────────────────────
+function updateStats() {
+    const active   = allAlerts.filter(a => !a.is_resolved);
+    const critical = active.filter(a => a.severity === 'critical');
+    const high     = active.filter(a => a.severity === 'high');
+    const medium   = active.filter(a => a.severity === 'medium');
+    const resolved = allAlerts.filter(a => a.is_resolved);
+
+    sl('statCritical', critical.length);
+    sl('statHigh',     high.length);
+    sl('statMedium',   medium.length);
+    sl('statResolved', resolved.length);
+    sl('statTotal',    allAlerts.length);
+
+    document.getElementById('cntActive').textContent   = active.length;
+    document.getElementById('cntCritical').textContent = critical.length;
+    document.getElementById('cntHigh').textContent     = high.length;
+    document.getElementById('cntMedium').textContent   = medium.length;
+    document.getElementById('cntResolved').textContent = resolved.length;
+    document.getElementById('cntAll').textContent      = allAlerts.length;
+
+    document.getElementById('topbarSub').textContent = `${active.length} active · ${critical.length} critical · ${resolved.length} resolved`;
+}
+
+function sl(id, v) { const e = document.getElementById(id); if(e){e.textContent=v;e.classList.remove('loading');} }
+
+// ── Tab ───────────────────────────────────────────────────────────
+function switchTab(el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    activeFilter = el.dataset.filter;
+    renderAlerts();
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function renderAlerts() {
+    const search  = document.getElementById('searchInput').value.toLowerCase();
+    const bizF    = document.getElementById('bizFilter').value;
+    const typeF   = document.getElementById('typeFilter').value;
+
+    let filtered = allAlerts.filter(a => {
+        const sev      = a.severity || 'low';
+        const resolved = a.is_resolved || false;
+        if (activeFilter === 'active'   && resolved) return false;
+        if (activeFilter === 'resolved' && !resolved) return false;
+        if (activeFilter === 'critical' && (resolved || sev !== 'critical')) return false;
+        if (activeFilter === 'high'     && (resolved || sev !== 'high')) return false;
+        if (activeFilter === 'medium'   && (resolved || sev !== 'medium')) return false;
+        const text = `${a.title||''} ${a.description||''} ${a.business_name||''}`.toLowerCase();
+        if (search && !text.includes(search)) return false;
+        if (bizF !== 'all') {
+            const biz = allBiz.find(b => String(b.id) === bizF);
+            if (biz && !(a.business_name || '').toLowerCase().includes(biz.name.toLowerCase())) return false;
+        }
+        if (typeF !== 'all' && a.alert_type !== typeF) return false;
+        return true;
+    });
+
+    filtered.sort((a, b) => {
+        const sa = sevOrder[a.severity] ?? 5;
+        const sb = sevOrder[b.severity] ?? 5;
+        if (sa !== sb) return sa - sb;
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    });
+
+    const wrap = document.getElementById('alertsList');
+
+    if (!filtered.length) {
+        const emptyMsgs = {
+            active: ['✅', 'No active alerts', 'All businesses are operating normally.'],
+            critical: ['🎉', 'No critical alerts', ''],
+            high: ['👍', 'No high priority alerts', ''],
+            medium: ['✨', 'No medium alerts', ''],
+            resolved: ['📋', 'No resolved alerts', ''],
+            all: ['📭', 'No alerts found', ''],
+        };
+        const [icon, title, sub] = emptyMsgs[activeFilter] || ['📭', 'No alerts', ''];
+        wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">${icon}</div><h4>${title}</h4>${sub ? `<p>${sub}</p>` : ''}</div>`;
+        return;
+    }
+
+    const list = document.createElement('div');
+    list.className = 'alerts-list';
+
+    filtered.forEach((a, idx) => {
+        const sev      = a.severity || 'low';
+        const level    = sevLevel(sev);
+        const resolved = a.is_resolved || false;
+        const time     = a.created_at
+            ? new Date(a.created_at).toLocaleDateString('en-KE', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+            : '—';
+
+        const card = document.createElement('div');
+        card.className = `alert-card${resolved ? ' resolved' : ''}`;
+        card.style.animationDelay = `${idx * 0.03}s`;
+        card.innerHTML = `
+            <div class="sev-bar ${level}"></div>
+            <div class="alert-icon">${sevIcon[sev] || '⚠️'}</div>
+            <div class="alert-body">
+                <div class="alert-title">${a.title || 'Alert'}</div>
+                <div class="alert-desc">${a.description || ''}</div>
+                <div class="alert-meta">
+                    <span class="sev-badge ${level}">${sev}</span>
+                    ${a.alert_type ? `<span style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);background:var(--paper);padding:2px 7px;border-radius:2px;border:1px solid var(--border);">${a.alert_type.replace(/_/g,' ')}</span>` : ''}
+                    <span class="alert-time">🕒 ${time}</span>
+                    ${a.business_name ? `<span class="alert-biz">🏢 ${a.business_name}</span>` : '<span class="alert-user">🌐 System-wide</span>'}
+                    ${resolved ? '<span style="font-size:11px;color:var(--accent);font-weight:600;">✓ Resolved</span>' : ''}
+                </div>
+            </div>
+            <div class="alert-actions">
+                ${!resolved ? `<button class="btn btn-outline btn-sm" onclick="resolveAlert(${a.id}, this)">✓ Resolve</button>` : ''}
+                <button class="btn btn-outline btn-sm" style="color:var(--error);" onclick="deleteAlert(${a.id}, this)">🗑️</button>
+            </div>`;
+        list.appendChild(card);
+    });
+
+    wrap.innerHTML = '';
+    wrap.appendChild(list);
+}
+
+// ── Actions ───────────────────────────────────────────────────────
+async function resolveAlert(id, btn) {
+    btn.disabled = true; btn.textContent = '…';
+    try {
+        let res = await apiFetch(`/api/analytics/alerts/${id}/resolve/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() } });
+        if (!res.ok) res = await apiFetch(`/api/analytics/alerts/${id}/`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() }, body: JSON.stringify({ is_resolved: true }) });
+        const a = allAlerts.find(a => a.id === id);
+        if (a) a.is_resolved = true;
+    } catch(e) { const a = allAlerts.find(a => a.id === id); if (a) a.is_resolved = true; }
+    updateStats(); renderAlerts(); showToast('Alert resolved ✓');
+}
+
+function deleteAlert(id, btn) {
+    allAlerts = allAlerts.filter(a => a.id !== id);
+    updateStats(); renderAlerts(); showToast('Alert removed');
+}
+
+async function resolveAll() {
+    const active = allAlerts.filter(a => !a.is_resolved);
+    if (!active.length) { showToast('No active alerts to resolve'); return; }
+    for (const a of active) {
+        try {
+            await apiFetch(`/api/analytics/alerts/${a.id}/resolve/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() } });
+        } catch(e) {}
+        a.is_resolved = true;
+    }
+    updateStats(); renderAlerts(); showToast(`✓ ${active.length} alerts resolved`);
+}
+
+// ── Scan ──────────────────────────────────────────────────────────
+async function runScan() {
+    const btn = document.getElementById('scanBtn');
+    const spinner = document.getElementById('scanSpinner');
+    btn.disabled = true; spinner.style.display = 'inline-block';
+
+    try {
+        const [invRes, txnRes] = await Promise.all([
+            apiFetch('/api/inventory/?page_size=500'),
+            apiFetch('/api/transactions/?page_size=1000'),
+        ]);
+        const inv  = invRes.ok  ? (await invRes.json()).results  || [] : [];
+        const txns = txnRes.ok  ? (await txnRes.json()).results  || [] : [];
+        const generated = generateAlerts(inv, txns);
+
+        if (!generated.length) {
+            showToast('✅ Scan complete — no issues found');
+        } else {
+            // Remove old auto-generated (negative ids), add fresh
+            allAlerts = allAlerts.filter(a => a.id > 0);
+            allAlerts = [...generated, ...allAlerts];
+            updateStats(); renderAlerts();
+            showToast(`⚡ ${generated.length} alert${generated.length > 1 ? 's' : ''} detected`);
+        }
+    } catch(e) { showToast('Scan failed. Please try again.'); }
+    finally { btn.disabled = false; spinner.style.display = 'none'; }
+}
+
+// ── Create alert ──────────────────────────────────────────────────
+async function createAlert() {
+    const errDiv = document.getElementById('createAlertError');
+    errDiv.classList.remove('show');
+
+    const title = document.getElementById('newTitle').value.trim();
+    const desc  = document.getElementById('newDesc').value.trim();
+    if (!title) { errDiv.textContent = '⚠️ Title is required.'; errDiv.classList.add('show'); return; }
+    if (!desc)  { errDiv.textContent = '⚠️ Description is required.'; errDiv.classList.add('show'); return; }
+
+    const payload = {
+        title, description: desc,
+        severity:   document.getElementById('newSeverity').value,
+        alert_type: document.getElementById('newType').value,
+        business:   document.getElementById('newBiz').value || null,
+        is_resolved: false,
+    };
+
+    document.getElementById('createSpinner').style.display = 'inline-block';
+
+    try {
+        const res = await apiFetch('/api/analytics/alerts/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok || res.status === 201) {
+            const biz = allBiz.find(b => String(b.id) === payload.business);
+            allAlerts.unshift({ ...data, business_name: biz?.name || '', created_at: new Date().toISOString() });
+            closeModal('createAlertModal');
+            updateStats(); renderAlerts();
+            showToast('✅ Alert created');
+            document.getElementById('newTitle').value = '';
+            document.getElementById('newDesc').value  = '';
+        } else {
+            // Fallback: add locally if API doesn't support
+            const biz = allBiz.find(b => String(b.id) === payload.business);
+            allAlerts.unshift({ ...payload, id: -(Date.now()), business_name: biz?.name || '', created_at: new Date().toISOString() });
+            closeModal('createAlertModal');
+            updateStats(); renderAlerts();
+            showToast('✅ Alert created (locally)');
+        }
+    } catch(e) {
+        errDiv.textContent = '⚠️ Network error.'; errDiv.classList.add('show');
+    } finally {
+        document.getElementById('createSpinner').style.display = 'none';
+    }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('bizFilter').value = 'all';
+    document.getElementById('typeFilter').value = 'all';
+    renderAlerts();
+}
+function openModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); }));
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+
+// ── Boot ──────────────────────────────────────────────────────────
+loadAll();
+</script>
 </body>
 </html>

@@ -1,10 +1,598 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions - Admin Panel | BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-light: #40916c; --accent-pale: #d8f3dc; --gold: #e9c46a;
+            --error: #c1121f; --error-pale: #fce4e4; --warn: #d4860a;
+            --warn-pale: #fef3cd; --muted: #6b7280; --border: #e2e0d8;
+            --admin: #7c3aed; --admin-pale: #ede9fe;
+            --sidebar-w: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; }
+
+        /* ── Sidebar ─────────────────────────────────────────── */
+        .sidebar { width: var(--sidebar-w); background: #1a0533; min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-badge { display: inline-block; background: var(--admin); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 8px; }
+        .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .brand-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 3px; }
+        .sidebar-nav { padding: 16px 0; flex: 1; }
+        .nav-section { padding: 12px 24px 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5); text-decoration: none; transition: all 0.15s; border-left: 2px solid transparent; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: #c4b5fd; background: rgba(124,58,237,0.15); border-left-color: var(--admin); }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .admin-pill { display: flex; align-items: center; gap: 10px; }
+        .admin-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--admin); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .admin-info { flex: 1; min-width: 0; }
+        .admin-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .admin-role { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+        .logout-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.3); font-size: 16px; padding: 4px; transition: color 0.15s; }
+        .logout-btn:hover { color: var(--error); }
+        .back-link { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,0.35); text-decoration: none; padding: 8px 24px 4px; transition: color 0.15s; }
+        .back-link:hover { color: rgba(255,255,255,0.7); }
+
+        /* ── Main ───────────────────────────────────────────── */
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-left h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+        .topbar-right { display: flex; gap: 10px; }
+        .content { padding: 28px 32px; flex: 1; }
+
+        /* ── Buttons ─────────────────────────────────────────── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+        .btn-admin { background: var(--admin); color: #fff; }
+        .btn-admin:hover { background: #6d28d9; }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--ink); }
+        .btn-danger { background: none; color: var(--error); border: 1.5px solid var(--border); }
+        .btn-danger:hover { background: var(--error-pale); border-color: var(--error); }
+        .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+        @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+        /* ── Stats ──────────────────────────────────────────── */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 18px 20px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; display: flex; align-items: center; gap: 14px; }
+        .stat-card:nth-child(1){animation-delay:.05s} .stat-card:nth-child(2){animation-delay:.1s} .stat-card:nth-child(3){animation-delay:.15s} .stat-card:nth-child(4){animation-delay:.2s}
+        .stat-icon { font-size: 22px; }
+        .stat-val { font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; }
+        .stat-val.loading { color: var(--border); animation: pulse 1.2s infinite; }
+        .stat-lbl { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+        /* ── Tabs ────────────────────────────────────────────── */
+        .tabs { display: flex; gap: 4px; background: #fff; border: 1px solid var(--border); border-radius: 3px; padding: 4px; margin-bottom: 16px; width: fit-content; }
+        .tab { padding: 7px 18px; border-radius: 2px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; border: none; background: none; color: var(--muted); font-family: 'Sora', sans-serif; }
+        .tab:hover { color: var(--ink); }
+        .tab.active { background: var(--ink); color: #fff; }
+
+        /* ── Toolbar ─────────────────────────────────────────── */
+        .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .search-wrap { position: relative; flex: 1; min-width: 220px; }
+        .search-wrap input { width: 100%; padding: 9px 14px 9px 36px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'Sora', sans-serif; background: #fff; }
+        .search-wrap input:focus { outline: none; border-color: var(--admin); }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
+        .filter-select { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'Sora', sans-serif; background: #fff; cursor: pointer; color: var(--ink); }
+        .filter-select:focus { outline: none; border-color: var(--admin); }
+        input[type="date"] { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'DM Mono', monospace; background: #fff; color: var(--ink); cursor: pointer; }
+        input[type="date"]:focus { outline: none; border-color: var(--admin); }
+
+        /* ── Panel / Table ───────────────────────────────────── */
+        .panel { background: #fff; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) 0.2s both; }
+        .panel-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .panel-header h3 { font-size: 13px; font-weight: 700; }
+        .panel-tag { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); background: var(--paper); padding: 3px 8px; border-radius: 2px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; }
+        th { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 10px 16px; text-align: left; background: var(--paper); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; white-space: nowrap; }
+        th:hover { color: var(--ink); }
+        td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafaf8; }
+
+        .txn-type { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; }
+        .txn-type.sale { background: var(--accent-pale); color: var(--accent); }
+        .txn-type.expense { background: var(--error-pale); color: var(--error); }
+        .txn-type.purchase { background: var(--warn-pale); color: var(--warn); }
+
+        .amount { font-family: 'DM Mono', monospace; font-weight: 500; }
+        .amount.positive { color: var(--accent); }
+        .amount.negative { color: var(--error); }
+
+        .payment-tag { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); background: var(--paper); padding: 2px 7px; border-radius: 2px; border: 1px solid var(--border); text-transform: capitalize; }
+        .mono { font-family: 'DM Mono', monospace; font-size: 12px; }
+
+        .row-actions { display: flex; gap: 5px; opacity: 0; transition: opacity 0.15s; }
+        tr:hover .row-actions { opacity: 1; }
+
+        /* ── Pagination ──────────────────────────────────────── */
+        .pagination { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-top: 1px solid var(--border); background: var(--paper); }
+        .pagination-info { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
+        .pagination-btns { display: flex; gap: 6px; }
+        .page-btn { padding: 6px 12px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 12px; font-weight: 600; cursor: pointer; background: #fff; color: var(--ink); transition: all 0.15s; font-family: 'Sora', sans-serif; }
+        .page-btn:hover:not(:disabled) { border-color: var(--admin); color: var(--admin); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .page-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+        .empty-icon { font-size: 40px; margin-bottom: 12px; }
+        .empty-state h4 { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+
+        /* ── Modal ───────────────────────────────────────────── */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,23,0.55); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; animation: fade-in 0.2s ease; }
+        .modal { background: #fff; border-radius: 4px; width: 100%; max-width: 500px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.2), 4px 4px 0 0 var(--admin); animation: rise 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .modal-header h3 { font-size: 15px; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--muted); }
+        .modal-close:hover { color: var(--ink); }
+        .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); background: var(--paper); display: flex; gap: 10px; justify-content: flex-end; }
+
+        .detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 16px; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; }
+        .detail-value { font-weight: 500; text-align: right; font-family: 'DM Mono', monospace; font-size: 12px; word-break: break-all; }
+
+        .txn-hero { background: var(--ink); border-radius: 3px; padding: 20px 24px; margin-bottom: 20px; text-align: center; }
+        .txn-hero-amount { font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+        .txn-hero-amount.positive { color: #6ee7b7; }
+        .txn-hero-amount.negative { color: #fca5a5; }
+        .txn-hero-desc { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 6px; }
+
+        .modal-alert { display: none; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 3px; font-size: 12px; margin-bottom: 16px; }
+        .modal-alert.show { display: flex; }
+        .modal-alert-error { background: var(--error-pale); color: var(--error); border-left: 3px solid var(--error); }
+
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 3px; font-size: 13px; z-index: 300; display: none; }
+        .toast.show { display: block; animation: rise 0.3s ease; }
+
+        @media (max-width: 1100px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 700px) { :root { --sidebar-w: 0px; } .sidebar { display: none; } .content { padding: 16px; } .stats-row { grid-template-columns: 1fr 1fr; } }
+    </style>
 </head>
 <body>
-$END$
+
+<!-- ── Sidebar ────────────────────────────────────────────────── -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-badge">⚡ Admin Panel</div>
+        <div class="brand-name">BiasharaSmart Hub</div>
+        <div class="brand-sub">System Administration</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Overview</div>
+        <a class="nav-item" href="/admin-panel/"><span class="nav-icon">📊</span> Dashboard</a>
+        <div class="nav-section">Management</div>
+        <a class="nav-item" href="/admin-panel/users/"><span class="nav-icon">👥</span> Users</a>
+        <a class="nav-item" href="/admin-panel/businesses/"><span class="nav-icon">🏢</span> Businesses</a>
+        <a class="nav-item active" href="/admin-panel/transactions/"><span class="nav-icon">💰</span> Transactions</a>
+        <a class="nav-item" href="/admin-panel/subscriptions/"><span class="nav-icon">💳</span> Subscriptions</a>
+        <div class="nav-section">System</div>
+        <a class="nav-item" href="/admin-panel/analytics/"><span class="nav-icon">📈</span> Analytics</a>
+        <a class="nav-item" href="/admin-panel/logs/"><span class="nav-icon">📋</span> Logs</a>
+        <a class="nav-item" href="/admin-panel/settings/"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <a class="back-link" href="/admin-panel/dashboard/">← Back to Dashboard</a>
+    <div class="sidebar-footer">
+        <div class="admin-pill">
+            <div class="admin-avatar">{{ user.first_name|first|upper|default:"A" }}</div>
+            <div class="admin-info">
+                <div class="admin-name">{{ user.first_name|default:user.username }}</div>
+                <div class="admin-role">superadmin</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- ── Main ──────────────────────────────────────────────────── -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <h2>Transactions</h2>
+            <p id="topbarSub">Loading…</p>
+        </div>
+        <div class="topbar-right">
+            <button class="btn btn-outline" onclick="exportCSV()">⬇️ Export CSV</button>
+            <form method="post" action="/logout/">
+        {% csrf_token %}
+        <button type="submit" style="
+            display:inline-flex;align-items:center;gap:6px;
+            padding:8px 14px;border-radius:3px;
+            background:#fff;color:var(--error);
+            border:1.5px solid var(--border);
+            font-family:'Sora',sans-serif;font-size:12px;font-weight:600;
+            cursor:pointer;transition:all 0.15s;"
+            onmouseover="this.style.background='var(--error-pale)';this.style.borderColor='var(--error)';"
+            onmouseout="this.style.background='#fff';this.style.borderColor='var(--border)';">
+            ⎋ Sign Out
+        </button>
+    </form>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div><div class="stat-val loading" id="statRevenue">—</div><div class="stat-lbl">Total Revenue</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📥</div>
+                <div><div class="stat-val loading" id="statExpenses">—</div><div class="stat-lbl">Total Expenses</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div><div class="stat-val loading" id="statCount">—</div><div class="stat-lbl">Transactions</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div><div class="stat-val loading" id="statProfit">—</div><div class="stat-lbl">Net Profit</div></div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-type="all" onclick="switchTab(this)">All</button>
+            <button class="tab" data-type="sale" onclick="switchTab(this)">Sales</button>
+            <button class="tab" data-type="expense" onclick="switchTab(this)">Expenses</button>
+            <button class="tab" data-type="purchase" onclick="switchTab(this)">Purchases</button>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search description, business…" oninput="applyFilters()">
+            </div>
+            <select class="filter-select" id="bizFilter" onchange="applyFilters()">
+                <option value="all">All businesses</option>
+            </select>
+            <select class="filter-select" id="paymentFilter" onchange="applyFilters()">
+                <option value="all">All payments</option>
+                <option value="cash">Cash</option>
+                <option value="mpesa">M-Pesa</option>
+                <option value="bank">Bank</option>
+                <option value="credit">Credit</option>
+            </select>
+            <input type="date" id="dateFrom" onchange="applyFilters()" title="From date">
+            <input type="date" id="dateTo" onchange="applyFilters()" title="To date">
+            <button class="btn btn-outline" onclick="clearFilters()">✕ Clear</button>
+        </div>
+
+        <!-- Table -->
+        <div class="panel">
+            <div class="panel-header">
+                <h3>All Transactions</h3>
+                <span class="panel-tag" id="txnCount">Loading…</span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th onclick="sortBy('date')">Date ↕</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Business</th>
+                            <th>Payment</th>
+                            <th onclick="sortBy('amount')">Amount ↕</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="txnBody">
+                        <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">⏳</div>Loading…</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination" id="paginationBar" style="display:none;">
+                <span class="pagination-info" id="pageInfo">—</span>
+                <div class="pagination-btns" id="pageBtns"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Transaction Detail Modal ───────────────────────────────── -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Transaction Detail</h3>
+            <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div id="detailModalError" class="modal-alert modal-alert-error"></div>
+            <div id="detailContent"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" id="deleteDetailBtn" onclick="deleteFromModal()">🗑️ Delete</button>
+            <button class="btn btn-outline" onclick="closeModal('detailModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
+async function apiFetch(url, opts = {}) {
+    return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest', ...opts.headers }, ...opts });
+}
+
+let allTxns = [];
+let allBiz  = [];
+let activeTab = 'all';
+let sortKey = 'date';
+let sortAsc = false;
+let currentPage = 1;
+const PAGE_SIZE = 25;
+let viewingTxnId = null;
+
+// ── Load ──────────────────────────────────────────────────────────
+async function loadAll() {
+    try {
+        const [txnRes, bizRes] = await Promise.all([
+            apiFetch('/api/transactions/?page_size=1000'),
+            apiFetch('/api/businesses/?page_size=500')
+        ]);
+        if (txnRes.ok) { const d = await txnRes.json(); allTxns = d.results || d || []; }
+        if (bizRes.ok) {
+            const d = await bizRes.json();
+            allBiz = d.results || d || [];
+            const sel = document.getElementById('bizFilter');
+            allBiz.forEach(b => { sel.innerHTML += `<option value="${b.id}">${b.name}</option>`; });
+        }
+    } catch(e) {}
+    updateStats();
+    renderTable();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────
+function updateStats() {
+    const sales    = allTxns.filter(t => t.transaction_type === 'sale');
+    const expenses = allTxns.filter(t => t.transaction_type === 'expense');
+    const revenue  = sales.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const spent    = expenses.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const profit   = revenue - spent;
+
+    sl('statRevenue',  fmt(revenue));
+    sl('statExpenses', fmt(spent));
+    sl('statCount',    allTxns.length);
+
+    const el = document.getElementById('statProfit');
+    el.textContent = fmt(Math.abs(profit));
+    el.classList.remove('loading');
+    el.style.color = profit >= 0 ? 'var(--accent)' : 'var(--error)';
+
+    document.getElementById('topbarSub').textContent =
+        `${allTxns.length} transactions · ${fmt(revenue)} revenue · ${fmt(spent)} expenses`;
+}
+
+function sl(id, v) { const e = document.getElementById(id); if(e){e.textContent=v;e.classList.remove('loading');} }
+function fmt(n) { return 'KES ' + Number(n).toLocaleString('en-KE', { maximumFractionDigits: 0 }); }
+function fmtFull(n) { return 'KES ' + Number(n).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-KE', { month:'short', day:'numeric', year:'numeric' }) : '—'; }
+
+// ── Tab ───────────────────────────────────────────────────────────
+function switchTab(el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    activeTab = el.dataset.type;
+    currentPage = 1;
+    renderTable();
+}
+
+// ── Filters ───────────────────────────────────────────────────────
+function applyFilters() { currentPage = 1; renderTable(); }
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('bizFilter').value = 'all';
+    document.getElementById('paymentFilter').value = 'all';
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    applyFilters();
+}
+
+function sortBy(key) {
+    if (sortKey === key) sortAsc = !sortAsc;
+    else { sortKey = key; sortAsc = false; }
+    renderTable();
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function renderTable() {
+    const search  = document.getElementById('searchInput').value.toLowerCase();
+    const bizF    = document.getElementById('bizFilter').value;
+    const payF    = document.getElementById('paymentFilter').value;
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo   = document.getElementById('dateTo').value;
+
+    let filtered = allTxns.filter(t => {
+        if (activeTab !== 'all' && t.transaction_type !== activeTab) return false;
+        const text = `${t.description||''} ${t.notes||''}`.toLowerCase();
+        if (search && !text.includes(search)) return false;
+        if (bizF !== 'all' && String(t.business) !== bizF && String(t.business_id) !== bizF) return false;
+        if (payF !== 'all' && t.payment_method !== payF) return false;
+        const d = t.date || t.created_at;
+        if (dateFrom && d && d < dateFrom) return false;
+        if (dateTo && d && d > dateTo) return false;
+        return true;
+    });
+
+    filtered.sort((a, b) => {
+        let av = sortKey === 'amount' ? parseFloat(a.amount||0) : (a[sortKey]||'');
+        let bv = sortKey === 'amount' ? parseFloat(b.amount||0) : (b[sortKey]||'');
+        if (typeof av === 'string') av = av.toLowerCase();
+        if (typeof bv === 'string') bv = bv.toLowerCase();
+        return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+    });
+
+    const total  = filtered.length;
+    const pages  = Math.ceil(total / PAGE_SIZE);
+    currentPage  = Math.min(currentPage, Math.max(1, pages));
+    const start  = (currentPage - 1) * PAGE_SIZE;
+    const paged  = filtered.slice(start, start + PAGE_SIZE);
+
+    document.getElementById('txnCount').textContent = `${total} transactions`;
+
+    if (!paged.length) {
+        document.getElementById('txnBody').innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🔍</div><h4>${allTxns.length ? 'No transactions match your filters.' : 'No transactions found.'}</h4></div></td></tr>`;
+        document.getElementById('paginationBar').style.display = 'none';
+        return;
+    }
+
+    document.getElementById('txnBody').innerHTML = paged.map(t => {
+        const type  = t.transaction_type || 'sale';
+        const isPos = type === 'sale';
+        const biz   = allBiz.find(b => b.id === t.business || b.id === t.business_id);
+        const date  = fmtDate(t.date || t.created_at);
+
+        return `<tr>
+            <td class="mono" style="color:var(--muted);white-space:nowrap;">${date}</td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${t.description || t.notes || '—'}</td>
+            <td><span class="txn-type ${type}">${type}</span></td>
+            <td style="font-size:12px;color:var(--muted);">${biz?.name || t.business_name || '—'}</td>
+            <td><span class="payment-tag">${t.payment_method || '—'}</span></td>
+            <td class="amount ${isPos ? 'positive' : 'negative'}">${isPos ? '+' : '-'}${fmt(t.amount)}</td>
+            <td>
+                <div class="row-actions">
+                    <button class="btn btn-outline btn-sm" onclick="viewDetail(${t.id})">🔍 View</button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+
+    renderPagination(total, pages);
+}
+
+function renderPagination(total, pages) {
+    const bar = document.getElementById('paginationBar');
+    if (pages <= 1) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    const start = (currentPage - 1) * PAGE_SIZE + 1;
+    const end   = Math.min(currentPage * PAGE_SIZE, total);
+    document.getElementById('pageInfo').textContent = `Showing ${start}–${end} of ${total}`;
+
+    const range = [];
+    for (let i = 1; i <= pages; i++) {
+        if (i === 1 || i === pages || (i >= currentPage - 1 && i <= currentPage + 1)) range.push(i);
+        else if (range[range.length - 1] !== '…') range.push('…');
+    }
+
+    let btns = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>← Prev</button>`;
+    range.forEach(p => {
+        btns += p === '…'
+            ? `<button class="page-btn" disabled>…</button>`
+            : `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    });
+    btns += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===pages?'disabled':''}>Next →</button>`;
+    document.getElementById('pageBtns').innerHTML = btns;
+}
+
+function goPage(p) { currentPage = p; renderTable(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+// ── Detail modal ──────────────────────────────────────────────────
+function viewDetail(id) {
+    const t = allTxns.find(t => t.id === id);
+    if (!t) return;
+    viewingTxnId = id;
+
+    const type  = t.transaction_type || 'sale';
+    const isPos = type === 'sale';
+    const biz   = allBiz.find(b => b.id === t.business || b.id === t.business_id);
+
+    document.getElementById('detailContent').innerHTML = `
+        <div class="txn-hero">
+            <div class="txn-hero-amount ${isPos ? 'positive' : 'negative'}">${isPos ? '+' : '-'}${fmtFull(t.amount)}</div>
+            <div class="txn-hero-desc">${t.description || '—'} · ${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+        </div>
+        <div class="detail-row"><span class="detail-label">ID</span><span class="detail-value">#${t.id}</span></div>
+        <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${fmtDate(t.date || t.created_at)}</span></div>
+        <div class="detail-row"><span class="detail-label">Business</span><span class="detail-value">${biz?.name || t.business_name || '—'}</span></div>
+        <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value" style="text-transform:capitalize;">${type}</span></div>
+        <div class="detail-row"><span class="detail-label">Payment</span><span class="detail-value" style="text-transform:capitalize;">${t.payment_method || '—'}</span></div>
+        ${t.customer_name ? `<div class="detail-row"><span class="detail-label">Customer</span><span class="detail-value">${t.customer_name}</span></div>` : ''}
+        ${t.vendor ? `<div class="detail-row"><span class="detail-label">Vendor</span><span class="detail-value">${t.vendor}</span></div>` : ''}
+        ${t.category ? `<div class="detail-row"><span class="detail-label">Category</span><span class="detail-value" style="text-transform:capitalize;">${t.category}</span></div>` : ''}
+        ${t.notes ? `<div class="detail-row"><span class="detail-label">Notes</span><span class="detail-value">${t.notes}</span></div>` : ''}
+        <div class="detail-row"><span class="detail-label">Created</span><span class="detail-value">${fmtDate(t.created_at)}</span></div>
+    `;
+
+    document.getElementById('detailModalError').classList.remove('show');
+    openModal('detailModal');
+}
+
+async function deleteFromModal() {
+    if (!viewingTxnId) return;
+    const t = allTxns.find(t => t.id === viewingTxnId);
+    if (!confirm(`Delete transaction "${t?.description || '#' + viewingTxnId}"? Cannot be undone.`)) return;
+
+    try {
+        const res = await apiFetch(`/api/transactions/${viewingTxnId}/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': getCsrf() }
+        });
+        if (res.ok || res.status === 204) {
+            allTxns = allTxns.filter(t => t.id !== viewingTxnId);
+            closeModal('detailModal');
+            updateStats();
+            renderTable();
+            showToast('🗑️ Transaction deleted');
+        } else {
+            document.getElementById('detailModalError').textContent = '⚠️ Could not delete transaction.';
+            document.getElementById('detailModalError').classList.add('show');
+        }
+    } catch(e) {
+        document.getElementById('detailModalError').textContent = '⚠️ Network error.';
+        document.getElementById('detailModalError').classList.add('show');
+    }
+}
+
+// ── Export CSV ────────────────────────────────────────────────────
+function exportCSV() {
+    const headers = ['ID','Date','Description','Type','Business','Payment','Amount','Customer','Vendor','Notes'];
+    const rows = allTxns.map(t => {
+        const biz = allBiz.find(b => b.id === t.business || b.id === t.business_id);
+        return [
+            t.id,
+            t.date || t.created_at || '',
+            t.description || '',
+            t.transaction_type || '',
+            biz?.name || '',
+            t.payment_method || '',
+            t.amount || 0,
+            t.customer_name || '',
+            t.vendor || '',
+            t.notes || '',
+        ];
+    });
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); }));
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+
+// ── Boot ──────────────────────────────────────────────────────────
+loadAll();
+</script>
 </body>
 </html>

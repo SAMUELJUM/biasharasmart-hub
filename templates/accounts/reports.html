@@ -1,10 +1,710 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-light: #40916c; --accent-pale: #d8f3dc; --gold: #e9c46a;
+            --error: #c1121f; --error-pale: #fce4e4; --warn: #d4860a;
+            --warn-pale: #fef3cd; --muted: #6b7280; --border: #e2e0d8;
+            --sidebar-w: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; }
+
+        /* ── Sidebar ── */
+        .sidebar { width: var(--sidebar-w); background: var(--ink); min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-badge { display: inline-block; background: var(--gold); color: var(--ink); font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 8px; }
+        .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .brand-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+        .sidebar-nav { padding: 16px 0; flex: 1; }
+        .nav-section { padding: 12px 24px 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.15s, background 0.15s; border-left: 2px solid transparent; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: var(--gold); background: rgba(233,196,106,0.08); border-left-color: var(--gold); }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .user-pill { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+        .logout-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.35); font-size: 16px; padding: 4px; transition: color 0.15s; flex-shrink: 0; }
+        .logout-btn:hover { color: var(--error); }
+
+        /* ── Main ── */
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-left h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+        .content { padding: 28px 32px; flex: 1; }
+
+        /* ── Buttons ── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-light); box-shadow: 0 4px 12px rgba(45,106,79,0.3); transform: translateY(-1px); }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--ink); }
+        .btn-gold { background: var(--gold); color: var(--ink); }
+        .btn-gold:hover { background: #d4a832; }
+
+        @keyframes rise  { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin  { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+        /* ── Report type cards ── */
+        .report-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+        .report-card { background: #fff; border: 1.5px solid var(--border); border-radius: 4px; padding: 24px; cursor: pointer; transition: all 0.15s; box-shadow: 2px 2px 0 0 var(--border); animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+        .report-card:nth-child(1){animation-delay:.05s} .report-card:nth-child(2){animation-delay:.1s} .report-card:nth-child(3){animation-delay:.15s}
+        .report-card:nth-child(4){animation-delay:.2s}  .report-card:nth-child(5){animation-delay:.25s} .report-card:nth-child(6){animation-delay:.3s}
+        .report-card:hover { border-color: var(--accent); transform: translate(-2px,-2px); box-shadow: 4px 4px 0 0 var(--accent); }
+        .report-card.selected { border-color: var(--accent); background: var(--accent-pale); box-shadow: 4px 4px 0 0 var(--accent); }
+        .report-icon  { font-size: 28px; margin-bottom: 12px; }
+        .report-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+        .report-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+        .report-badge { display: inline-block; margin-top: 10px; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 2px; letter-spacing: 0.05em; text-transform: uppercase; }
+        .badge-green  { background: var(--accent-pale); color: var(--accent); }
+        .badge-gold   { background: #fef3cd; color: var(--warn); }
+
+        /* ── Config panel ── */
+        .config-panel { background: #fff; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 24px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
+        .config-header { padding: 16px 24px; border-bottom: 1px solid var(--border); background: var(--paper); display: flex; align-items: center; justify-content: space-between; }
+        .config-header h3 { font-size: 13px; font-weight: 700; }
+        .config-body { padding: 24px; }
+        .config-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink); }
+        input, select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'Sora', sans-serif; color: var(--ink); background: var(--paper); transition: border-color 0.15s; }
+        input:focus, select:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(45,106,79,0.1); }
+        select { cursor: pointer; }
+
+        /* ── Preview panel ── */
+        .preview-panel { background: #fff; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) 0.35s both; }
+        .preview-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .preview-header h3 { font-size: 13px; font-weight: 700; }
+        .preview-actions { display: flex; gap: 8px; }
+        .report-preview { padding: 24px; min-height: 300px; }
+
+        .preview-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 260px; text-align: center; color: var(--muted); }
+        .preview-placeholder .ph-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+        .preview-placeholder p { font-size: 13px; }
+
+        /* ── Report document ── */
+        .report-doc { display: none; }
+        .report-doc.show { display: block; animation: rise 0.3s ease; }
+        .report-doc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--ink); }
+        .report-doc-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+        .report-doc-meta { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 4px; }
+        .report-doc-brand { text-align: right; font-size: 12px; font-weight: 700; }
+        .report-doc-brand span { display: block; font-size: 10px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+
+        /* Summary boxes */
+        .summary-boxes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+        .summary-box { background: var(--paper); border: 1px solid var(--border); border-radius: 3px; padding: 14px 16px; }
+        .summary-box-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 6px; }
+        .summary-box-value { font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; letter-spacing: -0.02em; }
+        .summary-box-value.green { color: var(--accent); }
+        .summary-box-value.red   { color: var(--error); }
+        .summary-box-value.gold  { color: var(--warn); }
+
+        /* Report table */
+        .report-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        .report-table th { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; text-align: left; background: var(--paper); border-bottom: 1px solid var(--border); }
+        .report-table td { padding: 10px 12px; font-size: 12px; border-bottom: 1px solid var(--border); }
+        .report-table tr:last-child td { border-bottom: none; font-weight: 600; background: var(--paper); }
+        .mono { font-family: 'DM Mono', monospace; }
+        .text-right { text-align: right; }
+        .positive { color: var(--accent); }
+        .negative { color: var(--error); }
+
+        /* Loading */
+        .loading-state { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 60px; color: var(--muted); font-size: 13px; }
+        .loading-spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+        /* Alert */
+        .alert { display: none; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 3px; font-size: 13px; margin-bottom: 16px; }
+        .alert.show { display: flex; }
+        .alert-error { background: var(--error-pale); color: var(--error); border-left: 3px solid var(--error); }
+
+        /* Stock status pill */
+        .stock-ok  { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 2px; background: var(--accent-pale); color: var(--accent); }
+        .stock-low { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 2px; background: var(--error-pale); color: var(--error); }
+
+        @media (max-width:1000px) { .report-grid{grid-template-columns:repeat(2,1fr)} .config-grid{grid-template-columns:1fr 1fr} .summary-boxes{grid-template-columns:1fr 1fr} }
+        @media (max-width:700px)  { :root{--sidebar-w:0px} .sidebar{display:none} .content{padding:16px} .report-grid{grid-template-columns:1fr 1fr} .config-grid{grid-template-columns:1fr} }
+    </style>
 </head>
 <body>
-$END$
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-badge">🇰🇪 SME Platform</div>
+        <div class="brand-name">BiasharaSmart Hub</div>
+        <div class="brand-sub">Business Dashboard</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Main</div>
+        <a class="nav-item" href="/dashboard/"><span class="nav-icon">📊</span> Overview</a>
+        <a class="nav-item" href="/transactions/"><span class="nav-icon">💰</span> Transactions</a>
+        <a class="nav-item" href="/inventory/"><span class="nav-icon">📦</span> Inventory</a>
+        <div class="nav-section">Insights</div>
+        <a class="nav-item" href="/analytics/"><span class="nav-icon">📈</span> Analytics</a>
+        <a class="nav-item active" href="/reports/"><span class="nav-icon">📋</span> Reports</a>
+        <a class="nav-item" href="/alerts/"><span class="nav-icon">⚠️</span> Alerts</a>
+        <div class="nav-section">Account</div>
+        <a class="nav-item" href="/business/"><span class="nav-icon">🏢</span> My Business</a>
+        <a class="nav-item" href="/settings/"><span class="nav-icon">⚙️</span> Settings</a>
+        <a class="nav-item" href="/chat/"><span class="nav-icon">🤖</span> AI Assistant</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-pill">
+            <div class="user-avatar">{{ user.first_name|first|upper|default:"U" }}</div>
+            <div class="user-info">
+                <div class="user-name">{{ user.first_name|default:user.username }}</div>
+                <div class="user-role">{{ user.phone_number }}</div>
+            </div>
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn" title="Logout">✕</button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <h2>Reports</h2>
+            <p>Generate and download business reports</p>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <div id="alertError" class="alert alert-error"></div>
+
+        <!-- Step 1: Report type -->
+        <div class="config-panel">
+            <div class="config-header"><h3>Step 1 — Choose Report Type</h3></div>
+            <div style="padding:24px;">
+                <div class="report-grid">
+                    <div class="report-card selected" data-type="profit_loss" onclick="selectReport(this)">
+                        <div class="report-icon">📊</div>
+                        <div class="report-title">Profit & Loss</div>
+                        <div class="report-desc">Revenue vs expenses. See if your business is profitable.</div>
+                        <span class="report-badge badge-green">Most popular</span>
+                    </div>
+                    <div class="report-card" data-type="sales" onclick="selectReport(this)">
+                        <div class="report-icon">💰</div>
+                        <div class="report-title">Sales Report</div>
+                        <div class="report-desc">Breakdown of all sales transactions by date and product.</div>
+                        <span class="report-badge badge-green">Sales</span>
+                    </div>
+                    <div class="report-card" data-type="expenses" onclick="selectReport(this)">
+                        <div class="report-icon">📥</div>
+                        <div class="report-title">Expense Report</div>
+                        <div class="report-desc">All expenses grouped by category over the selected period.</div>
+                        <span class="report-badge badge-gold">Expenses</span>
+                    </div>
+                    <div class="report-card" data-type="inventory" onclick="selectReport(this)">
+                        <div class="report-icon">📦</div>
+                        <div class="report-title">Inventory Report</div>
+                        <div class="report-desc">Current stock levels, values, and low-stock alerts.</div>
+                        <span class="report-badge badge-green">Stock</span>
+                    </div>
+                    <div class="report-card" data-type="cashflow" onclick="selectReport(this)">
+                        <div class="report-icon">🌊</div>
+                        <div class="report-title">Cash Flow</div>
+                        <div class="report-desc">Money in vs money out over time. Track liquidity.</div>
+                        <span class="report-badge badge-gold">Finance</span>
+                    </div>
+                    <div class="report-card" data-type="tax" onclick="selectReport(this)">
+                        <div class="report-icon">🧾</div>
+                        <div class="report-title">Tax Summary</div>
+                        <div class="report-desc">KRA-ready summary of income and deductible expenses.</div>
+                        <span class="report-badge badge-gold">KRA / VAT</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Config -->
+        <div class="config-panel">
+            <div class="config-header">
+                <h3>Step 2 — Configure Report</h3>
+                <span id="configReportLabel" style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;">Profit & Loss</span>
+            </div>
+            <div class="config-body">
+                <div class="config-grid">
+                    <div class="form-group">
+                        <label>Business</label>
+                        <select id="configBusiness">
+                            <option value="all">All businesses</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date From</label>
+                        <input type="date" id="configDateFrom">
+                    </div>
+                    <div class="form-group">
+                        <label>Date To</label>
+                        <input type="date" id="configDateTo">
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="setRange('thisMonth')">This Month</button>
+                    <button type="button" class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="setRange('lastMonth')">Last Month</button>
+                    <button type="button" class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="setRange('thisQuarter')">This Quarter</button>
+                    <button type="button" class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="setRange('thisYear')">This Year</button>
+                    <button type="button" class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="setRange('last30')">Last 30 Days</button>
+                    <button type="button" class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="setRange('last90')">Last 90 Days</button>
+                </div>
+                <div style="margin-top:20px;">
+                    <button class="btn btn-primary" onclick="generateReport()">
+                        <span id="genSpinner" style="display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+                        Generate Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Preview + Download -->
+        <div class="preview-panel">
+            <div class="preview-header">
+                <h3>Step 3 — Preview & Download</h3>
+                <div class="preview-actions">
+                    <button class="btn btn-outline" id="printBtn"    onclick="window.print()"   style="display:none;">🖨️ Print</button>
+                    <button class="btn btn-gold"    id="downloadBtn" onclick="downloadReport()" style="display:none;">⬇️ Download PDF</button>
+                </div>
+            </div>
+            <div class="report-preview" id="reportPreview">
+                <div class="preview-placeholder">
+                    <div class="ph-icon">📋</div>
+                    <p>Configure your report above and click <strong>Generate Report</strong> to preview it here.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
+async function apiFetch(url) {
+    return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+}
+
+let selectedReportType = 'profit_loss';
+let allBusinesses = [];
+
+const reportLabels = {
+    profit_loss: 'Profit & Loss', sales: 'Sales Report',
+    expenses: 'Expense Report',   inventory: 'Inventory Report',
+    cashflow: 'Cash Flow',        tax: 'Tax Summary'
+};
+
+// ── Date range ────────────────────────────────────────────────
+function setRange(range) {
+    const now = new Date();
+    let from, to = now;
+    if      (range === 'thisMonth')    { from = new Date(now.getFullYear(), now.getMonth(), 1); }
+    else if (range === 'lastMonth')    { from = new Date(now.getFullYear(), now.getMonth()-1, 1); to = new Date(now.getFullYear(), now.getMonth(), 0); }
+    else if (range === 'thisQuarter')  { const q = Math.floor(now.getMonth()/3); from = new Date(now.getFullYear(), q*3, 1); }
+    else if (range === 'thisYear')     { from = new Date(now.getFullYear(), 0, 1); }
+    else if (range === 'last30')       { from = new Date(now - 30*864e5); }
+    else if (range === 'last90')       { from = new Date(now - 90*864e5); }
+    document.getElementById('configDateFrom').value = from.toISOString().split('T')[0];
+    document.getElementById('configDateTo').value   = to.toISOString().split('T')[0];
+}
+
+// ── Report type selection ─────────────────────────────────────
+function selectReport(el) {
+    document.querySelectorAll('.report-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedReportType = el.dataset.type;
+    document.getElementById('configReportLabel').textContent = reportLabels[selectedReportType];
+    document.getElementById('reportPreview').innerHTML = `<div class="preview-placeholder"><div class="ph-icon">📋</div><p>Click <strong>Generate Report</strong> to preview your <strong>${reportLabels[selectedReportType]}</strong>.</p></div>`;
+    document.getElementById('downloadBtn').style.display = 'none';
+    document.getElementById('printBtn').style.display   = 'none';
+}
+
+// ── Load businesses ───────────────────────────────────────────
+async function loadBusinesses() {
+    try {
+        const res = await apiFetch('/api/businesses/');
+        if (!res.ok) return;
+        const data = await res.json();
+        allBusinesses = data.results || data || [];
+        const sel = document.getElementById('configBusiness');
+        allBusinesses.forEach(b => {
+            const o = document.createElement('option');
+            o.value = b.id; o.textContent = b.name;
+            sel.appendChild(o);
+        });
+    } catch(e) {}
+}
+
+// ── Generate report ───────────────────────────────────────────
+async function generateReport() {
+    const dateFrom = document.getElementById('configDateFrom').value;
+    const dateTo   = document.getElementById('configDateTo').value;
+    const business = document.getElementById('configBusiness').value;
+
+    if (!dateFrom || !dateTo) { showError('Please select a date range.'); return; }
+    if (new Date(dateFrom) > new Date(dateTo)) { showError('Start date must be before end date.'); return; }
+
+    document.getElementById('genSpinner').style.display = 'inline-block';
+    document.getElementById('reportPreview').innerHTML  = `<div class="loading-state"><div class="loading-spinner"></div> Generating ${reportLabels[selectedReportType]}…</div>`;
+    document.getElementById('downloadBtn').style.display = 'none';
+    document.getElementById('printBtn').style.display   = 'none';
+    document.getElementById('alertError').classList.remove('show');
+
+    try {
+        await buildReport(dateFrom, dateTo, business);
+    } finally {
+        document.getElementById('genSpinner').style.display = 'none';
+    }
+}
+
+// ── Build report from transactions API ───────────────────────
+async function buildReport(dateFrom, dateTo, business) {
+    const bizName = business === 'all'
+        ? 'All Businesses'
+        : (allBusinesses.find(b => String(b.id) === String(business))?.name || '—');
+
+    // Inventory uses a different endpoint — handle separately
+    if (selectedReportType === 'inventory') {
+        try {
+            let url = `/api/inventory/?page_size=500`;
+            if (business !== 'all') url += `&business=${business}`;
+            const res = await apiFetch(url);
+            if (!res.ok) { showError('Could not load inventory data.'); return; }
+            const data = await res.json();
+            const products = data.results || data || [];
+            render(buildInventoryReport(products, dateFrom, dateTo, bizName));
+        } catch(e) { showError('Failed to load inventory. Please try again.'); }
+        return;
+    }
+
+    // All other reports use transactions API
+    try {
+        let url = `/api/transactions/?start_date=${dateFrom}&end_date=${dateTo}&page_size=1000`;
+        if (business !== 'all') url += `&business=${business}`;
+
+        const res = await apiFetch(url);
+        if (!res.ok) { showError('Could not load transaction data. Please try again.'); return; }
+
+        const data = await res.json();
+        const txns = data.results || data || [];
+
+        const sales    = txns.filter(t => t.transaction_type === 'sale');
+        const expenses = txns.filter(t => t.transaction_type === 'expense');
+        const totalSales    = sales.reduce((s,t)    => s + parseFloat(t.amount||0), 0);
+        const totalExpenses = expenses.reduce((s,t) => s + parseFloat(t.amount||0), 0);
+        const profit = totalSales - totalExpenses;
+
+        let html = '';
+        if      (selectedReportType === 'profit_loss') html = buildPLReport(txns, totalSales, totalExpenses, profit, dateFrom, dateTo, bizName);
+        else if (selectedReportType === 'sales')       html = buildSalesReport(sales, totalSales, dateFrom, dateTo, bizName);
+        else if (selectedReportType === 'expenses')    html = buildExpensesReport(expenses, totalExpenses, dateFrom, dateTo, bizName);
+        else if (selectedReportType === 'cashflow')    html = buildCashflowReport(txns, totalSales, totalExpenses, dateFrom, dateTo, bizName);
+        else if (selectedReportType === 'tax')         html = buildTaxReport(txns, totalSales, totalExpenses, profit, dateFrom, dateTo, bizName);
+        else                                           html = buildPLReport(txns, totalSales, totalExpenses, profit, dateFrom, dateTo, bizName);
+
+        render(html);
+    } catch(e) {
+        showError('Failed to generate report. Please try again.');
+    }
+}
+
+function render(html) {
+    document.getElementById('reportPreview').innerHTML  = html;
+    document.getElementById('downloadBtn').style.display = 'inline-flex';
+    document.getElementById('printBtn').style.display   = 'inline-flex';
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function fmt(n) { return 'KES ' + Number(n).toLocaleString('en-KE', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+function fmtDate(d) { try { return new Date(d).toLocaleDateString('en-KE', { month:'short', day:'numeric', year:'numeric' }); } catch(e) { return d||'—'; } }
+
+// Get payment method — handles both payment_mode and payment_method
+function getPayment(t) {
+    return (t.payment_mode || t.payment_method || '—');
+}
+
+function reportHeader(title, dateFrom, dateTo, bizName) {
+    return `<div class="report-doc-header">
+        <div>
+            <div class="report-doc-title">${title}</div>
+            <div class="report-doc-meta">${fmtDate(dateFrom)} — ${fmtDate(dateTo)} &nbsp;·&nbsp; ${bizName}</div>
+            <div class="report-doc-meta">Generated: ${new Date().toLocaleDateString('en-KE', { dateStyle:'full' })}</div>
+        </div>
+        <div class="report-doc-brand">BiasharaSmart Hub<span>Business Intelligence Platform</span></div>
+    </div>`;
+}
+
+// ── 1. Profit & Loss ──────────────────────────────────────────
+function buildPLReport(txns, totalSales, totalExpenses, profit, dateFrom, dateTo, bizName) {
+    const noData = txns.length === 0;
+    return `<div class="report-doc show">
+        ${reportHeader('Profit & Loss Statement', dateFrom, dateTo, bizName)}
+        <div class="summary-boxes">
+            <div class="summary-box"><div class="summary-box-label">Total Revenue</div><div class="summary-box-value green">${fmt(totalSales)}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Total Expenses</div><div class="summary-box-value red">${fmt(totalExpenses)}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Net ${profit>=0?'Profit':'Loss'}</div><div class="summary-box-value ${profit>=0?'green':'red'}">${fmt(Math.abs(profit))}</div></div>
+        </div>
+        <table class="report-table">
+            <thead><tr><th>Item</th><th class="text-right">Amount (KES)</th></tr></thead>
+            <tbody>
+                <tr><td>Total Revenue (Sales)</td><td class="text-right mono positive">${fmt(totalSales)}</td></tr>
+                <tr><td>Total Expenses</td><td class="text-right mono negative">${fmt(totalExpenses)}</td></tr>
+                <tr><td colspan="2" style="padding:4px 12px;background:var(--paper);"></td></tr>
+                <tr><td><strong>Net ${profit>=0?'Profit':'Loss'}</strong></td><td class="text-right mono ${profit>=0?'positive':'negative'}"><strong>${fmt(Math.abs(profit))}</strong></td></tr>
+            </tbody>
+        </table>
+        ${noData ? '<p style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">No transactions found in this period. Try a wider date range.</p>' : ''}
+    </div>`;
+}
+
+// ── 2. Sales Report ───────────────────────────────────────────
+function buildSalesReport(sales, total, dateFrom, dateTo, bizName) {
+    const avg = sales.length ? total / sales.length : 0;
+
+    // Group by payment method
+    const byPayment = {};
+    sales.forEach(t => {
+        const p = getPayment(t);
+        byPayment[p] = (byPayment[p]||0) + parseFloat(t.amount||0);
+    });
+
+    return `<div class="report-doc show">
+        ${reportHeader('Sales Report', dateFrom, dateTo, bizName)}
+        <div class="summary-boxes">
+            <div class="summary-box"><div class="summary-box-label">Total Sales</div><div class="summary-box-value green">${fmt(total)}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Transactions</div><div class="summary-box-value">${sales.length}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Average Sale</div><div class="summary-box-value gold">${fmt(avg)}</div></div>
+        </div>
+
+        ${Object.keys(byPayment).length > 1 ? `
+        <p style="font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">By Payment Method</p>
+        <table class="report-table" style="margin-bottom:20px;">
+            <thead><tr><th>Method</th><th class="text-right">Amount</th><th class="text-right">% of Sales</th></tr></thead>
+            <tbody>
+                ${Object.entries(byPayment).sort((a,b)=>b[1]-a[1]).map(([method, amt]) =>
+                    `<tr><td style="text-transform:capitalize;">${method === 'mpesa' ? '📱 M-Pesa' : method}</td>
+                    <td class="text-right mono positive">${fmt(amt)}</td>
+                    <td class="text-right mono" style="color:var(--muted);">${total?(amt/total*100).toFixed(1):0}%</td></tr>`
+                ).join('')}
+            </tbody>
+        </table>` : ''}
+
+        <table class="report-table">
+            <thead><tr><th>Date</th><th>Description</th><th>Payment</th><th class="text-right">Amount</th></tr></thead>
+            <tbody>
+                ${sales.length ? sales.map(t => `<tr>
+                    <td class="mono">${fmtDate(t.date||t.created_at)}</td>
+                    <td>${t.description||'—'}</td>
+                    <td style="text-transform:capitalize;">${getPayment(t)}</td>
+                    <td class="text-right mono positive">${fmt(t.amount)}</td>
+                </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;">No sales in this period.</td></tr>'}
+                ${sales.length ? `<tr><td colspan="3"><strong>Total</strong></td><td class="text-right mono positive"><strong>${fmt(total)}</strong></td></tr>` : ''}
+            </tbody>
+        </table>
+    </div>`;
+}
+
+// ── 3. Expenses Report ────────────────────────────────────────
+function buildExpensesReport(expenses, total, dateFrom, dateTo, bizName) {
+    const byCategory = {};
+    expenses.forEach(e => {
+        const cat = e.category || e.expense_category || 'Other';
+        byCategory[cat] = (byCategory[cat]||0) + parseFloat(e.amount||0);
+    });
+
+    return `<div class="report-doc show">
+        ${reportHeader('Expense Report', dateFrom, dateTo, bizName)}
+        <div class="summary-boxes">
+            <div class="summary-box"><div class="summary-box-label">Total Expenses</div><div class="summary-box-value red">${fmt(total)}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Transactions</div><div class="summary-box-value">${expenses.length}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Categories</div><div class="summary-box-value gold">${Object.keys(byCategory).length}</div></div>
+        </div>
+        <table class="report-table">
+            <thead><tr><th>Category</th><th class="text-right">Amount</th><th class="text-right">% of Total</th></tr></thead>
+            <tbody>
+                ${Object.entries(byCategory).sort((a,b)=>b[1]-a[1]).map(([cat,amt]) =>
+                    `<tr><td style="text-transform:capitalize;">${cat}</td>
+                    <td class="text-right mono negative">${fmt(amt)}</td>
+                    <td class="text-right mono" style="color:var(--muted);">${total?(amt/total*100).toFixed(1):0}%</td></tr>`
+                ).join('')}
+                ${expenses.length
+                    ? `<tr><td><strong>Total</strong></td><td class="text-right mono negative"><strong>${fmt(total)}</strong></td><td></td></tr>`
+                    : '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;">No expenses in this period.</td></tr>'}
+            </tbody>
+        </table>
+        ${expenses.length ? `
+        <p style="font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin:20px 0 8px;">All Expense Transactions</p>
+        <table class="report-table">
+            <thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="text-right">Amount</th></tr></thead>
+            <tbody>
+                ${expenses.map(t => `<tr>
+                    <td class="mono">${fmtDate(t.date||t.created_at)}</td>
+                    <td>${t.description||'—'}</td>
+                    <td style="text-transform:capitalize;">${t.category||t.expense_category||'—'}</td>
+                    <td class="text-right mono negative">${fmt(t.amount)}</td>
+                </tr>`).join('')}
+            </tbody>
+        </table>` : ''}
+    </div>`;
+}
+
+// ── 4. Inventory Report ───────────────────────────────────────
+function buildInventoryReport(products, dateFrom, dateTo, bizName) {
+    const totalValue = products.reduce((s,p) => {
+        const price = parseFloat(p.selling_price||p.price||p.unit_price||0);
+        const qty   = parseInt(p.quantity||p.stock_quantity||0);
+        return s + (price * qty);
+    }, 0);
+
+    const lowStock = products.filter(p => {
+        const qty      = parseInt(p.quantity||p.stock_quantity||0);
+        const reorder  = parseInt(p.reorder_level||p.reorder_point||5);
+        return qty <= reorder;
+    });
+
+    return `<div class="report-doc show">
+        ${reportHeader('Inventory Report', dateFrom, dateTo, bizName)}
+        <div class="summary-boxes">
+            <div class="summary-box"><div class="summary-box-label">Total Products</div><div class="summary-box-value">${products.length}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Stock Value</div><div class="summary-box-value green">${fmt(totalValue)}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Low Stock Items</div><div class="summary-box-value ${lowStock.length>0?'red':'green'}">${lowStock.length}</div></div>
+        </div>
+        <table class="report-table">
+            <thead><tr><th>Product</th><th>Category</th><th class="text-right">Qty</th><th class="text-right">Unit Price</th><th class="text-right">Stock Value</th><th>Status</th></tr></thead>
+            <tbody>
+                ${products.length ? products.map(p => {
+                    const qty    = parseInt(p.quantity||p.stock_quantity||0);
+                    const price  = parseFloat(p.selling_price||p.price||p.unit_price||0);
+                    const val    = qty * price;
+                    const reorder= parseInt(p.reorder_level||p.reorder_point||5);
+                    const isLow  = qty <= reorder;
+                    return `<tr>
+                        <td><strong>${p.name||'—'}</strong></td>
+                        <td style="color:var(--muted);text-transform:capitalize;">${p.category||'—'}</td>
+                        <td class="text-right mono">${qty}</td>
+                        <td class="text-right mono">${fmt(price)}</td>
+                        <td class="text-right mono">${fmt(val)}</td>
+                        <td><span class="${isLow?'stock-low':'stock-ok'}">${isLow?'⚠ LOW':'✓ OK'}</span></td>
+                    </tr>`;
+                }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px;">No products found.</td></tr>'}
+                ${products.length ? `<tr><td colspan="4"><strong>Total Stock Value</strong></td><td class="text-right mono positive"><strong>${fmt(totalValue)}</strong></td><td></td></tr>` : ''}
+            </tbody>
+        </table>
+    </div>`;
+}
+
+// ── 5. Cash Flow ──────────────────────────────────────────────
+function buildCashflowReport(txns, totalIn, totalOut, dateFrom, dateTo, bizName) {
+    const net = totalIn - totalOut;
+    const sorted = [...txns].sort((a,b) => new Date(a.date||a.created_at) - new Date(b.date||b.created_at));
+
+    return `<div class="report-doc show">
+        ${reportHeader('Cash Flow Statement', dateFrom, dateTo, bizName)}
+        <div class="summary-boxes">
+            <div class="summary-box"><div class="summary-box-label">Cash In (Sales)</div><div class="summary-box-value green">${fmt(totalIn)}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Cash Out (Expenses)</div><div class="summary-box-value red">${fmt(totalOut)}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Net Cash Flow</div><div class="summary-box-value ${net>=0?'green':'red'}">${fmt(net)}</div></div>
+        </div>
+        <table class="report-table">
+            <thead><tr><th>Date</th><th>Description</th><th>Type</th><th class="text-right">Amount</th></tr></thead>
+            <tbody>
+                ${sorted.length ? sorted.map(t => {
+                    const isSale = t.transaction_type === 'sale';
+                    return `<tr>
+                        <td class="mono">${fmtDate(t.date||t.created_at)}</td>
+                        <td>${t.description||'—'}</td>
+                        <td style="text-transform:capitalize;">${t.transaction_type}</td>
+                        <td class="text-right mono ${isSale?'positive':'negative'}">${isSale?'+':'-'}${fmt(t.amount)}</td>
+                    </tr>`;
+                }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;">No transactions in this period.</td></tr>'}
+                ${sorted.length ? `<tr><td colspan="3"><strong>Net Cash Flow</strong></td><td class="text-right mono ${net>=0?'positive':'negative'}"><strong>${fmt(net)}</strong></td></tr>` : ''}
+            </tbody>
+        </table>
+    </div>`;
+}
+
+// ── 6. Tax Summary ────────────────────────────────────────────
+function buildTaxReport(txns, totalSales, totalExpenses, profit, dateFrom, dateTo, bizName) {
+    const vatRate       = 0.16;
+    const vatCollected  = totalSales    * vatRate;
+    const vatPaid       = totalExpenses * vatRate;
+    const vatPayable    = vatCollected  - vatPaid;
+    const taxableIncome = Math.max(profit, 0);
+
+    // Split sales by payment method for M-Pesa verification
+    const sales = txns.filter(t => t.transaction_type === 'sale');
+    const byPayment = {};
+    sales.forEach(t => {
+        const p = getPayment(t);
+        byPayment[p] = (byPayment[p]||0) + parseFloat(t.amount||0);
+    });
+
+    return `<div class="report-doc show">
+        ${reportHeader('Tax Summary (KRA)', dateFrom, dateTo, bizName)}
+        <div class="summary-boxes">
+            <div class="summary-box"><div class="summary-box-label">Gross Revenue</div><div class="summary-box-value green">${fmt(totalSales)}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Deductible Expenses</div><div class="summary-box-value red">${fmt(totalExpenses)}</div></div>
+            <div class="summary-box"><div class="summary-box-label">Taxable Income</div><div class="summary-box-value gold">${fmt(taxableIncome)}</div></div>
+        </div>
+        <table class="report-table">
+            <thead><tr><th>Tax Item</th><th class="text-right">Amount (KES)</th></tr></thead>
+            <tbody>
+                <tr><td>Gross Revenue (Sales)</td><td class="text-right mono positive">${fmt(totalSales)}</td></tr>
+                <tr><td>Total Deductible Expenses</td><td class="text-right mono negative">${fmt(totalExpenses)}</td></tr>
+                <tr><td>Net Taxable Income</td><td class="text-right mono ${profit>=0?'positive':'negative'}">${fmt(profit)}</td></tr>
+                <tr><td colspan="2" style="padding:4px 12px;background:var(--paper);"></td></tr>
+                <tr><td>VAT Collected (16% on sales)</td><td class="text-right mono">${fmt(vatCollected)}</td></tr>
+                <tr><td>VAT Paid on Expenses (16%)</td><td class="text-right mono">${fmt(vatPaid)}</td></tr>
+                <tr><td><strong>VAT Payable to KRA</strong></td><td class="text-right mono ${vatPayable>=0?'negative':'positive'}"><strong>${fmt(Math.abs(vatPayable))}</strong></td></tr>
+            </tbody>
+        </table>
+
+        ${Object.keys(byPayment).length ? `
+        <p style="font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--muted);margin:20px 0 8px;">Revenue by Payment Method</p>
+        <table class="report-table">
+            <thead><tr><th>Method</th><th class="text-right">Amount</th><th class="text-right">% of Revenue</th></tr></thead>
+            <tbody>
+                ${Object.entries(byPayment).sort((a,b)=>b[1]-a[1]).map(([method, amt]) =>
+                    `<tr><td style="text-transform:capitalize;">${method==='mpesa'?'📱 M-Pesa':method}</td>
+                    <td class="text-right mono positive">${fmt(amt)}</td>
+                    <td class="text-right mono" style="color:var(--muted);">${totalSales?(amt/totalSales*100).toFixed(1):0}%</td></tr>`
+                ).join('')}
+            </tbody>
+        </table>` : ''}
+
+        <p style="font-size:11px;color:var(--muted);margin-top:20px;font-family:'DM Mono',monospace;padding:12px;background:var(--warn-pale);border-radius:3px;">
+            ⚠️ This is an estimate only. Consult a certified tax professional or KRA for official filings. VAT registration threshold in Kenya is KES 5 million annual turnover.
+        </p>
+    </div>`;
+}
+
+function downloadReport() { window.print(); }
+
+function showError(msg) {
+    const el = document.getElementById('alertError');
+    el.textContent = '⚠️ ' + msg;
+    el.classList.add('show');
+}
+
+// ── Boot ──────────────────────────────────────────────────────
+setRange('thisMonth');
+loadBusinesses();
+</script>
 </body>
 </html>

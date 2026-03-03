@@ -1,10 +1,770 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-light: #40916c; --accent-pale: #d8f3dc;
+            --gold: #e9c46a; --gold-pale: #fef3cd;
+            --error: #c1121f; --error-pale: #fce4e4;
+            --warn: #d4860a; --muted: #6b7280; --border: #e2e0d8;
+            --blue: #0ea5e9; --blue-pale: #e0f2fe;
+            --sidebar-w: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; }
+
+        /* ── Sidebar ── */
+        .sidebar { width: var(--sidebar-w); background: #1a0533; min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .brand-icon { width: 32px; height: 32px; border-radius: 3px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .brand-name { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .brand-sub { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; margin-top: 3px; }
+        .sidebar-nav { padding: 16px 0; flex: 1; overflow-y: auto; }
+        .nav-section { padding: 12px 24px 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5); text-decoration: none; transition: all 0.15s; border-left: 2px solid transparent; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: #86efac; background: rgba(45,106,79,0.2); border-left-color: var(--accent); }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .user-pill { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+        .logout-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.3); font-size: 16px; padding: 4px; transition: color 0.15s; }
+        .logout-btn:hover { color: var(--error); }
+
+        /* ── Main ── */
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-left h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+        .topbar-right { display: flex; gap: 10px; align-items: center; }
+        .content { padding: 28px 32px; flex: 1; max-width: 1000px; }
+
+        /* ── Buttons ── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-light); }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--ink); }
+        .btn-warn { background: var(--gold); color: var(--ink); }
+        .btn-warn:hover { background: #e0b84a; }
+        .btn-danger { background: var(--error-pale); color: var(--error); border: 1.5px solid var(--error); }
+        .btn-danger:hover { background: var(--error); color: #fff; }
+        .btn-sm { padding: 6px 12px; font-size: 11px; }
+        .btn-full { width: 100%; justify-content: center; }
+        @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-4px)} 40%,80%{transform:translateX(4px)} }
+
+        /* ── Tabs ── */
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px; animation: rise 0.3s ease both; }
+        .tab { padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; font-family: 'Sora', sans-serif; }
+        .tab:hover { color: var(--ink); }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: rise 0.3s ease both; }
+
+        /* ── Section header ── */
+        .section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+        /* ── Cards ── */
+        .card { background: #fff; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 20px; overflow: hidden; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+        .card:nth-child(1){animation-delay:.05s} .card:nth-child(2){animation-delay:.1s} .card:nth-child(3){animation-delay:.15s}
+        .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--paper); display: flex; align-items: center; justify-content: space-between; }
+        .card-header h3 { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .card-header-icon { font-size: 16px; }
+        .card-body { padding: 20px; }
+
+        /* ── Profile avatar block ── */
+        .profile-hero { display: flex; align-items: center; gap: 20px; padding: 20px; background: var(--ink); border-radius: 4px; margin-bottom: 20px; }
+        .profile-ava-wrap { position: relative; flex-shrink: 0; }
+        .profile-ava { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: #fff; border: 3px solid rgba(255,255,255,0.15); }
+        .profile-ava-edit { position: absolute; bottom: 0; right: 0; width: 20px; height: 20px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; border: 2px solid #1a0533; }
+        .profile-info { flex: 1; }
+        .profile-name { font-size: 16px; font-weight: 700; color: #fff; }
+        .profile-phone { font-size: 12px; color: rgba(255,255,255,0.45); font-family: 'DM Mono', monospace; margin-top: 3px; }
+        .profile-badges { display: flex; gap: 6px; margin-top: 8px; }
+        .profile-badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .profile-badge.verified { background: var(--accent-pale); color: var(--accent); }
+        .profile-badge.unverified { background: var(--error-pale); color: var(--error); }
+        .profile-badge.plan { background: var(--gold-pale); color: var(--warn); }
+
+        /* ── Form ── */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.span2 { grid-column: span 2; }
+        .form-label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+        .form-label .badge-required { font-size: 8px; background: var(--error-pale); color: var(--error); padding: 1px 5px; border-radius: 2px; font-weight: 700; letter-spacing: 0.06em; }
+        .form-label .badge-optional { font-size: 8px; background: var(--paper); color: var(--muted); padding: 1px 5px; border-radius: 2px; border: 1px solid var(--border); font-weight: 400; letter-spacing: 0; text-transform: none; }
+        input[type=text], input[type=email], input[type=tel], input[type=password], select, textarea {
+            width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 3px;
+            font-size: 13px; font-family: 'Sora', sans-serif; color: var(--ink); background: var(--paper);
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(45,106,79,0.1); }
+        input[disabled], input[readonly] { background: #f1f0eb; color: var(--muted); cursor: not-allowed; }
+        input::placeholder { color: #b0aca0; }
+        .input-group { position: relative; }
+        .input-group input { padding-right: 40px; }
+        .input-group-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; cursor: pointer; transition: color 0.15s; }
+        .input-group-icon:hover { color: var(--ink); }
+        .form-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+        .form-divider { height: 1px; background: var(--border); margin: 20px 0; }
+        .form-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border); margin-top: 4px; }
+
+        /* ── Alert banners ── */
+        .alert { display: none; padding: 10px 14px; border-radius: 3px; font-size: 12px; margin-bottom: 16px; border-left: 3px solid; }
+        .alert.show { display: flex; align-items: center; gap: 8px; }
+        .alert.success { background: var(--accent-pale); color: var(--accent); border-color: var(--accent); }
+        .alert.error { background: var(--error-pale); color: var(--error); border-color: var(--error); animation: shake 0.4s ease; }
+        .alert.warn { background: var(--gold-pale); color: var(--warn); border-color: var(--gold); }
+
+        /* Django messages */
+        .messages { margin-bottom: 20px; }
+        .message { padding: 10px 14px; border-radius: 3px; font-size: 13px; margin-bottom: 8px; border-left: 3px solid; display: flex; align-items: center; gap: 8px; }
+        .message.success { background: var(--accent-pale); color: var(--accent); border-color: var(--accent); }
+        .message.error { background: var(--error-pale); color: var(--error); border-color: var(--error); }
+        .message.warning { background: var(--gold-pale); color: var(--warn); border-color: var(--gold); }
+
+        /* ── Toggle ── */
+        .toggle-list { display: flex; flex-direction: column; gap: 0; }
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-info { flex: 1; }
+        .toggle-label { font-size: 13px; font-weight: 600; }
+        .toggle-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+        .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .toggle-track { position: absolute; inset: 0; background: var(--border); border-radius: 11px; cursor: pointer; transition: background 0.2s; }
+        .toggle input:checked + .toggle-track { background: var(--accent); }
+        .toggle-track::after { content:''; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .toggle input:checked + .toggle-track::after { left: 21px; }
+
+        /* ── Danger zone ── */
+        .danger-zone { border: 1.5px solid var(--error); border-radius: 4px; overflow: hidden; }
+        .danger-zone-header { background: var(--error-pale); padding: 12px 20px; border-bottom: 1px solid var(--error); }
+        .danger-zone-header h4 { font-size: 12px; font-weight: 700; color: var(--error); text-transform: uppercase; letter-spacing: 0.06em; }
+        .danger-zone-body { padding: 16px 20px; background: #fff; }
+        .danger-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .danger-item:last-child { border-bottom: none; }
+        .danger-item-info h5 { font-size: 13px; font-weight: 600; }
+        .danger-item-info p { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+        /* ── Session / device list ── */
+        .device-item { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .device-item:last-child { border-bottom: none; }
+        .device-icon { width: 36px; height: 36px; background: var(--paper); border: 1px solid var(--border); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .device-info { flex: 1; }
+        .device-name { font-size: 13px; font-weight: 600; }
+        .device-meta { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+        .device-current { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 2px; background: var(--accent-pale); color: var(--accent); text-transform: uppercase; }
+
+        /* ── Spinner ── */
+        .spinner { display: none; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+        .spinner-dark { border-color: rgba(0,0,0,0.15); border-top-color: var(--ink); }
+
+        /* ── Password strength ── */
+        .pw-strength { margin-top: 6px; }
+        .pw-strength-bar { height: 4px; border-radius: 99px; background: var(--border); overflow: hidden; margin-bottom: 4px; }
+        .pw-strength-fill { height: 100%; border-radius: 99px; width: 0; transition: width 0.3s, background 0.3s; }
+        .pw-strength-label { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+        /* ── Toast ── */
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 3px; font-size: 13px; z-index: 300; display: none; box-shadow: 0 4px 16px rgba(0,0,0,0.2); max-width: 320px; }
+        .toast.show { display: flex; align-items: center; gap: 10px; animation: rise 0.3s ease; }
+
+        /* ── Modal ── */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,23,0.55); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: #fff; border-radius: 4px; width: 100%; max-width: 420px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.2), 4px 4px 0 0 var(--error); }
+        .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border); }
+        .modal-header h3 { font-size: 15px; font-weight: 700; }
+        .modal-header p { font-size: 12px; color: var(--muted); margin-top: 4px; }
+        .modal-body { padding: 20px 24px; }
+        .modal-footer { padding: 14px 24px; border-top: 1px solid var(--border); background: var(--paper); display: flex; gap: 10px; justify-content: flex-end; }
+
+        @media (max-width: 900px) { .form-grid { grid-template-columns: 1fr; } .form-group.span2 { grid-column: span 1; } }
+        @media (max-width: 700px) { :root { --sidebar-w: 0px; } .sidebar { display: none; } .content { padding: 16px; } }
+    </style>
 </head>
 <body>
-$END$
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo">
+            <div class="brand-icon">🏪</div>
+            <div class="brand-name">BiasharaSmart</div>
+        </div>
+        <div class="brand-sub">Business Dashboard</div>
+    </div>
+<nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <a class="nav-item" href="/dashboard/"><span class="nav-icon">📊</span> Overview</a>
+    <a class="nav-item" href="/transactions/"><span class="nav-icon">💰</span> Transactions</a>
+    <a class="nav-item" href="/inventory/"><span class="nav-icon">📦</span> Inventory</a>
+
+    <div class="nav-section">Sales</div>
+    <a class="nav-item" href="/dashboard/#pos" onclick="sessionStorage.setItem('dashTab','pos')"><span class="nav-icon">🛒</span> Point of Sale</a>
+    <a class="nav-item" href="/dashboard/#customers" onclick="sessionStorage.setItem('dashTab','customers')"><span class="nav-icon">👤</span> Customers</a>
+    <a class="nav-item" href="/dashboard/#suppliers" onclick="sessionStorage.setItem('dashTab','suppliers')"><span class="nav-icon">🚚</span> Suppliers</a>
+
+    <div class="nav-section">Insights</div>
+    <a class="nav-item" href="/analytics/"><span class="nav-icon">📈</span> Analytics</a>
+    <a class="nav-item" href="/reports/"><span class="nav-icon">📋</span> Reports</a>
+    <a class="nav-item" href="/alerts/"><span class="nav-icon">⚠️</span> Alerts</a>
+
+    <div class="nav-section">Account</div>
+    <a class="nav-item" href="/business/"><span class="nav-icon">🏢</span> My Business</a>
+    <a class="nav-item active" href="/settings/"><span class="nav-icon">⚙️</span> Settings</a>
+</nav>
+    <div class="sidebar-footer">
+        <div class="user-pill">
+            <div class="user-avatar">{{ user.first_name|first|upper|default:"U" }}</div>
+            <div class="user-info">
+                <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                <div class="user-role">{{ user.phone_number|default:"Business Owner" }}</div>
+            </div>
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="button" class="logout-btn" title="Logout" onclick="this.closest('form').submit()">✕</button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <h2>Settings</h2>
+            <p>Manage your account and preferences</p>
+        </div>
+        <div class="topbar-right">
+            <a href="/dashboard/" class="btn btn-outline">← Dashboard</a>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- Django messages -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">
+                {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% else %}⚠️{% endif %}
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Profile hero -->
+        <div class="profile-hero">
+            <div class="profile-ava-wrap">
+                <div class="profile-ava">{{ user.first_name|first|upper|default:"U" }}</div>
+                <div class="profile-ava-edit">✏️</div>
+            </div>
+            <div class="profile-info">
+                <div class="profile-name">{{ user.get_full_name|default:user.username }}</div>
+                <div class="profile-phone">{{ user.phone_number|default:"No phone set" }}</div>
+                <div class="profile-badges">
+                    {% if user.is_phone_verified %}
+                    <span class="profile-badge verified">✓ Verified</span>
+                    {% else %}
+                    <span class="profile-badge unverified">⚠ Unverified</span>
+                    {% endif %}
+                    <span class="profile-badge plan">{{ user.subscription_plan|default:"Free Plan" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('profile', this)">👤 Profile</button>
+            <button class="tab" onclick="switchTab('security', this)">🔒 Security</button>
+            <button class="tab" onclick="switchTab('business', this)">🏪 Business</button>
+            <button class="tab" onclick="switchTab('notifications', this)">🔔 Notifications</button>
+            <button class="tab" onclick="switchTab('danger', this)">⚠️ Danger Zone</button>
+        </div>
+
+        <!-- ─────────────────────────────────────────────
+             TAB: Profile
+        ───────────────────────────────────────────── -->
+        <div class="tab-panel active" id="tab-profile">
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="card-header-icon">👤</span> Personal Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert success" id="profileSuccess"></div>
+                    <div class="alert error" id="profileError"></div>
+
+                    <form method="post" id="profileForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="profile">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">First Name <span class="badge-required">Required</span></label>
+                                <input type="text" name="first_name" value="{{ user.first_name }}" placeholder="Jane">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name <span class="badge-required">Required</span></label>
+                                <input type="text" name="last_name" value="{{ user.last_name }}" placeholder="Wanjiru">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email <span class="badge-optional">Optional</span></label>
+                                <input type="email" name="email" value="{{ user.email }}" placeholder="jane@business.co.ke">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Username</label>
+                                <input type="text" name="username" value="{{ user.username }}" placeholder="janewanjiru">
+                                <span class="form-hint">Used for login if phone not available</span>
+                            </div>
+                            <div class="form-group span2">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" value="{{ user.phone_number }}" disabled readonly>
+                                <span class="form-hint">Phone number cannot be changed. Contact support if needed.</span>
+                            </div>
+                        </div>
+                        <div class="form-footer">
+                            <span style="font-size:11px;color:var(--muted);">Last updated: {{ user.updated_at|date:"M d, Y"|default:"—" }}</span>
+                            <button type="submit" class="btn btn-primary" id="profileSaveBtn">
+                                <span class="spinner" id="profileSpinner"></span>
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ─────────────────────────────────────────────
+             TAB: Security
+        ───────────────────────────────────────────── -->
+        <div class="tab-panel" id="tab-security">
+
+            <!-- Phone verification -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="card-header-icon">📱</span> Phone Verification</h3>
+                    {% if user.is_phone_verified %}
+                    <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:2px;background:var(--accent-pale);color:var(--accent);text-transform:uppercase;">✓ Verified</span>
+                    {% else %}
+                    <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:2px;background:var(--error-pale);color:var(--error);text-transform:uppercase;">⚠ Not Verified</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if user.is_phone_verified %}
+                    <p style="font-size:13px;color:var(--accent);font-weight:500;">✅ Your phone number <strong>{{ user.phone_number }}</strong> is verified. OTP login is active.</p>
+                    {% else %}
+                    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Your phone number is not yet verified. Verify it to enable OTP-based secure login.</p>
+                    <button class="btn btn-primary" onclick="sendOTP()">📲 Send Verification OTP</button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Change password -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="card-header-icon">🔑</span> Change Password</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert success" id="pwSuccess"></div>
+                    <div class="alert error" id="pwError"></div>
+                    <form method="post" id="passwordForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="password">
+                        <div class="form-grid">
+                            <div class="form-group span2">
+                                <label class="form-label">Current Password</label>
+                                <div class="input-group">
+                                    <input type="password" name="current_password" id="currentPw" placeholder="Enter current password" required>
+                                    <span class="input-group-icon" onclick="togglePw('currentPw', this)">👁</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">New Password</label>
+                                <div class="input-group">
+                                    <input type="password" name="new_password" id="newPw" placeholder="Min 8 characters" oninput="checkStrength(this.value)" required>
+                                    <span class="input-group-icon" onclick="togglePw('newPw', this)">👁</span>
+                                </div>
+                                <div class="pw-strength">
+                                    <div class="pw-strength-bar"><div class="pw-strength-fill" id="pwFill"></div></div>
+                                    <div class="pw-strength-label" id="pwLabel">Enter a password</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Confirm New Password</label>
+                                <div class="input-group">
+                                    <input type="password" name="confirm_password" id="confirmPw" placeholder="Repeat new password" required>
+                                    <span class="input-group-icon" onclick="togglePw('confirmPw', this)">👁</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-footer">
+                            <span style="font-size:11px;color:var(--muted);">Use a strong, unique password</span>
+                            <button type="submit" class="btn btn-warn" id="pwSaveBtn">
+                                <span class="spinner spinner-dark" id="pwSpinner"></span>
+                                Update Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Active sessions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="card-header-icon">💻</span> Active Sessions</h3>
+                    <button class="btn btn-outline btn-sm" onclick="showToast('⚠️ All other sessions signed out')">Sign Out All Others</button>
+                </div>
+                <div class="card-body">
+                    <div class="device-item">
+                        <div class="device-icon">💻</div>
+                        <div class="device-info">
+                            <div class="device-name">This device <span class="device-current">Current</span></div>
+                            <div class="device-meta">{{ request.META.HTTP_USER_AGENT|truncatechars:50|default:"Browser · Kenya" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ─────────────────────────────────────────────
+             TAB: Business
+        ───────────────────────────────────────────── -->
+        <div class="tab-panel" id="tab-business">
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="card-header-icon">🏪</span> Business Profile</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert success" id="bizSuccess"></div>
+                    <div class="alert error" id="bizError"></div>
+
+                    {% if business %}
+                    <form method="post" id="businessForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="business">
+                        <div class="form-grid">
+                            <div class="form-group span2">
+                                <label class="form-label">Business Name <span class="badge-required">Required</span></label>
+                                <input type="text" name="business_name" value="{{ business.name }}" placeholder="My Business Ltd">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Sector</label>
+                                <select name="sector">
+                                    <option value="">Select sector…</option>
+                                    {% for val, label in sector_choices %}
+                                    <option value="{{ val }}" {% if business.sector == val %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone <span class="badge-optional">Optional</span></label>
+                                <input type="tel" name="business_phone" value="{{ business.phone_number }}" placeholder="Business phone">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Town / City</label>
+                                <input type="text" name="town" value="{{ business.town }}" placeholder="e.g. Nairobi">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">County</label>
+                                <input type="text" name="county" value="{{ business.county }}" placeholder="e.g. Nairobi County">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Registration No. <span class="badge-optional">Optional</span></label>
+                                <input type="text" name="registration_number" value="{{ business.registration_number }}" placeholder="BN/2024/000000">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">M-Pesa Till No. <span class="badge-optional">Optional</span></label>
+                                <input type="text" name="mpesa_till_number" value="{{ business.mpesa_till_number }}" placeholder="123456">
+                            </div>
+                            <div class="form-group span2">
+                                <label class="form-label">Location Description <span class="badge-optional">Optional</span></label>
+                                <input type="text" name="location_description" value="{{ business.location_description }}" placeholder="e.g. Ground floor, ABC Building, Tom Mboya St">
+                            </div>
+                        </div>
+                        <div class="form-footer">
+                            <span style="font-size:11px;color:var(--muted);">Business ID: #{{ business.id }}</span>
+                            <button type="submit" class="btn btn-primary">Save Business Info</button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div style="text-align:center;padding:40px 20px;color:var(--muted);">
+                        <div style="font-size:36px;margin-bottom:10px;">🏪</div>
+                        <h4 style="font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;">No business registered yet</h4>
+                        <p style="font-size:13px;margin-bottom:16px;">Set up your business profile to unlock all features.</p>
+                        <a href="/business/" class="btn btn-primary">➕ Register Business</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ─────────────────────────────────────────────
+             TAB: Notifications
+        ───────────────────────────────────────────── -->
+        <div class="tab-panel" id="tab-notifications">
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="card-header-icon">🔔</span> Notification Preferences</h3>
+                    <button class="btn btn-primary btn-sm" onclick="saveNotifications()">Save</button>
+                </div>
+                <div class="card-body">
+                    <div class="section-label">SMS Notifications</div>
+                    <div class="toggle-list">
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Sale Alerts</div>
+                                <div class="toggle-desc">Get an SMS when a sale is recorded via POS</div>
+                            </div>
+                            <label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div></label>
+                        </div>
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Low Stock Alerts</div>
+                                <div class="toggle-desc">Alert when a product falls below reorder level</div>
+                            </div>
+                            <label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div></label>
+                        </div>
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Daily Sales Summary</div>
+                                <div class="toggle-desc">Receive a daily summary of your business performance</div>
+                            </div>
+                            <label class="toggle"><input type="checkbox"><div class="toggle-track"></div></label>
+                        </div>
+                    </div>
+
+                    <div class="form-divider"></div>
+                    <div class="section-label">Email Notifications</div>
+                    <div class="toggle-list">
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <div class="toggle-label">Monthly Reports</div>
+                                <div class="toggle-desc">Receive monthly business reports via email</div>
+                            </div>
+                            <label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div></label>
+                        </div>
+                        <div class="toggle-row">
+                            <div class="toggle-info">
+                                <div class="toggle-label">System Updates</div>
+                                <div class="toggle-desc">News about new features and platform updates</div>
+                            </div>
+                            <label class="toggle"><input type="checkbox"><div class="toggle-track"></div></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ─────────────────────────────────────────────
+             TAB: Danger Zone
+        ───────────────────────────────────────────── -->
+        <div class="tab-panel" id="tab-danger">
+
+            <div class="danger-zone">
+                <div class="danger-zone-header">
+                    <h4>⚠️ Danger Zone</h4>
+                </div>
+                <div class="danger-zone-body">
+                    <div class="danger-item">
+                        <div class="danger-item-info">
+                            <h5>Export All Data</h5>
+                            <p>Download a copy of all your business data in CSV format</p>
+                        </div>
+                        <button class="btn btn-outline btn-sm" onclick="showToast('⏳ Preparing your data export…')">⬇️ Export</button>
+                    </div>
+                    <div class="danger-item">
+                        <div class="danger-item-info">
+                            <h5>Deactivate Business</h5>
+                            <p>Temporarily hide your business from the platform. You can reactivate anytime.</p>
+                        </div>
+                        <button class="btn btn-outline btn-sm" onclick="showToast('⚠️ Contact support to deactivate')">Deactivate</button>
+                    </div>
+                    <div class="danger-item">
+                        <div class="danger-item-info">
+                            <h5>Delete Account</h5>
+                            <p>Permanently delete your account and all associated data. This cannot be undone.</p>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="openDeleteModal()">🗑️ Delete Account</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Delete Account Modal -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>🗑️ Delete Account</h3>
+            <p>This action is permanent and cannot be undone.</p>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:13px;margin-bottom:14px;">All your data — businesses, transactions, inventory, customers and suppliers — will be permanently deleted.</p>
+            <div class="form-group">
+                <label class="form-label">Type your phone number to confirm</label>
+                <input type="text" id="deleteConfirmInput" placeholder="{{ user.phone_number }}">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn btn-danger" onclick="confirmDelete()">Yes, Delete Everything</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Tabs ──────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerHTML = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Alert helpers ─────────────────────────────────────────────────
+function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+    el.className = 'alert ' + type + ' show';
+    setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+// ── Password visibility toggle ────────────────────────────────────
+function togglePw(id, icon) {
+    const input = document.getElementById(id);
+    if (input.type === 'password') { input.type = 'text'; icon.textContent = '🙈'; }
+    else { input.type = 'password'; icon.textContent = '👁'; }
+}
+
+// ── Password strength ─────────────────────────────────────────────
+function checkStrength(val) {
+    const fill = document.getElementById('pwFill');
+    const label = document.getElementById('pwLabel');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const levels = [
+        { pct: '0%', color: 'var(--border)', text: 'Enter a password' },
+        { pct: '25%', color: 'var(--error)', text: 'Weak' },
+        { pct: '50%', color: 'var(--warn)', text: 'Fair' },
+        { pct: '75%', color: 'var(--gold)', text: 'Good' },
+        { pct: '100%', color: 'var(--accent)', text: 'Strong ✓' },
+    ];
+    const lvl = val.length === 0 ? levels[0] : levels[Math.max(1, score)];
+    fill.style.width = lvl.pct;
+    fill.style.background = lvl.color;
+    label.textContent = lvl.text;
+    label.style.color = lvl.color;
+}
+
+// ── Profile form ──────────────────────────────────────────────────
+document.getElementById('profileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('profileSaveBtn');
+    const spinner = document.getElementById('profileSpinner');
+    spinner.style.display = 'inline-block'; btn.disabled = true;
+    // Let it submit normally via POST
+    this.submit();
+});
+
+// ── Password form ─────────────────────────────────────────────────
+document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    const newPw = document.getElementById('newPw').value;
+    const confirmPw = document.getElementById('confirmPw').value;
+    if (newPw !== confirmPw) {
+        e.preventDefault();
+        showAlert('pwError', 'Passwords do not match.', 'error');
+        return;
+    }
+    if (newPw.length < 8) {
+        e.preventDefault();
+        showAlert('pwError', 'Password must be at least 8 characters.', 'error');
+        return;
+    }
+});
+
+// ── Business form ─────────────────────────────────────────────────
+document.getElementById('businessForm')?.addEventListener('submit', function() {
+    // normal POST submit
+});
+
+// ── Notifications ─────────────────────────────────────────────────
+function saveNotifications() {
+    showToast('✅ Notification preferences saved');
+}
+
+// ── Send OTP ──────────────────────────────────────────────────────
+function sendOTP() {
+    showToast('📲 OTP sent to your phone');
+}
+
+// ── Delete modal ──────────────────────────────────────────────────
+function openDeleteModal() { document.getElementById('deleteModal').classList.add('show'); }
+function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('show'); }
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+});
+function confirmDelete() {
+    const input = document.getElementById('deleteConfirmInput').value.trim();
+    const phone = '{{ user.phone_number }}';
+    if (input !== phone) {
+        showToast('❌ Phone number does not match');
+        return;
+    }
+    showToast('⏳ Deleting account…');
+    // POST to delete endpoint
+    fetch('/api/auth/delete-account/', {
+        method: 'DELETE',
+        credentials: 'same-origin',
+        headers: { 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '' }
+    }).then(() => window.location.href = '/');
+}
+
+// ── Auto-open tab if Django message points to section ─────────────
+{% if messages %}
+{% for message in messages %}
+{% if 'password' in message.message|lower %}
+switchTab('security', document.querySelectorAll('.tab')[1]);
+{% elif 'business' in message.message|lower %}
+switchTab('business', document.querySelectorAll('.tab')[2]);
+{% endif %}
+{% endfor %}
+{% endif %}
+</script>
 </body>
 </html>

@@ -1,10 +1,482 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0a0f1e; --paper: #f6f4ef;
+            --green: #1a7a4a; --green-light: #2d9e65; --green-pale: #d4f5e3;
+            --purple: #7c3aed; --purple-pale: #ede9fe;
+            --gold: #d4a017; --gold-pale: #fef3c7;
+            --muted: #6b7280; --border: #e5e3dc;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--ink);
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
+            position: relative; overflow-x: hidden;
+        }
+
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        .blob { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+        .blob-1 { width: 400px; height: 400px; background: rgba(26,122,74,0.2); top: -100px; left: -100px; }
+        .blob-2 { width: 300px; height: 300px; background: rgba(124,58,237,0.15); bottom: -80px; right: -80px; }
+
+        /* ── Wizard ── */
+        .wizard {
+            position: relative; z-index: 10;
+            background: #fff; border-radius: 8px;
+            width: 100%; max-width: 700px;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+
+        /* Progress bar */
+        .progress-bar { height: 4px; background: var(--border); }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), #40916c);
+            transition: width 0.4s ease;
+            width: 25%;
+        }
+
+        /* Step dots */
+        .step-indicator {
+            display: flex; align-items: center;
+            padding: 20px 32px 0;
+        }
+        .step-dot {
+            width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700;
+            font-family: 'DM Mono', monospace;
+            border: 2px solid var(--border);
+            color: var(--muted); background: #fff;
+            transition: all 0.3s; flex-shrink: 0;
+        }
+        .step-dot.active { background: var(--green); border-color: var(--green); color: #fff; }
+        .step-dot.done   { background: var(--green-pale); border-color: var(--green); color: var(--green); }
+        .step-line { flex: 1; height: 2px; background: var(--border); transition: background 0.3s; }
+        .step-line.done  { background: var(--green); }
+
+        /* Slides — KEY FIX: use display:none/block, no position:absolute */
+        .step-slide { display: none; padding: 28px 32px; }
+        .step-slide.active { display: block; }
+
+        .step-eyebrow {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--green);
+            font-family: 'DM Mono', monospace;
+            background: var(--green-pale); padding: 4px 10px;
+            border-radius: 2px; margin-bottom: 14px;
+        }
+        .step-title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+        .step-sub   { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 22px; }
+
+        /* Feature grid */
+        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+        .feature-card {
+            border: 1.5px solid var(--border); border-radius: 4px;
+            padding: 14px; transition: all 0.15s;
+        }
+        .feature-card:hover { border-color: var(--green); background: var(--green-pale); }
+        .feature-icon  { font-size: 26px; margin-bottom: 8px; }
+        .feature-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+        .feature-desc  { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+        /* Channel grid */
+        .channel-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
+        .channel-card {
+            border: 1.5px solid var(--border); border-radius: 4px;
+            padding: 18px 14px; text-align: center; transition: all 0.15s;
+        }
+        .channel-card:hover { border-color: var(--green); }
+        .channel-icon   { font-size: 30px; margin-bottom: 8px; }
+        .channel-name   { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+        .channel-detail {
+            font-family: 'DM Mono', monospace; font-size: 10px;
+            color: var(--green); background: var(--green-pale);
+            padding: 3px 8px; border-radius: 2px;
+            display: inline-block; margin-top: 6px;
+        }
+        .channel-desc { font-size: 11px; color: var(--muted); line-height: 1.5; margin-top: 6px; }
+
+        /* Tips list */
+        .tips-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+        .tip-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            background: var(--paper); border-radius: 3px;
+            padding: 12px 14px; border: 1px solid var(--border);
+        }
+        .tip-num {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: var(--green); color: #fff;
+            font-size: 11px; font-weight: 700;
+            font-family: 'DM Mono', monospace;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; margin-top: 1px;
+        }
+        .tip-text { font-size: 13px; line-height: 1.6; }
+        .tip-text strong { color: var(--green); }
+
+        /* Info box */
+        .info-box {
+            background: var(--gold-pale);
+            border-left: 4px solid var(--gold);
+            border-radius: 0 3px 3px 0;
+            padding: 12px 16px;
+            font-size: 13px; line-height: 1.6;
+            margin-top: 12px;
+        }
+        .info-box strong { color: var(--gold); }
+
+        /* Welcome hero (step 4) */
+        .welcome-hero {
+            background: var(--ink); border-radius: 4px;
+            padding: 24px; text-align: center; margin-bottom: 16px;
+        }
+        .welcome-hero .big-emoji { font-size: 44px; margin-bottom: 10px; }
+        .welcome-hero h3 { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+        .welcome-hero p  { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+        .checklist { display: flex; flex-direction: column; gap: 8px; }
+        .check-item {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--paper); border: 1px solid var(--border);
+            border-radius: 3px; padding: 11px 14px; font-size: 13px;
+        }
+        .check-item .ci-icon { font-size: 18px; flex-shrink: 0; }
+        .check-item span { flex: 1; }
+        .check-item a {
+            font-size: 11px; font-weight: 700; color: var(--green);
+            text-decoration: none; font-family: 'DM Mono', monospace;
+            white-space: nowrap;
+        }
+        .check-item a:hover { text-decoration: underline; }
+
+        /* Footer */
+        .wizard-footer {
+            padding: 16px 32px;
+            border-top: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--paper);
+        }
+        .step-count { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 20px; border-radius: 3px;
+            font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700;
+            cursor: pointer; border: none; text-decoration: none;
+            transition: all 0.15s;
+        }
+        .btn-green   { background: var(--green); color: #fff; }
+        .btn-green:hover { background: var(--green-light); }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--ink); }
+        .btn-skip {
+            background: none; border: none;
+            font-size: 12px; color: var(--muted);
+            cursor: pointer; font-family: 'Sora', sans-serif; padding: 0;
+        }
+        .btn-skip:hover { color: var(--ink); }
+
+        @keyframes rise { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        .wizard { animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+    </style>
 </head>
 <body>
-$END$
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="wizard">
+
+    <!-- Progress bar -->
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <!-- Step dots -->
+    <div class="step-indicator">
+        <div class="step-dot active" id="dot-1">1</div>
+        <div class="step-line" id="line-1"></div>
+        <div class="step-dot" id="dot-2">2</div>
+        <div class="step-line" id="line-2"></div>
+        <div class="step-dot" id="dot-3">3</div>
+        <div class="step-line" id="line-3"></div>
+        <div class="step-dot" id="dot-4">4</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- STEP 1: Welcome                                           -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div class="step-slide active" id="slide-1">
+        <div class="step-eyebrow">🇰🇪 Welcome to BiasharaSmart Hub</div>
+        <h2 class="step-title">Habari, {{ user.first_name|default:user.username }}! 👋</h2>
+        <p class="step-sub">Your account is ready. This quick tour shows what BiasharaSmart Hub can do for your business — it takes under 2 minutes.</p>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Real-Time Analytics</div>
+                <div class="feature-desc">Track sales, expenses, and profit with live dashboards and charts.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <div class="feature-title">AI Forecasting</div>
+                <div class="feature-desc">Predict future sales with 85%+ accuracy using machine learning.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <div class="feature-title">Inventory Management</div>
+                <div class="feature-desc">Track stock levels and get low-stock alerts before you run out.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💳</div>
+                <div class="feature-title">M-Pesa Integration</div>
+                <div class="feature-desc">Record M-Pesa transactions and build your business credit score.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- STEP 2: Access Channels                                   -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div class="step-slide" id="slide-2">
+        <div class="step-eyebrow">📡 Access Channels</div>
+        <h2 class="step-title">Use it anywhere, on any phone</h2>
+        <p class="step-sub">BiasharaSmart Hub works on every device — even basic feature phones with no data connection.</p>
+        <div class="channel-grid">
+            <div class="channel-card">
+                <div class="channel-icon">🌐</div>
+                <div class="channel-name">Web Dashboard</div>
+                <div class="channel-desc">Full features, analytics, and reports on any browser.</div>
+                <span class="channel-detail">You are here now</span>
+            </div>
+            <div class="channel-card">
+                <div class="channel-icon">📱</div>
+                <div class="channel-name">USSD Access</div>
+                <div class="channel-desc">Record sales from any phone — no internet needed.</div>
+                <span class="channel-detail">Dial *123#</span>
+            </div>
+            <div class="channel-card">
+                <div class="channel-icon">💬</div>
+                <div class="channel-name">WhatsApp Bot</div>
+                <div class="channel-desc">Chat with your business data directly on WhatsApp.</div>
+                <span class="channel-detail">Send "Hi" to start</span>
+            </div>
+        </div>
+        <div class="info-box">
+            <strong>💡 Pro tip:</strong> Even at the market or in a low-connectivity area, you can still record every sale using USSD by dialling <strong>*123#</strong> from any Kenyan phone — no internet required.
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- STEP 3: Quick Start Checklist                             -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div class="step-slide" id="slide-3">
+        <div class="step-eyebrow">🚀 Quick Start</div>
+        <h2 class="step-title">Get set up in 5 steps</h2>
+        <p class="step-sub">Follow these steps after this tour to get the most out of BiasharaSmart Hub from day one.</p>
+        <div class="tips-list">
+            <div class="tip-item">
+                <div class="tip-num">1</div>
+                <div class="tip-text"><strong>Add your business profile</strong> — go to Business in the sidebar. Fill in your name, sector, location, and M-Pesa details.</div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-num">2</div>
+                <div class="tip-text"><strong>Add your products to Inventory</strong> — so you can track stock levels and use the Point of Sale (POS) panel on your dashboard.</div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-num">3</div>
+                <div class="tip-text"><strong>Record your first sale</strong> — click "Add Sale" in the sidebar and enter any recent transaction to get started.</div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-num">4</div>
+                <div class="tip-text"><strong>Add your expenses</strong> — rent, stock purchases, utilities. This is how you calculate your real profit accurately.</div>
+            </div>
+            <div class="tip-item">
+                <div class="tip-num">5</div>
+                <div class="tip-text"><strong>Check Analytics</strong> — once you have some data, Analytics will show trends, AI forecasts, and business insights.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- STEP 4: You are ready                                     -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div class="step-slide" id="slide-4">
+        <div class="welcome-hero">
+            <div class="big-emoji">🎉</div>
+            <h3>You are all set!</h3>
+            <p>Your account is ready. Head to your dashboard to start recording your business activity.</p>
+        </div>
+      <div class="checklist">
+    <div class="check-item">
+        <span class="ci-icon">📖</span>
+        <span>Need detailed instructions? Read the full User Guide any time.</span>
+        <a href="#" onclick="completeAndGo('/help/')">Open Guide →</a>
+    </div>
+    <div class="check-item">
+        <span class="ci-icon">⬇️</span>
+        <span>Download the User Guide as a Word document to keep offline.</span>
+        <a href="#" onclick="downloadAndComplete()">Download →</a>
+    </div>
+    <div class="check-item">
+        <span class="ci-icon">📱</span>
+        <span>Record sales without internet — dial USSD from any phone.</span>
+        <a href="#" onclick="completeAndGo('/help/#section-15')">Learn more →</a>
+    </div>
+    <div class="check-item">
+        <span class="ci-icon">🏢</span>
+        <span>First thing: set up your business profile to get started.</span>
+        <a href="#" onclick="completeAndGo('/business/')">Set up now →</a>
+    </div>
+</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- Footer                                                    -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div class="wizard-footer">
+        <button class="btn-skip" id="skipBtn" onclick="skipOnboarding()">Skip tour</button>
+        <span class="step-count" id="stepCount">Step 1 of 4</span>
+        <div style="display:flex;gap:10px;">
+            <button class="btn btn-outline" id="prevBtn" onclick="prevStep()">← Back</button>
+            <button class="btn btn-green"   id="nextBtn" onclick="nextStep()">Next →</button>
+        </div>
+    </div>
+
+</div><!-- end .wizard -->
+
+<!-- Hidden POST form to mark onboarding complete -->
+<form method="post" id="completeForm" style="display:none;">
+    {% csrf_token %}
+</form>
+
+<script>
+let current = 1;
+const total  = 4;
+
+function updateUI() {
+    // Show/hide slides
+    for (let i = 1; i <= total; i++) {
+        const slide = document.getElementById('slide-' + i);
+        slide.classList.toggle('active', i === current);
+    }
+
+    // Update dots
+    for (let i = 1; i <= total; i++) {
+        const dot  = document.getElementById('dot-' + i);
+        const line = document.getElementById('line-' + i);
+        dot.classList.remove('active', 'done');
+        if (i < current)  dot.classList.add('done');
+        if (i === current) dot.classList.add('active');
+        if (line) {
+            line.classList.toggle('done', i < current);
+        }
+    }
+
+    // Progress bar
+    document.getElementById('progressFill').style.width = ((current / total) * 100) + '%';
+
+    // Step count
+    document.getElementById('stepCount').textContent = 'Step ' + current + ' of ' + total;
+
+    // Back button — hide on step 1
+    document.getElementById('prevBtn').style.visibility = current === 1 ? 'hidden' : 'visible';
+
+    // Skip button — hide on last step
+    document.getElementById('skipBtn').style.display = current === total ? 'none' : 'inline-block';
+
+    // Next button label
+    const nextBtn = document.getElementById('nextBtn');
+    if (current === total) {
+        nextBtn.textContent = '🚀 Go to Dashboard';
+    } else {
+        nextBtn.textContent = 'Next →';
+    }
+}
+
+function nextStep() {
+    if (current < total) {
+        current++;
+        updateUI();
+    } else {
+        completeOnboarding();
+    }
+}
+
+function prevStep() {
+    if (current > 1) {
+        current--;
+        updateUI();
+    }
+}
+
+function completeOnboarding() {
+    document.getElementById('completeForm').submit();
+}
+
+function skipOnboarding() {
+    if (confirm('Skip the tour? You can always find the User Guide by clicking the ? button in your dashboard.')) {
+        completeOnboarding();
+    }
+}
+
+// Complete onboarding then navigate to a page
+function completeAndGo(url) {
+    const form = document.getElementById('completeForm');
+    // Add a hidden input with the redirect destination
+    let input = document.getElementById('nextUrl');
+    if (!input) {
+        input = document.createElement('input');
+        input.type  = 'hidden';
+        input.name  = 'next';
+        input.id    = 'nextUrl';
+        form.appendChild(input);
+    }
+    input.value = url;
+    form.submit();
+}
+
+// Download guide without navigating away — open in new tab
+function downloadAndComplete() {
+    // Mark onboarding done via fetch so user stays on page for download
+    fetch('/onboarding/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'next=/dashboard/'
+    }).then(() => {
+        // Open download in new tab, then go to dashboard
+        window.open('/help/download/', '_blank');
+        setTimeout(() => { window.location.href = '/dashboard/'; }, 500);
+    }).catch(() => {
+        window.open('/help/download/', '_blank');
+        window.location.href = '/dashboard/';
+    });
+}
+
+// Initialise
+updateUI();
+</script>
 </body>
 </html>

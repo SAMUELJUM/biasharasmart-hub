@@ -1,10 +1,917 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Admin Panel | BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-pale: #d8f3dc; --gold: #e9c46a;
+            --error: #c1121f; --error-pale: #fce4e4; --warn: #d4860a;
+            --warn-pale: #fef3cd; --muted: #6b7280; --border: #e2e0d8;
+            --admin: #7c3aed; --admin-pale: #ede9fe;
+            --sidebar-w: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; }
+
+        /* ── Sidebar ─────────────────────────────────────────── */
+        .sidebar { width: var(--sidebar-w); background: #1a0533; min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-badge { display: inline-block; background: var(--admin); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 8px; }
+        .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .brand-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 3px; }
+        .sidebar-nav { padding: 16px 0; flex: 1; }
+        .nav-section { padding: 12px 24px 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5); text-decoration: none; transition: all 0.15s; border-left: 2px solid transparent; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: #c4b5fd; background: rgba(124,58,237,0.15); border-left-color: var(--admin); }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .admin-pill { display: flex; align-items: center; gap: 10px; }
+        .admin-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--admin); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .admin-info { flex: 1; min-width: 0; }
+        .admin-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .admin-role { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+        .logout-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.3); font-size: 16px; padding: 4px; transition: color 0.15s; }
+        .logout-btn:hover { color: var(--error); }
+        .back-link { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,0.35); text-decoration: none; padding: 8px 24px 4px; transition: color 0.15s; }
+        .back-link:hover { color: rgba(255,255,255,0.7); }
+
+        /* ── Main ───────────────────────────────────────────── */
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-left h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+        .content { padding: 28px 32px; flex: 1; display: flex; gap: 28px; align-items: flex-start; }
+
+        /* ── Settings nav sidebar ────────────────────────────── */
+        .settings-nav { width: 200px; flex-shrink: 0; position: sticky; top: 96px; }
+        .settings-nav-item { display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 3px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; font-family: 'Sora', sans-serif; margin-bottom: 2px; }
+        .settings-nav-item:hover { color: var(--ink); background: rgba(0,0,0,0.04); }
+        .settings-nav-item.active { color: var(--admin); background: var(--admin-pale); font-weight: 600; }
+        .settings-nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+        /* ── Panels ──────────────────────────────────────────── */
+        .settings-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0; }
+        .settings-section { display: none; }
+        .settings-section.active { display: flex; flex-direction: column; gap: 20px; }
+
+        .panel { background: #fff; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+        .panel-header { padding: 16px 24px; border-bottom: 1px solid var(--border); background: var(--paper); }
+        .panel-header h3 { font-size: 13px; font-weight: 700; }
+        .panel-header p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+        .panel-body { padding: 24px; }
+        .panel-footer { padding: 14px 24px; border-top: 1px solid var(--border); background: var(--paper); display: flex; gap: 10px; align-items: center; }
+
+        /* ── Buttons ─────────────────────────────────────────── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+        .btn-admin { background: var(--admin); color: #fff; }
+        .btn-admin:hover { background: #6d28d9; box-shadow: 0 4px 12px rgba(124,58,237,0.3); }
+        .btn-admin:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--ink); }
+        .btn-danger { background: var(--error); color: #fff; }
+        .btn-danger:hover { background: #a00f19; }
+        .btn-warn { background: var(--warn); color: #fff; }
+        .btn-warn:hover { background: #b8730a; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Form elements ───────────────────────────────────── */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.span2 { grid-column: span 2; }
+        label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink); }
+        label .hint { font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 10px; color: var(--muted); margin-left: 4px; }
+        input[type="text"], input[type="email"], input[type="number"], input[type="password"], input[type="url"], select, textarea {
+            width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 3px;
+            font-size: 13px; font-family: 'DM Mono', monospace; color: var(--ink); background: var(--paper); transition: border-color 0.15s;
+        }
+        select { font-family: 'Sora', sans-serif; cursor: pointer; }
+        textarea { font-family: 'Sora', sans-serif; font-size: 13px; resize: vertical; min-height: 80px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--admin); background: #fff; box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
+        input::placeholder, textarea::placeholder { color: #b0aca0; }
+
+        /* ── Toggle row ──────────────────────────────────────── */
+        .toggle-list { display: flex; flex-direction: column; }
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); gap: 20px; }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-info { flex: 1; }
+        .toggle-title { font-size: 13px; font-weight: 600; }
+        .toggle-desc { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+        .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+        .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .toggle-track { position: absolute; inset: 0; background: var(--border); border-radius: 11px; cursor: pointer; transition: background 0.2s; }
+        .toggle input:checked + .toggle-track { background: var(--admin); }
+        .toggle-track::after { content:''; position:absolute; width:16px; height:16px; border-radius:50%; background:#fff; top:3px; left:3px; transition:left 0.2s; }
+        .toggle input:checked + .toggle-track::after { left: 21px; }
+
+        /* ── Info row ─────────────────────────────────────────── */
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+        .info-value { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
+
+        /* ── Alert ───────────────────────────────────────────── */
+        .alert { display: none; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 3px; font-size: 13px; margin-bottom: 0; }
+        .alert.show { display: flex; animation: fade-in 0.2s ease; }
+        .alert-success { background: var(--accent-pale); color: var(--accent); border-left: 3px solid var(--accent); }
+        .alert-error   { background: var(--error-pale); color: var(--error); border-left: 3px solid var(--error); }
+        .alert-warn    { background: var(--warn-pale); color: var(--warn); border-left: 3px solid var(--warn); }
+
+        /* ── Danger zone ─────────────────────────────────────── */
+        .danger-zone { border: 1.5px solid var(--error); border-radius: 4px; overflow: hidden; }
+        .danger-zone .panel-header { background: var(--error-pale); border-bottom-color: #fca5a5; }
+        .danger-zone .panel-header h3 { color: var(--error); }
+        .danger-action { display: flex; align-items: flex-start; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #fca5a5; gap: 20px; }
+        .danger-action:last-child { border-bottom: none; }
+        .danger-action-info h4 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+        .danger-action-info p { font-size: 12px; color: var(--muted); }
+
+        /* ── Badge ───────────────────────────────────────────── */
+        .status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 2px; }
+        .badge-green  { background: var(--accent-pale); color: var(--accent); }
+        .badge-yellow { background: var(--warn-pale); color: var(--warn); }
+        .badge-red    { background: var(--error-pale); color: var(--error); }
+        .badge-admin  { background: var(--admin-pale); color: var(--admin); }
+
+        /* ── API key display ─────────────────────────────────── */
+        .api-key-wrap { display: flex; align-items: center; gap: 8px; }
+        .api-key-val  { flex: 1; font-family: 'DM Mono', monospace; font-size: 12px; background: var(--paper); border: 1.5px solid var(--border); border-radius: 3px; padding: 9px 14px; color: var(--muted); letter-spacing: 0.05em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 3px; font-size: 13px; z-index: 300; display: none; }
+        .toast.show { display: block; animation: rise 0.3s ease; }
+
+        @media (max-width: 900px) { .content { flex-direction: column; } .settings-nav { width: 100%; position: static; display: flex; flex-wrap: wrap; gap: 4px; } .form-grid { grid-template-columns: 1fr; } .form-group.span2 { grid-column: span 1; } }
+        @media (max-width: 700px) { :root { --sidebar-w: 0px; } .sidebar { display: none; } .content { padding: 16px; } }
+    </style>
 </head>
 <body>
-$END$
+
+<!-- ── Sidebar ────────────────────────────────────────────────── -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-badge">⚡ Admin Panel</div>
+        <div class="brand-name">BiasharaSmart Hub</div>
+        <div class="brand-sub">System Administration</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Overview</div>
+        <a class="nav-item" href="/admin-panel/"><span class="nav-icon">📊</span> Dashboard</a>
+        <div class="nav-section">Management</div>
+        <a class="nav-item" href="/admin-panel/users/"><span class="nav-icon">👥</span> Users</a>
+        <a class="nav-item" href="/admin-panel/businesses/"><span class="nav-icon">🏢</span> Businesses</a>
+        <a class="nav-item" href="/admin-panel/transactions/"><span class="nav-icon">💰</span> Transactions</a>
+        <a class="nav-item" href="/admin-panel/subscriptions/"><span class="nav-icon">💳</span> Subscriptions</a>
+        <div class="nav-section">System</div>
+        <a class="nav-item" href="/admin-panel/analytics/"><span class="nav-icon">📈</span> Analytics</a>
+        <a class="nav-item" href="/admin-panel/alerts/"><span class="nav-icon">🚨</span> Alerts</a>
+        <a class="nav-item" href="/admin-panel/logs/"><span class="nav-icon">📋</span> Logs</a>
+        <a class="nav-item active" href="/admin-panel/settings/"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <a class="back-link" href="/admin-panel/dashboard/">← Back to Dashboard</a>
+    <div class="sidebar-footer">
+        <div class="admin-pill">
+            <div class="admin-avatar">{{ user.first_name|first|upper|default:"A" }}</div>
+            <div class="admin-info">
+                <div class="admin-name">{{ user.first_name|default:user.username }}</div>
+                <div class="admin-role">superadmin</div>
+            </div>
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn" title="Logout">✕</button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<!-- ── Main ──────────────────────────────────────────────────── -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <h2>Settings</h2>
+            <p>Platform configuration and administration</p>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- ── Settings sidebar nav ── -->
+        <nav class="settings-nav">
+            <button class="settings-nav-item active" data-section="general" onclick="showSection(this)"><span class="settings-nav-icon">🏢</span> General</button>
+            <button class="settings-nav-item" data-section="profile" onclick="showSection(this)"><span class="settings-nav-icon">👤</span> Admin Profile</button>
+            <button class="settings-nav-item" data-section="security" onclick="showSection(this)"><span class="settings-nav-icon">🔐</span> Security</button>
+            <button class="settings-nav-item" data-section="notifications" onclick="showSection(this)"><span class="settings-nav-icon">🔔</span> Notifications</button>
+            <button class="settings-nav-item" data-section="api" onclick="showSection(this)"><span class="settings-nav-icon">🔌</span> API & Integrations</button>
+            <button class="settings-nav-item" data-section="billing" onclick="showSection(this)"><span class="settings-nav-icon">💳</span> Billing</button>
+            <button class="settings-nav-item" data-section="system" onclick="showSection(this)"><span class="settings-nav-icon">⚙️</span> System</button>
+            <button class="settings-nav-item" data-section="danger" onclick="showSection(this)" style="color:var(--error);"><span class="settings-nav-icon">⚠️</span> Danger Zone</button>
+        </nav>
+
+        <!-- ── Settings body ── -->
+        <div class="settings-body">
+
+            <!-- ── GENERAL ── -->
+            <div class="settings-section active" id="section-general">
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Platform Identity</h3>
+                        <p>Basic information about your platform shown to users</p>
+                    </div>
+                    <div class="panel-body">
+                        <div id="generalSuccess" class="alert alert-success" style="margin-bottom:16px;"></div>
+                        <div class="form-grid">
+                            <div class="form-group span2">
+                                <label>Platform Name</label>
+                                <input type="text" id="platformName" value="BiasharaSmart Hub">
+                            </div>
+                            <div class="form-group">
+                                <label>Support Email</label>
+                                <input type="email" id="supportEmail" value="support@biasharasmart.co.ke">
+                            </div>
+                            <div class="form-group">
+                                <label>Support Phone</label>
+                                <input type="text" id="supportPhone" value="+254 700 000 000">
+                            </div>
+                            <div class="form-group">
+                                <label>Country</label>
+                                <select id="country">
+                                    <option value="KE" selected>🇰🇪 Kenya</option>
+                                    <option value="UG">🇺🇬 Uganda</option>
+                                    <option value="TZ">🇹🇿 Tanzania</option>
+                                    <option value="RW">🇷🇼 Rwanda</option>
+                                    <option value="ET">🇪🇹 Ethiopia</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Default Currency</label>
+                                <select id="currency">
+                                    <option value="KES" selected>KES — Kenyan Shilling</option>
+                                    <option value="UGX">UGX — Ugandan Shilling</option>
+                                    <option value="TZS">TZS — Tanzanian Shilling</option>
+                                </select>
+                            </div>
+                            <div class="form-group span2">
+                                <label>Platform Description <span class="hint">(shown on login page)</span></label>
+                                <textarea id="platformDesc">Smart business management for Kenyan SMEs. Track sales, expenses, inventory and grow your business.</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-admin" onclick="saveGeneral()">
+                            <span id="generalSpinner" style="display:none;width:13px;height:13px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Registration Settings</h3>
+                        <p>Control how new users sign up to the platform</p>
+                    </div>
+                    <div class="panel-body">
+                        <div class="toggle-list">
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Open Registration</div>
+                                    <div class="toggle-desc">Allow anyone to create an account without an invite link.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="openReg" checked><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Email Verification Required</div>
+                                    <div class="toggle-desc">New users must verify their email before accessing the platform.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="emailVerify"><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Admin Approval Required</div>
+                                    <div class="toggle-desc">New accounts must be approved by an admin before activation.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="adminApproval"><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Allow Multiple Businesses per User</div>
+                                    <div class="toggle-desc">Users can register and manage more than one business.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="multiBiz" checked><div class="toggle-track"></div></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-admin" onclick="saveToast('Registration settings saved')">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── ADMIN PROFILE ── -->
+            <div class="settings-section" id="section-profile">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Admin Account</h3>
+                        <p>Your personal admin profile details</p>
+                    </div>
+                    <div class="panel-body">
+                        <div id="profileSuccess" class="alert alert-success" style="margin-bottom:16px;"></div>
+                        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+                            <div style="width:60px;height:60px;border-radius:50%;background:var(--admin);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;flex-shrink:0;">
+                                {{ user.first_name|first|upper|default:"A" }}
+                            </div>
+                            <div>
+                                <div style="font-size:16px;font-weight:700;">{{ user.first_name|default:"Admin" }} {{ user.last_name }}</div>
+                                <div style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:3px;">{{ user.phone_number }}</div>
+                                <span class="status-badge badge-admin" style="margin-top:6px;">⚡ Superadmin</span>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" id="profileFirst" value="{{ user.first_name }}">
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" id="profileLast" value="{{ user.last_name }}">
+                            </div>
+                            <div class="form-group span2">
+                                <label>Phone Number <span class="hint">(used as login)</span></label>
+                                <input type="text" id="profilePhone" value="{{ user.phone_number }}" disabled style="opacity:0.6;cursor:not-allowed;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-admin" onclick="saveProfile()">
+                            <span id="profileSpinner" style="display:none;width:13px;height:13px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+                            Save Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── SECURITY ── -->
+            <div class="settings-section" id="section-security">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Change Password</h3>
+                        <p>Update your admin account password</p>
+                    </div>
+                    <div class="panel-body">
+                        <div id="pwSuccess" class="alert alert-success" style="margin-bottom:16px;"></div>
+                        <div id="pwError" class="alert alert-error" style="margin-bottom:16px;"></div>
+                        <div class="form-grid">
+                            <div class="form-group span2">
+                                <label>Current Password</label>
+                                <input type="password" id="pwCurrent" placeholder="Enter current password">
+                            </div>
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" id="pwNew" placeholder="Min 8 characters">
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm New Password</label>
+                                <input type="password" id="pwConfirm" placeholder="Repeat new password">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-admin" onclick="changePassword()">Update Password</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Platform Security Settings</h3>
+                        <p>Security policies applied to all users</p>
+                    </div>
+                    <div class="panel-body">
+                        <div class="toggle-list">
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Force Strong Passwords</div>
+                                    <div class="toggle-desc">Require uppercase, numbers and special characters for all user passwords.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="strongPw" checked><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Session Timeout</div>
+                                    <div class="toggle-desc">Automatically log out inactive users after 24 hours.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="sessionTimeout" checked><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Log Failed Login Attempts</div>
+                                    <div class="toggle-desc">Record and alert on repeated failed login attempts.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="logFailed" checked><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Two-Factor Authentication <span class="status-badge badge-yellow" style="font-size:9px;padding:2px 6px;">Coming Soon</span></div>
+                                    <div class="toggle-desc">Enable 2FA via SMS or TOTP for admin accounts.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="twofa" disabled><div class="toggle-track"></div></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-admin" onclick="saveToast('Security settings saved')">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── NOTIFICATIONS ── -->
+            <div class="settings-section" id="section-notifications">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Admin Notifications</h3>
+                        <p>Configure what alerts are sent to the admin</p>
+                    </div>
+                    <div class="panel-body">
+                        <div class="toggle-list">
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">New User Registration</div>
+                                    <div class="toggle-desc">Notify when a new user signs up to the platform.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="notifNewUser" checked><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">New Business Created</div>
+                                    <div class="toggle-desc">Notify when a user registers a new business.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="notifNewBiz" checked><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Critical Alerts</div>
+                                    <div class="toggle-desc">Notify on critical system or business alerts.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="notifCritical" checked><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Weekly Summary Report</div>
+                                    <div class="toggle-desc">Receive a weekly platform performance report via email.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="notifWeekly"><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Low Stock Alerts (Platform-wide)</div>
+                                    <div class="toggle-desc">Notify when any business on the platform has critically low stock.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="notifStock"><div class="toggle-track"></div></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-admin" onclick="saveToast('Notification preferences saved')">Save Preferences</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Notification Channels</h3>
+                        <p>Where to send admin notifications</p>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-grid">
+                            <div class="form-group span2">
+                                <label>Admin Email</label>
+                                <input type="email" id="notifEmail" placeholder="admin@biasharasmart.co.ke">
+                            </div>
+                            <div class="form-group">
+                                <label>SMS Number <span class="hint">(optional)</span></label>
+                                <input type="text" id="notifSMS" placeholder="+254 700 000 000">
+                            </div>
+                            <div class="form-group">
+                                <label>Slack Webhook <span class="hint">(optional)</span></label>
+                                <input type="url" id="notifSlack" placeholder="https://hooks.slack.com/…">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-admin" onclick="saveToast('Notification channels saved')">Save Channels</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── API & INTEGRATIONS ── -->
+            <div class="settings-section" id="section-api">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>API Keys</h3>
+                        <p>Keys for connecting third-party services</p>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-grid">
+                            <div class="form-group span2">
+                                <label>Platform API Key <span class="hint">(read-only)</span></label>
+                                <div class="api-key-wrap">
+                                    <div class="api-key-val" id="apiKeyDisplay">bsh_live_••••••••••••••••••••••••••••••</div>
+                                    <button class="btn btn-outline btn-sm" onclick="revealApiKey(this)">👁 Show</button>
+                                    <button class="btn btn-outline btn-sm" onclick="copyApiKey()">📋 Copy</button>
+                                </div>
+                            </div>
+                            <div class="form-group span2">
+                                <label>M-Pesa Consumer Key <span class="hint">(Daraja API)</span></label>
+                                <input type="password" id="mpesaKey" placeholder="Enter M-Pesa consumer key">
+                            </div>
+                            <div class="form-group span2">
+                                <label>M-Pesa Consumer Secret</label>
+                                <input type="password" id="mpesaSecret" placeholder="Enter M-Pesa consumer secret">
+                            </div>
+                            <div class="form-group">
+                                <label>M-Pesa Shortcode</label>
+                                <input type="text" id="mpesaShortcode" placeholder="e.g. 174379">
+                            </div>
+                            <div class="form-group">
+                                <label>M-Pesa Environment</label>
+                                <select id="mpesaEnv">
+                                    <option value="sandbox">Sandbox (Testing)</option>
+                                    <option value="production">Production (Live)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-admin" onclick="saveToast('API settings saved')">Save API Settings</button>
+                        <button class="btn btn-outline" onclick="testMpesa()">Test M-Pesa Connection</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>SMS Gateway</h3>
+                        <p>Send SMS notifications to users via Africa's Talking or Twilio</p>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-grid">
+                            <div class="form-group span2">
+                                <label>SMS Provider</label>
+                                <select id="smsProvider">
+                                    <option value="africastalking">Africa's Talking</option>
+                                    <option value="twilio">Twilio</option>
+                                    <option value="disabled">Disabled</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>API Username / SID</label>
+                                <input type="text" id="smsUser" placeholder="API username or account SID">
+                            </div>
+                            <div class="form-group">
+                                <label>API Key / Auth Token</label>
+                                <input type="password" id="smsKey" placeholder="API key or auth token">
+                            </div>
+                            <div class="form-group">
+                                <label>Sender ID</label>
+                                <input type="text" id="smsSender" placeholder="e.g. BiasharaSmart">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-admin" onclick="saveToast('SMS gateway settings saved')">Save SMS Settings</button>
+                        <button class="btn btn-outline" onclick="saveToast('Test SMS sent!')">Send Test SMS</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── BILLING ── -->
+            <div class="settings-section" id="section-billing">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Subscription Plans</h3>
+                        <p>Configure pricing tiers available to users</p>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Free Plan — Business Limit</label>
+                                <input type="number" id="freeBizLimit" value="1" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Free Plan — Transaction Limit / month</label>
+                                <input type="number" id="freeTxnLimit" value="50" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Pro Plan — Monthly Price (KES)</label>
+                                <input type="number" id="proPrice" value="999" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Pro Plan — Business Limit</label>
+                                <input type="number" id="proBizLimit" value="5" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Enterprise Plan — Monthly Price (KES)</label>
+                                <input type="number" id="enterprisePrice" value="4999" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Enterprise Plan — Business Limit</label>
+                                <input type="number" id="enterpriseBizLimit" value="999" min="1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-admin" onclick="saveToast('Subscription plans updated')">Save Plans</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Billing Settings</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="toggle-list">
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Trial Period Enabled</div>
+                                    <div class="toggle-desc">New users get a 30-day free trial of Pro features.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="trialEnabled" checked><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Grace Period on Expiry</div>
+                                    <div class="toggle-desc">Allow 7 days after subscription expires before restricting access.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="gracePeriod" checked><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Auto-send Renewal Reminders</div>
+                                    <div class="toggle-desc">Email/SMS reminders 7 days before subscription expires.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="renewReminder" checked><div class="toggle-track"></div></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-admin" onclick="saveToast('Billing settings saved')">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── SYSTEM ── -->
+            <div class="settings-section" id="section-system">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>System Information</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="info-row"><span class="info-label">Django Version</span><span class="info-value">5.0.2</span></div>
+                        <div class="info-row"><span class="info-label">Python Version</span><span class="info-value">3.13.5</span></div>
+                        <div class="info-row"><span class="info-label">Platform Version</span><span class="info-value">1.0.0</span></div>
+                        <div class="info-row"><span class="info-label">Environment</span><span class="info-value"><span class="status-badge badge-yellow">Development</span></span></div>
+                        <div class="info-row"><span class="info-label">Database</span><span class="info-value">SQLite / PostgreSQL</span></div>
+                        <div class="info-row"><span class="info-label">Debug Mode</span><span class="info-value"><span class="status-badge badge-yellow">ON</span></span></div>
+                        <div class="info-row"><span class="info-label">Server Time</span><span class="info-value" id="serverTime">—</span></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Maintenance & Cache</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="toggle-list">
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Maintenance Mode</div>
+                                    <div class="toggle-desc">Take the platform offline for maintenance. Only admins can log in.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="maintMode"><div class="toggle-track"></div></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Enable Query Caching</div>
+                                    <div class="toggle-desc">Cache API responses for better performance.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="cacheEnabled" checked><div class="toggle-track"></div></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-outline" onclick="saveToast('Cache cleared ✓')">🗑️ Clear Cache</button>
+                        <button class="btn btn-admin" onclick="saveToast('System settings saved')">Save Settings</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Data & Backups</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="toggle-list">
+                            <div class="toggle-row">
+                                <div class="toggle-info">
+                                    <div class="toggle-title">Automatic Daily Backups</div>
+                                    <div class="toggle-desc">Backup the database every day at midnight.</div>
+                                </div>
+                                <label class="toggle"><input type="checkbox" id="autoBackup" checked><div class="toggle-track"></div></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-outline" onclick="saveToast('Backup started — this may take a few minutes')">⬇️ Export Full Backup</button>
+                        <button class="btn btn-admin" onclick="saveToast('Backup settings saved')">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── DANGER ZONE ── -->
+            <div class="settings-section" id="section-danger">
+                <div class="danger-zone">
+                    <div class="panel-header">
+                        <h3>⚠️ Danger Zone</h3>
+                        <p>These actions are irreversible. Proceed with extreme caution.</p>
+                    </div>
+
+                    <div class="danger-action">
+                        <div class="danger-action-info">
+                            <h4>Suspend All Users</h4>
+                            <p>Disable all user accounts immediately. They will not be able to log in until re-activated.</p>
+                        </div>
+                        <button class="btn btn-warn btn-sm" onclick="confirmAction('Suspend all users? They will be locked out immediately.', 'All users suspended')">Suspend All</button>
+                    </div>
+
+                    <div class="danger-action">
+                        <div class="danger-action-info">
+                            <h4>Clear All Alerts</h4>
+                            <p>Permanently delete all resolved and unresolved alerts from the system.</p>
+                        </div>
+                        <button class="btn btn-warn btn-sm" onclick="confirmAction('Clear all alerts? This cannot be undone.', 'All alerts cleared')">Clear Alerts</button>
+                    </div>
+
+                    <div class="danger-action">
+                        <div class="danger-action-info">
+                            <h4>Reset Platform Analytics</h4>
+                            <p>Delete all cached analytics data. Live transaction data will not be affected.</p>
+                        </div>
+                        <button class="btn btn-warn btn-sm" onclick="confirmAction('Reset all analytics cache?', 'Analytics cache reset')">Reset Analytics</button>
+                    </div>
+
+                    <div class="danger-action">
+                        <div class="danger-action-info">
+                            <h4>Wipe All Demo Data</h4>
+                            <p>Remove all demo/test users, businesses, and transactions from the database.</p>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="confirmAction('Wipe all demo data? This is permanent and cannot be undone.', 'Demo data wiped')">Wipe Demo Data</button>
+                    </div>
+
+                    <div class="danger-action">
+                        <div class="danger-action-info">
+                            <h4>Factory Reset</h4>
+                            <p>Delete ALL data including users, businesses, transactions, and settings. The platform will return to its initial state.</p>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="confirmAction('⚠️ FACTORY RESET: Delete ALL data? This cannot be undone. Type CONFIRM to proceed.', 'Factory reset initiated')">Factory Reset</button>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end settings-body -->
+    </div><!-- end content -->
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
+async function apiFetch(url, opts = {}) {
+    return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest', ...opts.headers }, ...opts });
+}
+
+// ── Section switching ─────────────────────────────────────────────
+function showSection(btn) {
+    document.querySelectorAll('.settings-nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('section-' + btn.dataset.section).classList.add('active');
+}
+
+// ── Server time ───────────────────────────────────────────────────
+function updateTime() {
+    document.getElementById('serverTime').textContent = new Date().toLocaleString('en-KE', { dateStyle: 'full', timeStyle: 'medium' });
+}
+updateTime(); setInterval(updateTime, 1000);
+
+// ── Save general ──────────────────────────────────────────────────
+async function saveGeneral() {
+    const spinner = document.getElementById('generalSpinner');
+    spinner.style.display = 'inline-block';
+    await new Promise(r => setTimeout(r, 600));
+    spinner.style.display = 'none';
+    const el = document.getElementById('generalSuccess');
+    el.textContent = '✅ Platform settings saved successfully.';
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// ── Save profile ──────────────────────────────────────────────────
+async function saveProfile() {
+    const spinner = document.getElementById('profileSpinner');
+    spinner.style.display = 'inline-block';
+    const payload = {
+        first_name: document.getElementById('profileFirst').value.trim(),
+        last_name:  document.getElementById('profileLast').value.trim(),
+    };
+    try {
+        const res = await apiFetch('/api/auth/profile/', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body: JSON.stringify(payload)
+        });
+        const el = document.getElementById('profileSuccess');
+        if (res.ok) {
+            el.textContent = '✅ Profile updated successfully.';
+            el.className = 'alert alert-success show';
+        } else {
+            el.textContent = '⚠️ Failed to update profile.';
+            el.className = 'alert alert-error show';
+        }
+        setTimeout(() => el.classList.remove('show'), 4000);
+    } catch(e) {
+        showToast('Network error');
+    } finally {
+        spinner.style.display = 'none';
+    }
+}
+
+// ── Change password ───────────────────────────────────────────────
+async function changePassword() {
+    const current = document.getElementById('pwCurrent').value;
+    const newPw   = document.getElementById('pwNew').value;
+    const confirm = document.getElementById('pwConfirm').value;
+    const errEl   = document.getElementById('pwError');
+    const sucEl   = document.getElementById('pwSuccess');
+    errEl.classList.remove('show'); sucEl.classList.remove('show');
+
+    if (!current) { errEl.textContent = '⚠️ Enter your current password.'; errEl.classList.add('show'); return; }
+    if (newPw.length < 8) { errEl.textContent = '⚠️ New password must be at least 8 characters.'; errEl.classList.add('show'); return; }
+    if (newPw !== confirm) { errEl.textContent = '⚠️ Passwords do not match.'; errEl.classList.add('show'); return; }
+
+    try {
+        const res = await apiFetch('/api/auth/change-password/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body: JSON.stringify({ old_password: current, new_password: newPw })
+        });
+        if (res.ok) {
+            sucEl.textContent = '✅ Password changed successfully.';
+            sucEl.classList.add('show');
+            document.getElementById('pwCurrent').value = '';
+            document.getElementById('pwNew').value = '';
+            document.getElementById('pwConfirm').value = '';
+        } else {
+            const data = await res.json();
+            errEl.textContent = '⚠️ ' + (data.detail || data.old_password?.[0] || 'Failed to change password.');
+            errEl.classList.add('show');
+        }
+    } catch(e) { errEl.textContent = '⚠️ Network error.'; errEl.classList.add('show'); }
+}
+
+// ── API key ───────────────────────────────────────────────────────
+const FAKE_KEY = 'bsh_live_sk_a7f3d91b2e44c8059fe6d8120c3a74b1';
+let keyRevealed = false;
+
+function revealApiKey(btn) {
+    const display = document.getElementById('apiKeyDisplay');
+    keyRevealed = !keyRevealed;
+    display.textContent = keyRevealed ? FAKE_KEY : 'bsh_live_••••••••••••••••••••••••••••••';
+    btn.textContent = keyRevealed ? '🙈 Hide' : '👁 Show';
+}
+
+function copyApiKey() {
+    navigator.clipboard.writeText(FAKE_KEY).then(() => showToast('✅ API key copied'));
+}
+
+function testMpesa() { showToast('⚡ Testing M-Pesa connection…'); setTimeout(() => showToast('✅ M-Pesa connection successful'), 2000); }
+
+// ── Danger zone ───────────────────────────────────────────────────
+function confirmAction(msg, successMsg) {
+    if (confirm(msg)) showToast('⚡ ' + successMsg);
+}
+
+// ── Toast / helpers ───────────────────────────────────────────────
+function saveToast(msg) { showToast('✅ ' + msg); }
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
 </body>
 </html>

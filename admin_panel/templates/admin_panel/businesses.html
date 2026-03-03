@@ -1,10 +1,626 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Businesses - Admin Panel | BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-light: #40916c; --accent-pale: #d8f3dc; --gold: #e9c46a;
+            --error: #c1121f; --error-pale: #fce4e4; --warn: #d4860a;
+            --warn-pale: #fef3cd; --muted: #6b7280; --border: #e2e0d8;
+            --admin: #7c3aed; --admin-pale: #ede9fe;
+            --sidebar-w: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; }
+
+        /* ── Sidebar ─────────────────────────────────────────── */
+        .sidebar { width: var(--sidebar-w); background: #1a0533; min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-badge { display: inline-block; background: var(--admin); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 8px; }
+        .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .brand-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 3px; }
+        .sidebar-nav { padding: 16px 0; flex: 1; }
+        .nav-section { padding: 12px 24px 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5); text-decoration: none; transition: all 0.15s; border-left: 2px solid transparent; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: #c4b5fd; background: rgba(124,58,237,0.15); border-left-color: var(--admin); }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .admin-pill { display: flex; align-items: center; gap: 10px; }
+        .admin-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--admin); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .admin-info { flex: 1; min-width: 0; }
+        .admin-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .admin-role { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+        .logout-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.3); font-size: 16px; padding: 4px; transition: color 0.15s; }
+        .logout-btn:hover { color: var(--error); }
+        .back-link { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,0.35); text-decoration: none; padding: 8px 24px 4px; transition: color 0.15s; }
+        .back-link:hover { color: rgba(255,255,255,0.7); }
+
+        /* ── Main ───────────────────────────────────────────── */
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-left h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+        .topbar-right { display: flex; gap: 10px; }
+        .content { padding: 28px 32px; flex: 1; }
+
+        /* ── Buttons ─────────────────────────────────────────── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+        .btn-admin { background: var(--admin); color: #fff; }
+        .btn-admin:hover { background: #6d28d9; box-shadow: 0 4px 12px rgba(124,58,237,0.3); transform: translateY(-1px); }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--ink); }
+        .btn-danger { background: none; color: var(--error); border: 1.5px solid var(--border); }
+        .btn-danger:hover { background: var(--error-pale); border-color: var(--error); }
+        .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+        @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+        /* ── Stats ──────────────────────────────────────────── */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 18px 20px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; display: flex; align-items: center; gap: 14px; }
+        .stat-card:nth-child(1){animation-delay:.05s} .stat-card:nth-child(2){animation-delay:.1s} .stat-card:nth-child(3){animation-delay:.15s} .stat-card:nth-child(4){animation-delay:.2s}
+        .stat-icon { font-size: 22px; }
+        .stat-val { font-size: 22px; font-weight: 700; font-family: 'DM Mono', monospace; }
+        .stat-val.loading { color: var(--border); animation: pulse 1.2s infinite; }
+        .stat-lbl { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+        /* ── Toolbar ─────────────────────────────────────────── */
+        .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .search-wrap { position: relative; flex: 1; min-width: 220px; }
+        .search-wrap input { width: 100%; padding: 9px 14px 9px 36px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'Sora', sans-serif; background: #fff; }
+        .search-wrap input:focus { outline: none; border-color: var(--admin); }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
+        .filter-select { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'Sora', sans-serif; background: #fff; cursor: pointer; color: var(--ink); }
+        .filter-select:focus { outline: none; border-color: var(--admin); }
+
+        /* ── Panel / Table ───────────────────────────────────── */
+        .panel { background: #fff; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) 0.2s both; }
+        .panel-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .panel-header h3 { font-size: 13px; font-weight: 700; }
+        .panel-tag { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); background: var(--paper); padding: 3px 8px; border-radius: 2px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; }
+        th { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 10px 16px; text-align: left; background: var(--paper); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; white-space: nowrap; }
+        th:hover { color: var(--ink); }
+        td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafaf8; }
+
+        .biz-cell { display: flex; align-items: center; gap: 10px; }
+        .biz-ava { width: 34px; height: 34px; border-radius: 3px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .biz-ava.inactive { background: var(--border); }
+        .biz-name { font-weight: 600; }
+        .biz-type { font-size: 11px; color: var(--muted); margin-top: 1px; text-transform: capitalize; }
+
+        .badge { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+        .badge-active { background: var(--accent-pale); color: var(--accent); }
+        .badge-inactive { background: var(--error-pale); color: var(--error); }
+        .badge-type { background: var(--admin-pale); color: var(--admin); }
+
+        .mono { font-family: 'DM Mono', monospace; font-size: 12px; }
+        .text-green { color: var(--accent); }
+        .text-red { color: var(--error); }
+        .row-actions { display: flex; gap: 5px; opacity: 0; transition: opacity 0.15s; }
+        tr:hover .row-actions { opacity: 1; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+        .empty-icon { font-size: 40px; margin-bottom: 12px; }
+        .empty-state h4 { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+
+        /* ── Modal ───────────────────────────────────────────── */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,23,0.55); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; animation: fade-in 0.2s ease; }
+        .modal { background: #fff; border-radius: 4px; width: 100%; max-width: 540px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.2), 4px 4px 0 0 var(--admin); animation: rise 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .modal-header h3 { font-size: 15px; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--muted); }
+        .modal-close:hover { color: var(--ink); }
+        .modal-body { padding: 24px; max-height: 72vh; overflow-y: auto; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); background: var(--paper); display: flex; gap: 10px; justify-content: flex-end; }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink); }
+        label .opt { color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 10px; margin-left: 4px; }
+        input, select, textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--ink); background: var(--paper); transition: border-color 0.15s; }
+        select { font-family: 'Sora', sans-serif; cursor: pointer; }
+        textarea { font-family: 'Sora', sans-serif; font-size: 13px; resize: vertical; min-height: 70px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--admin); background: #fff; box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
+        input::placeholder, textarea::placeholder { color: #b0aca0; }
+
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-label { font-size: 13px; font-weight: 500; }
+        .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+        .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .toggle-track { position: absolute; inset: 0; background: var(--border); border-radius: 11px; cursor: pointer; transition: background 0.2s; }
+        .toggle input:checked + .toggle-track { background: var(--admin); }
+        .toggle-track::after { content:''; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: left 0.2s; }
+        .toggle input:checked + .toggle-track::after { left: 21px; }
+
+        .modal-alert { display: none; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 3px; font-size: 12px; margin-bottom: 16px; }
+        .modal-alert.show { display: flex; }
+        .modal-alert-error { background: var(--error-pale); color: var(--error); border-left: 3px solid var(--error); }
+
+        /* Detail panel inside modal */
+        .biz-detail-hero { background: var(--ink); border-radius: 3px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+        .biz-detail-ava { width: 44px; height: 44px; border-radius: 3px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .biz-detail-name { font-size: 15px; font-weight: 700; color: #fff; }
+        .biz-detail-sub { font-size: 11px; color: rgba(255,255,255,0.45); font-family: 'DM Mono', monospace; margin-top: 3px; }
+
+        /* Stats inside modal */
+        .modal-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .modal-stat { background: var(--paper); border: 1px solid var(--border); border-radius: 3px; padding: 12px 14px; }
+        .modal-stat-val { font-size: 16px; font-weight: 700; font-family: 'DM Mono', monospace; }
+        .modal-stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 3px; font-size: 13px; z-index: 300; display: none; }
+        .toast.show { display: block; animation: rise 0.3s ease; }
+
+        @media (max-width: 1100px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 700px) { :root { --sidebar-w: 0px; } .sidebar { display: none; } .content { padding: 16px; } .stats-row { grid-template-columns: 1fr 1fr; } }
+    </style>
 </head>
 <body>
-$END$
+
+<!-- ── Sidebar ────────────────────────────────────────────────── -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-badge">⚡ Admin Panel</div>
+        <div class="brand-name">BiasharaSmart Hub</div>
+        <div class="brand-sub">System Administration</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Overview</div>
+        <a class="nav-item" href="/admin-panel/"><span class="nav-icon">📊</span> Dashboard</a>
+        <div class="nav-section">Management</div>
+        <a class="nav-item" href="/admin-panel/users/"><span class="nav-icon">👥</span> Users</a>
+        <a class="nav-item active" href="/admin-panel/businesses/"><span class="nav-icon">🏢</span> Businesses</a>
+        <a class="nav-item" href="/admin-panel/transactions/"><span class="nav-icon">💰</span> Transactions</a>
+        <a class="nav-item" href="/admin-panel/subscriptions/"><span class="nav-icon">💳</span> Subscriptions</a>
+        <div class="nav-section">System</div>
+        <a class="nav-item" href="/admin-panel/analytics/"><span class="nav-icon">📈</span> Analytics</a>
+        <a class="nav-item" href="/admin-panel/logs/"><span class="nav-icon">📋</span> Logs</a>
+        <a class="nav-item" href="/admin-panel/settings/"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <a class="back-link" href="/admin-panel/dashboard/">← Back to Dashboard</a>
+    <div class="sidebar-footer">
+        <div class="admin-pill">
+            <div class="admin-avatar">{{ user.first_name|first|upper|default:"A" }}</div>
+            <div class="admin-info">
+                <div class="admin-name">{{ user.first_name|default:user.username }}</div>
+                <div class="admin-role">superadmin</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- ── Main ──────────────────────────────────────────────────── -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <h2>Businesses</h2>
+            <p id="topbarSub">Loading…</p>
+        </div>
+        <div class="topbar-right">
+            <button class="btn btn-outline" onclick="exportCSV()">⬇️ Export CSV</button>
+            <form method="post" action="/logout/">
+        {% csrf_token %}
+        <button type="submit" style="
+            display:inline-flex;align-items:center;gap:6px;
+            padding:8px 14px;border-radius:3px;
+            background:#fff;color:var(--error);
+            border:1.5px solid var(--border);
+            font-family:'Sora',sans-serif;font-size:12px;font-weight:600;
+            cursor:pointer;transition:all 0.15s;"
+            onmouseover="this.style.background='var(--error-pale)';this.style.borderColor='var(--error)';"
+            onmouseout="this.style.background='#fff';this.style.borderColor='var(--border)';">
+            ⎋ Sign Out
+        </button>
+    </form>
+        </div>
+    </header>
+
+    <div class="content">
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon">🏢</div>
+                <div><div class="stat-val loading" id="statTotal">—</div><div class="stat-lbl">Total Businesses</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div><div class="stat-val loading" id="statActive">—</div><div class="stat-lbl">Active</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👤</div>
+                <div><div class="stat-val loading" id="statOwners">—</div><div class="stat-lbl">Unique Owners</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🆕</div>
+                <div><div class="stat-val loading" id="statNew">—</div><div class="stat-lbl">New This Month</div></div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search by name, location, owner…" oninput="filterBiz()">
+            </div>
+            <select class="filter-select" id="typeFilter" onchange="filterBiz()">
+                <option value="all">All types</option>
+                <option value="retail">Retail</option>
+                <option value="wholesale">Wholesale</option>
+                <option value="restaurant">Restaurant</option>
+                <option value="service">Service</option>
+                <option value="manufacturing">Manufacturing</option>
+                <option value="agriculture">Agriculture</option>
+                <option value="other">Other</option>
+            </select>
+            <select class="filter-select" id="statusFilter" onchange="filterBiz()">
+                <option value="all">All statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+            <button class="btn btn-outline" onclick="clearFilters()">✕ Clear</button>
+        </div>
+
+        <!-- Table -->
+        <div class="panel">
+            <div class="panel-header">
+                <h3>All Businesses</h3>
+                <span class="panel-tag" id="bizCount">Loading…</span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th onclick="sortBy('name')">Business ↕</th>
+                            <th>Type</th>
+                            <th>Owner</th>
+                            <th>Location</th>
+                            <th onclick="sortBy('created_at')">Created ↕</th>
+                            <th>Revenue</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="bizBody">
+                        <tr><td colspan="8"><div class="empty-state"><div class="empty-icon">⏳</div>Loading businesses…</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── View / Edit Business Modal ─────────────────────────────── -->
+<div class="modal-overlay" id="editBizModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Business Details</h3>
+            <button class="modal-close" onclick="closeModal('editBizModal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div id="editBizError" class="modal-alert modal-alert-error"></div>
+            <div id="editBizHero"></div>
+            <div id="editBizStats" class="modal-stats"></div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label>Business Name</label>
+                    <input type="text" id="editName">
+                </div>
+                <div class="form-group">
+                    <label>Business Type</label>
+                    <select id="editType">
+                        <option value="retail">Retail Shop</option>
+                        <option value="wholesale">Wholesale</option>
+                        <option value="restaurant">Restaurant / Food</option>
+                        <option value="service">Service Business</option>
+                        <option value="manufacturing">Manufacturing</option>
+                        <option value="agriculture">Agriculture</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label>Phone Number <span class="opt">(optional)</span></label>
+                    <input type="tel" id="editPhone" placeholder="0700 000 000">
+                </div>
+                <div class="form-group">
+                    <label>Location <span class="opt">(optional)</span></label>
+                    <input type="text" id="editLocation" placeholder="e.g. Tom Mboya St, Nairobi">
+                </div>
+            </div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label>KRA PIN <span class="opt">(optional)</span></label>
+                    <input type="text" id="editKraPIN" placeholder="A000000000A">
+                </div>
+                <div class="form-group">
+                    <label>Registration No. <span class="opt">(optional)</span></label>
+                    <input type="text" id="editRegNum" placeholder="BN/2024/000000">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Description <span class="opt">(optional)</span></label>
+                <textarea id="editDesc"></textarea>
+            </div>
+            <div style="border: 1px solid var(--border); border-radius: 3px; padding: 4px 12px;">
+                <div class="toggle-row">
+                    <div class="toggle-label">Active Business</div>
+                    <label class="toggle"><input type="checkbox" id="editIsActive"><div class="toggle-track"></div></label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" onclick="deleteBusinessConfirm()">Delete</button>
+            <button class="btn btn-outline" onclick="closeModal('editBizModal')">Cancel</button>
+            <button class="btn btn-admin" onclick="saveBusiness()">
+                <span id="saveBizSpinner" style="display:none;width:13px;height:13px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+                Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
+async function apiFetch(url, opts = {}) {
+    return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest', ...opts.headers }, ...opts });
+}
+
+let allBiz = [];
+let allTxns = [];
+let sortKey = 'created_at';
+let sortAsc = false;
+let editingBizId = null;
+
+const typeLabels = {
+    retail: 'Retail', wholesale: 'Wholesale', restaurant: 'Restaurant',
+    service: 'Service', manufacturing: 'Manufacturing',
+    agriculture: 'Agriculture', other: 'Other'
+};
+
+// ── Load ──────────────────────────────────────────────────────────
+async function loadAll() {
+    try {
+        const [bizRes, txnRes] = await Promise.all([
+            apiFetch('/api/businesses/?page_size=500'),
+            apiFetch('/api/transactions/?page_size=1000')
+        ]);
+        if (bizRes.ok) { const d = await bizRes.json(); allBiz = d.results || d || []; }
+        if (txnRes.ok) { const d = await txnRes.json(); allTxns = d.results || d || []; }
+    } catch(e) {}
+    updateStats();
+    renderTable();
+}
+
+function updateStats() {
+    const active  = allBiz.filter(b => b.is_active !== false).length;
+    const owners  = new Set(allBiz.map(b => b.owner || b.user || b.owner_id)).size;
+    const now     = new Date();
+    const newThis = allBiz.filter(b => {
+        if (!b.created_at) return false;
+        const d = new Date(b.created_at);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+    sl('statTotal',  allBiz.length);
+    sl('statActive', active);
+    sl('statOwners', owners);
+    sl('statNew',    newThis);
+    document.getElementById('topbarSub').textContent = `${allBiz.length} businesses · ${active} active`;
+}
+
+function sl(id, v) { const e = document.getElementById(id); if(e){e.textContent=v;e.classList.remove('loading');} }
+function fmt(n) { return 'KES ' + Number(n).toLocaleString('en-KE', { maximumFractionDigits: 0 }); }
+
+// ── Filter / Sort ─────────────────────────────────────────────────
+function filterBiz() { renderTable(); }
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('typeFilter').value = 'all';
+    document.getElementById('statusFilter').value = 'all';
+    renderTable();
+}
+function sortBy(key) {
+    if (sortKey === key) sortAsc = !sortAsc;
+    else { sortKey = key; sortAsc = false; }
+    renderTable();
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function renderTable() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const type   = document.getElementById('typeFilter').value;
+    const status = document.getElementById('statusFilter').value;
+
+    let filtered = allBiz.filter(b => {
+        const text = `${b.name||''} ${b.town||b.county||''} ${b.description||''}`.toLowerCase();
+        if (search && !text.includes(search)) return false;
+        if (type !== 'all' && b.sector !== type) return false;
+        if (status === 'active' && b.is_active === false) return false;
+        if (status === 'inactive' && b.is_active !== false) return false;
+        return true;
+    });
+
+    filtered.sort((a, b) => {
+        let av = a[sortKey] || '', bv = b[sortKey] || '';
+        if (typeof av === 'string') av = av.toLowerCase();
+        if (typeof bv === 'string') bv = bv.toLowerCase();
+        return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+    });
+
+    document.getElementById('bizCount').textContent = `${filtered.length} of ${allBiz.length} businesses`;
+
+    if (!filtered.length) {
+        document.getElementById('bizBody').innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">${allBiz.length ? '🔍' : '🏢'}</div><h4>${allBiz.length ? 'No businesses match your filters.' : 'No businesses found.'}</h4></div></td></tr>`;
+        return;
+    }
+
+    document.getElementById('bizBody').innerHTML = filtered.map(b => {
+        const active  = b.is_active !== false;
+        const initial = (b.name || 'B')[0].toUpperCase();
+        const created = b.created_at ? new Date(b.created_at).toLocaleDateString('en-KE', { month:'short', day:'numeric', year:'numeric' }) : '—';
+        const bizTxns = allTxns.filter(t => t.business === b.id || t.business_id === b.id);
+        const revenue = bizTxns.filter(t => t.transaction_type === 'sale').reduce((s,t) => s + parseFloat(t.amount||0), 0);
+        const type    = typeLabels[b.sector] || b.sector || '—';
+
+        return `<tr>
+            <td>
+                <div class="biz-cell">
+                    <div class="biz-ava ${active?'':'inactive'}">${initial}</div>
+                    <div>
+                        <div class="biz-name">${b.name || '—'}</div>
+                        <div class="biz-type">ID #${b.id}</div>
+                    </div>
+                </div>
+            </td>
+            <td><span class="badge badge-type" style="font-size:9px;">${type}</span></td>
+            <td style="font-size:12px;color:var(--muted);">${b.owner_name || b.owner || '—'}</td>
+            <td style="font-size:12px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.town || b.county || b.location_description || '—'}</td>
+            <td class="mono" style="color:var(--muted);">${created}</td>
+            <td class="mono text-green">${revenue > 0 ? fmt(revenue) : '—'}</td>
+            <td><span class="badge ${active?'badge-active':'badge-inactive'}">${active?'Active':'Inactive'}</span></td>
+            <td>
+                <div class="row-actions">
+                    <button class="btn btn-outline btn-sm" onclick="openEditModal(${b.id})">✏️ Edit</button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ── Edit modal ────────────────────────────────────────────────────
+function openEditModal(id) {
+    const b = allBiz.find(b => b.id === id);
+    if (!b) return;
+    editingBizId = id;
+
+    // Hero
+    const bizTxns = allTxns.filter(t => t.business === id || t.business_id === id);
+    const revenue  = bizTxns.filter(t => t.transaction_type === 'sale').reduce((s,t) => s + parseFloat(t.amount||0), 0);
+    const expenses = bizTxns.filter(t => t.transaction_type === 'expense').reduce((s,t) => s + parseFloat(t.amount||0), 0);
+
+    document.getElementById('editBizHero').innerHTML = `
+        <div class="biz-detail-hero">
+            <div class="biz-detail-ava">${(b.name||'B')[0].toUpperCase()}</div>
+            <div>
+                <div class="biz-detail-name">${b.name}</div>
+                <div class="biz-detail-sub">${typeLabels[b.sector]||b.sector||'Business'} · ID #${b.id}</div>
+            </div>
+        </div>`;
+
+    document.getElementById('editBizStats').innerHTML = `
+        <div class="modal-stat"><div class="modal-stat-val text-green">${fmt(revenue)}</div><div class="modal-stat-lbl">Revenue</div></div>
+        <div class="modal-stat"><div class="modal-stat-val text-red">${fmt(expenses)}</div><div class="modal-stat-lbl">Expenses</div></div>
+        <div class="modal-stat"><div class="modal-stat-val">${bizTxns.length}</div><div class="modal-stat-lbl">Transactions</div></div>`;
+
+    document.getElementById('editName').value     = b.name || '';
+    document.getElementById('editType').value     = b.sector || 'retail';
+    document.getElementById('editPhone').value    = b.phone_number || '';
+    document.getElementById('editLocation').value = b.town || b.county || b.location_description || '';
+    document.getElementById('editKraPIN').value   = b.kra_pin || '';
+    document.getElementById('editRegNum').value   = b.registration_number || '';
+    document.getElementById('editDesc').value     = b.description || '';
+    document.getElementById('editIsActive').checked = b.is_active !== false;
+    document.getElementById('editBizError').classList.remove('show');
+
+    openModal('editBizModal');
+}
+
+async function saveBusiness() {
+    document.getElementById('editBizError').classList.remove('show');
+    const name = document.getElementById('editName').value.trim();
+    if (!name) { showModalErr('editBizError', 'Business name is required.'); return; }
+
+    const payload = {
+        name,
+        sector:       document.getElementById('editType').value,
+        phone_number:        document.getElementById('editPhone').value.trim(),
+        location:            document.getElementById('editLocation').value.trim(),
+        kra_pin:             document.getElementById('editKraPIN').value.trim(),
+        registration_number: document.getElementById('editRegNum').value.trim(),
+        description:         document.getElementById('editDesc').value.trim(),
+        is_active:           document.getElementById('editIsActive').checked,
+    };
+
+    document.getElementById('saveBizSpinner').style.display = 'inline-block';
+    try {
+        const res = await apiFetch(`/api/businesses/${editingBizId}/`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            const idx = allBiz.findIndex(b => b.id === editingBizId);
+            if (idx !== -1) allBiz[idx] = { ...allBiz[idx], ...data };
+            closeModal('editBizModal');
+            showToast('✅ Business updated');
+            updateStats();
+            renderTable();
+        } else {
+            showModalErr('editBizError', data.detail || data.name?.[0] || 'Failed to save.');
+        }
+    } catch(e) { showModalErr('editBizError', 'Network error.'); }
+    finally { document.getElementById('saveBizSpinner').style.display = 'none'; }
+}
+
+async function deleteBusinessConfirm() {
+    const b = allBiz.find(b => b.id === editingBizId);
+    if (!b || !confirm(`Delete "${b.name}"? This cannot be undone.`)) return;
+    try {
+        const res = await apiFetch(`/api/businesses/${editingBizId}/`, {
+            method: 'DELETE', headers: { 'X-CSRFToken': getCsrf() }
+        });
+        if (res.ok || res.status === 204) {
+            allBiz = allBiz.filter(b => b.id !== editingBizId);
+            closeModal('editBizModal');
+            showToast('🗑️ Business deleted');
+            updateStats(); renderTable();
+        } else { showModalErr('editBizError', 'Could not delete.'); }
+    } catch(e) { showModalErr('editBizError', 'Network error.'); }
+}
+
+// ── Export CSV ────────────────────────────────────────────────────
+function exportCSV() {
+    const headers = ['ID','Name','Type','Phone','Location','KRA PIN','Active','Created'];
+    const rows = allBiz.map(b => [
+        b.id, b.name||'', typeLabels[b.sector]||b.sector||'',
+        b.phone_number||'', b.town||b.county||'', b.kra_pin||'',
+        b.is_active !== false ? 'Yes' : 'No',
+        b.created_at ? new Date(b.created_at).toLocaleDateString() : ''
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = `businesses_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); }));
+function showModalErr(id, msg) { const e = document.getElementById(id); e.textContent = '⚠️ ' + msg; e.classList.add('show'); }
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+
+// ── Boot ──────────────────────────────────────────────────────────
+loadAll();
+</script>
 </body>
 </html>

@@ -1,10 +1,850 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiasharaSmart Hub — AI Business Intelligence for Kenyan SMEs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0a0f1e;
+            --paper: #f6f4ef;
+            --white: #ffffff;
+            --green: #1a7a4a;
+            --green-light: #2d9e65;
+            --green-pale: #d4f5e3;
+            --purple: #7c3aed;
+            --purple-pale: #ede9fe;
+            --gold: #d4a017;
+            --gold-pale: #fef3c7;
+            --muted: #6b7280;
+            --border: #e5e3dc;
+            --hero-bg: #0a0f1e;
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            overflow-x: hidden;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--paper); }
+        ::-webkit-scrollbar-thumb { background: var(--green); border-radius: 99px; }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 5vw;
+            height: 68px;
+            background: rgba(10,15,30,0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            transition: background 0.3s;
+        }
+        .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-logo {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: linear-gradient(135deg, var(--green), var(--purple));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800; color: #fff;
+        }
+        .nav-brand-text { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .nav-brand-sub { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+
+        .nav-links { display: flex; align-items: center; gap: 32px; }
+        .nav-links a { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6); text-decoration: none; transition: color 0.15s; }
+        .nav-links a:hover { color: #fff; }
+
+        .nav-cta { display: flex; align-items: center; gap: 10px; }
+        .btn-nav-login { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7); text-decoration: none; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.15); border-radius: 3px; transition: all 0.15s; }
+        .btn-nav-login:hover { color: #fff; border-color: rgba(255,255,255,0.4); }
+        .btn-nav-register { font-size: 13px; font-weight: 700; color: #fff; text-decoration: none; padding: 9px 18px; background: var(--green); border-radius: 3px; transition: background 0.15s; }
+        .btn-nav-register:hover { background: var(--green-light); }
+
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+        .hamburger span { display: block; width: 22px; height: 2px; background: rgba(255,255,255,0.7); border-radius: 2px; transition: all 0.3s; }
+
+        /* ── HERO ── */
+        .hero {
+            background: var(--hero-bg);
+            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+            padding: 100px 5vw 80px;
+            text-align: center;
+        }
+
+        /* Decorative grid */
+        .hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+        }
+
+        /* Glow blobs */
+        .hero-blob { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+        .blob-1 { width: 500px; height: 500px; background: rgba(26,122,74,0.18); top: -100px; left: -100px; animation: float1 8s ease-in-out infinite; }
+        .blob-2 { width: 400px; height: 400px; background: rgba(124,58,237,0.15); bottom: -80px; right: -80px; animation: float2 10s ease-in-out infinite; }
+        .blob-3 { width: 300px; height: 300px; background: rgba(212,160,23,0.1); top: 50%; left: 50%; transform: translate(-50%,-50%); animation: float3 7s ease-in-out infinite; }
+
+        @keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,20px)} }
+        @keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,30px)} }
+        @keyframes float3 { 0%,100%{transform:translate(-50%,-50%) scale(1)} 50%{transform:translate(-50%,-50%) scale(1.1)} }
+
+        .hero-content { position: relative; z-index: 2; max-width: 860px; margin: 0 auto; }
+
+        .hero-eyebrow {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--green-light); font-family: 'DM Mono', monospace;
+            background: rgba(26,122,74,0.12); border: 1px solid rgba(26,122,74,0.3);
+            padding: 6px 14px; border-radius: 2px; margin-bottom: 28px;
+            animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.1s both;
+        }
+        .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-light); animation: blink 1.4s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+        .hero-title {
+            font-size: clamp(2.6rem, 6vw, 4.8rem);
+            font-weight: 800; color: #fff; line-height: 1.08; letter-spacing: -0.03em;
+            margin-bottom: 24px;
+            animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s both;
+        }
+        .hero-title em { font-style: italic; font-family: 'Playfair Display', serif; color: #a3e6c1; }
+        .hero-title .highlight {
+            background: linear-gradient(90deg, #2d9e65, #7c3aed);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .hero-sub {
+            font-size: clamp(1rem, 2vw, 1.2rem); color: rgba(255,255,255,0.55);
+            font-weight: 400; max-width: 580px; margin: 0 auto 40px; line-height: 1.7;
+            animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.3s both;
+        }
+
+        .hero-actions {
+            display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;
+            animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.4s both;
+            margin-bottom: 56px;
+        }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--green); color: #fff; text-decoration: none;
+            font-size: 14px; font-weight: 700; padding: 14px 28px; border-radius: 3px;
+            transition: all 0.2s; border: none; cursor: pointer;
+        }
+        .btn-primary:hover { background: var(--green-light); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(26,122,74,0.35); }
+
+        .btn-secondary {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: transparent; color: rgba(255,255,255,0.75); text-decoration: none;
+            font-size: 14px; font-weight: 600; padding: 13px 28px; border-radius: 3px;
+            border: 1.5px solid rgba(255,255,255,0.2); transition: all 0.2s;
+        }
+        .btn-secondary:hover { color: #fff; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); }
+
+        /* Stats bar */
+        .hero-stats {
+            display: flex; align-items: center; justify-content: center; gap: 0;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px; overflow: hidden;
+            animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.5s both;
+        }
+        .hero-stat {
+            flex: 1; padding: 20px 28px; text-align: center;
+            border-right: 1px solid rgba(255,255,255,0.08);
+        }
+        .hero-stat:last-child { border-right: none; }
+        .hero-stat-val { font-size: 24px; font-weight: 800; color: #fff; font-family: 'DM Mono', monospace; letter-spacing: -0.02em; }
+        .hero-stat-lbl { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+        /* Scroll cue */
+        .scroll-cue { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; color: rgba(255,255,255,0.25); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; animation: fadeUp 1s 1s both; cursor: pointer; }
+        .scroll-arrow { width: 20px; height: 20px; border-right: 2px solid rgba(255,255,255,0.2); border-bottom: 2px solid rgba(255,255,255,0.2); transform: rotate(45deg); animation: bounce 2s infinite; }
+        @keyframes bounce { 0%,100%{transform:rotate(45deg) translateY(0)} 50%{transform:rotate(45deg) translateY(4px)} }
+
+        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── SECTION COMMON ── */
+        section { padding: 100px 5vw; }
+        .section-label {
+            display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+            text-transform: uppercase; color: var(--green); font-family: 'DM Mono', monospace;
+            background: var(--green-pale); padding: 5px 12px; border-radius: 2px; margin-bottom: 16px;
+        }
+        .section-title { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 16px; }
+        .section-sub { font-size: 16px; color: var(--muted); max-width: 520px; line-height: 1.7; }
+        .section-header { margin-bottom: 56px; }
+
+        /* ── FEATURES ── */
+        #features { background: var(--white); }
+        .features-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; margin-bottom: 80px; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+
+        .feat-card {
+            background: #fff; padding: 32px 28px;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .feat-card:hover { background: #fafaf8; z-index: 1; }
+        .feat-card:hover .feat-icon-wrap { background: var(--green); }
+        .feat-card:hover .feat-icon-wrap span { filter: brightness(0) invert(1); }
+
+        .feat-icon-wrap {
+            width: 48px; height: 48px; border-radius: 3px;
+            background: var(--green-pale); display: flex; align-items: center; justify-content: center;
+            font-size: 22px; margin-bottom: 18px; transition: background 0.2s;
+        }
+        .feat-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.01em; }
+        .feat-card p { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+        .feat-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 3px 8px; border-radius: 2px; display: inline-block; margin-top: 14px; font-family: 'DM Mono', monospace; }
+        .tag-green { background: var(--green-pale); color: var(--green); }
+        .tag-purple { background: var(--purple-pale); color: var(--purple); }
+        .tag-gold { background: var(--gold-pale); color: var(--gold); }
+
+        /* ── HOW IT WORKS ── */
+        #how { background: var(--paper); }
+        .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
+        .steps::before {
+            content: '';
+            position: absolute; top: 36px; left: calc(12.5% + 20px); right: calc(12.5% + 20px);
+            height: 1px; background: var(--border); z-index: 0;
+        }
+        .step { text-align: center; padding: 0 24px; position: relative; z-index: 1; }
+        .step-num {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: #fff; border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800; font-family: 'DM Mono', monospace;
+            color: var(--ink); margin: 0 auto 20px; transition: all 0.2s;
+        }
+        .step:hover .step-num { background: var(--green); color: #fff; border-color: var(--green); transform: scale(1.1); }
+        .step h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+        .step p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+        /* ── CHANNELS ── */
+        #channels { background: var(--ink); color: #fff; }
+        #channels .section-label { background: rgba(26,122,74,0.15); color: #6ee7a8; }
+        #channels .section-title { color: #fff; }
+        #channels .section-sub { color: rgba(255,255,255,0.5); }
+
+        .channels-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .channel-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px; padding: 32px 28px; transition: all 0.2s;
+        }
+        .channel-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(26,122,74,0.4); transform: translateY(-3px); }
+        .channel-icon { font-size: 36px; margin-bottom: 18px; }
+        .channel-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+        .channel-card p { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.65; margin-bottom: 16px; }
+        .channel-detail { font-size: 12px; font-family: 'DM Mono', monospace; color: #6ee7a8; background: rgba(26,122,74,0.12); border: 1px solid rgba(26,122,74,0.2); padding: 8px 12px; border-radius: 2px; display: inline-block; }
+
+        /* ── PRICING ── */
+        #pricing { background: var(--white); }
+        .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .price-card {
+            border: 1.5px solid var(--border); border-radius: 4px; padding: 36px 32px;
+            position: relative; transition: all 0.2s;
+        }
+        .price-card:hover { border-color: var(--green); box-shadow: 0 12px 40px rgba(26,122,74,0.1); transform: translateY(-4px); }
+        .price-card.featured { border-color: var(--green); background: linear-gradient(135deg, #f0fdf8, #fff); }
+        .price-card.featured::before { content: 'Most Popular'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--green); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 14px; border-radius: 2px; white-space: nowrap; font-family: 'DM Mono', monospace; }
+        .price-name { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 12px; }
+        .price-amount { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; font-family: 'DM Mono', monospace; line-height: 1; }
+        .price-currency { font-size: 16px; font-weight: 600; vertical-align: super; }
+        .price-period { font-size: 13px; color: var(--muted); margin: 6px 0 24px; }
+        .price-features { list-style: none; margin-bottom: 28px; }
+        .price-features li { font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; color: var(--muted); }
+        .price-features li:last-child { border-bottom: none; }
+        .price-features li .check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+        .price-features li .cross { color: #d1d5db; flex-shrink: 0; }
+        .btn-price {
+            display: block; width: 100%; padding: 12px; border-radius: 3px; font-size: 14px; font-weight: 700;
+            text-align: center; text-decoration: none; border: none; cursor: pointer; font-family: 'Sora', sans-serif;
+            transition: all 0.15s;
+        }
+        .btn-price-outline { background: transparent; border: 1.5px solid var(--border); color: var(--ink); }
+        .btn-price-outline:hover { border-color: var(--green); color: var(--green); }
+        .btn-price-solid { background: var(--green); color: #fff; }
+        .btn-price-solid:hover { background: var(--green-light); }
+
+        /* ── API ── */
+        #api { background: var(--paper); }
+        .api-layout { display: grid; grid-template-columns: 1fr 1.1fr; gap: 60px; align-items: center; }
+        .api-terminal {
+            background: #0f1117; border-radius: 6px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+        }
+        .terminal-bar { background: #1a1f2e; padding: 12px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .term-dot.red { background: #ff5f56; } .term-dot.yellow { background: #ffbd2e; } .term-dot.green { background: #27c93f; }
+        .term-label { font-size: 11px; color: rgba(255,255,255,0.25); font-family: 'DM Mono', monospace; margin-left: 8px; }
+        .terminal-body { padding: 24px; font-family: 'DM Mono', monospace; font-size: 12px; line-height: 2; }
+        .t-comment { color: rgba(255,255,255,0.2); }
+        .t-method { color: #7dd3fc; }
+        .t-url { color: #a5f3fc; }
+        .t-key { color: #c4b5fd; }
+        .t-val { color: #86efac; }
+        .t-string { color: #fca5a5; }
+        .t-line { display: flex; gap: 8px; }
+
+        .api-endpoints { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; }
+        .api-ep {
+            display: flex; align-items: center; gap: 12px;
+            background: #fff; border: 1px solid var(--border); border-radius: 3px; padding: 12px 16px;
+            transition: all 0.15s;
+        }
+        .api-ep:hover { border-color: var(--green); background: var(--green-pale); }
+        .ep-method { font-size: 9px; font-weight: 700; font-family: 'DM Mono', monospace; padding: 3px 7px; border-radius: 2px; min-width: 40px; text-align: center; }
+        .ep-get { background: #dcfce7; color: #16a34a; }
+        .ep-post { background: #fef3c7; color: #d97706; }
+        .ep-url { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--ink); }
+        .ep-desc { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+        /* ── TESTIMONIALS ── */
+        #testimonials { background: var(--white); }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .testi-card { border: 1px solid var(--border); border-radius: 4px; padding: 28px; position: relative; transition: all 0.2s; }
+        .testi-card:hover { border-color: var(--green); box-shadow: 0 8px 28px rgba(26,122,74,0.08); }
+        .testi-quote { font-size: 36px; color: var(--green); line-height: 1; margin-bottom: 16px; font-family: Georgia, serif; }
+        .testi-text { font-size: 14px; line-height: 1.7; color: var(--ink); margin-bottom: 20px; font-style: italic; }
+        .testi-author { display: flex; align-items: center; gap: 12px; }
+        .testi-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: var(--green); }
+        .testi-name { font-size: 13px; font-weight: 700; }
+        .testi-role { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+        .testi-stars { color: var(--gold); font-size: 12px; margin-bottom: 10px; }
+
+        /* ── CTA ── */
+        #cta {
+            background: var(--ink); color: #fff;
+            text-align: center; padding: 120px 5vw;
+            position: relative; overflow: hidden;
+        }
+        #cta::before {
+            content: ''; position: absolute; inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        .cta-content { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }
+        #cta .section-title { color: #fff; }
+        #cta .section-sub { color: rgba(255,255,255,0.45); margin: 0 auto 40px; }
+        .cta-btns { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+        .cta-note { font-size: 12px; color: rgba(255,255,255,0.25); margin-top: 20px; font-family: 'DM Mono', monospace; }
+
+        /* ── FOOTER ── */
+        footer { background: #07090f; color: rgba(255,255,255,0.4); }
+        .footer-top {
+            display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 48px;
+            padding: 64px 5vw 48px; border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .footer-brand .nav-brand-text { color: rgba(255,255,255,0.8); font-size: 16px; }
+        .footer-brand p { font-size: 13px; margin-top: 10px; line-height: 1.6; max-width: 240px; }
+        .footer-col h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.6); margin-bottom: 16px; }
+        .footer-col a { display: block; font-size: 13px; color: rgba(255,255,255,0.35); text-decoration: none; margin-bottom: 10px; transition: color 0.15s; }
+        .footer-col a:hover { color: rgba(255,255,255,0.8); }
+        .footer-bottom { display: flex; align-items: center; justify-content: space-between; padding: 20px 5vw; font-size: 12px; }
+        .footer-bottom a { color: rgba(255,255,255,0.3); text-decoration: none; }
+        .footer-bottom a:hover { color: rgba(255,255,255,0.6); }
+        .ke-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); padding: 5px 10px; border-radius: 2px; font-size: 11px; font-family: 'DM Mono', monospace; }
+
+        /* ── MOBILE NAV DRAWER ── */
+        .mobile-nav { display: none; position: fixed; inset: 0; background: rgba(10,15,30,0.97); z-index: 999; padding: 80px 32px 32px; flex-direction: column; gap: 8px; }
+        .mobile-nav.open { display: flex; }
+        .mobile-nav a { font-size: 20px; font-weight: 600; color: rgba(255,255,255,0.7); text-decoration: none; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.06); transition: color 0.15s; }
+        .mobile-nav a:hover { color: #fff; }
+        .mobile-nav-close { position: absolute; top: 20px; right: 24px; background: none; border: none; color: rgba(255,255,255,0.4); font-size: 28px; cursor: pointer; }
+
+        /* ── REVEAL ANIMATIONS ── */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.16,1,0.3,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-d1 { transition-delay: 0.1s; }
+        .reveal-d2 { transition-delay: 0.2s; }
+        .reveal-d3 { transition-delay: 0.3s; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 1024px) {
+            .features-intro { grid-template-columns: 1fr; gap: 32px; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .api-layout { grid-template-columns: 1fr; }
+            .footer-top { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            section { padding: 72px 5vw; }
+            .steps { grid-template-columns: 1fr 1fr; gap: 32px; }
+            .steps::before { display: none; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .channels-grid { grid-template-columns: 1fr; }
+            .testimonials-grid { grid-template-columns: 1fr; }
+            .hero-stats { flex-direction: column; }
+            .hero-stat { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
+            .hero-stat:last-child { border-bottom: none; }
+            .nav-links, .nav-cta { display: none; }
+            .hamburger { display: flex; }
+            .footer-top { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+        }
+        @media (max-width: 480px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .steps { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-$END$
+
+<!-- ── NAV ──────────────────────────────────────────────────── -->
+<nav id="mainNav">
+    <a href="/" class="nav-brand">
+        <div class="nav-logo">B</div>
+        <div>
+            <div class="nav-brand-text">BiasharaSmart Hub</div>
+            <div class="nav-brand-sub">AI · Kenya · SMEs</div>
+        </div>
+    </a>
+    <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how">How It Works</a>
+        <a href="#channels">Access</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#api">API</a>
+    </div>
+    <div class="nav-cta">
+        <a href="/login/" class="btn-nav-login">Login</a>
+        <a href="/register/?plan=free" class="btn-nav-register">Get Started →</a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+    </button>
+</nav>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav" id="mobileNav">
+    <button class="mobile-nav-close" id="mobileClose">✕</button>
+    <a href="#features" onclick="closeMobileNav()">Features</a>
+    <a href="#how" onclick="closeMobileNav()">How It Works</a>
+    <a href="#channels" onclick="closeMobileNav()">Access</a>
+    <a href="#pricing" onclick="closeMobileNav()">Pricing</a>
+    <a href="#api" onclick="closeMobileNav()">API</a>
+    <a href="/login/" onclick="closeMobileNav()">Login</a><a href="/register/?plan=free" onclick="closeMobileNav()" style="color:#6ee7a8;">Get Started →</a>
+</div>
+
+<!-- ── HERO ──────────────────────────────────────────────────── -->
+<section class="hero" id="home">
+    <div class="hero-blob blob-1"></div>
+    <div class="hero-blob blob-2"></div>
+    <div class="hero-blob blob-3"></div>
+    <div class="hero-content">
+        <div class="hero-eyebrow">
+            <span class="eyebrow-dot"></span>
+            🇰🇪 Built for Kenyan SMEs · Kenya Vision 2030
+        </div>
+        <h1 class="hero-title">
+            Run your business<br>with <em>AI intelligence</em><br>at your side
+        </h1>
+        <p class="hero-sub">
+            BiasharaSmart Hub gives Kenyan small and medium enterprises real-time analytics, AI-powered forecasting, M-Pesa integration, and inventory management — all in one platform.
+        </p>
+        <div class="hero-actions">
+            <a href="/register/" class="btn-primary">Start Free Today →</a>
+            <a href="#features" class="btn-secondary">See All Features</a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat-val">85%+</div>
+                <div class="hero-stat-lbl">Forecast Accuracy</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-val">3</div>
+                <div class="hero-stat-lbl">Access Channels</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-val">KES</div>
+                <div class="hero-stat-lbl">M-Pesa Native</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-val">24/7</div>
+                <div class="hero-stat-lbl">Live Monitoring</div>
+            </div>
+        </div>
+    </div>
+    <div class="scroll-cue" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">
+        <span>Scroll</span>
+        <div class="scroll-arrow"></div>
+    </div>
+</section>
+
+<!-- ── FEATURES ──────────────────────────────────────────────── -->
+<section id="features">
+    <div class="features-intro">
+        <div class="reveal">
+            <span class="section-label">Features</span>
+            <h2 class="section-title">Everything your<br>business needs to grow</h2>
+            <p class="section-sub">From real-time sales tracking to AI-powered forecasting, BiasharaSmart Hub is your complete business intelligence partner.</p>
+        </div>
+        <div class="reveal reveal-d1" style="display:flex;gap:12px;flex-wrap:wrap;">
+            <div style="background:var(--green-pale);border-radius:4px;padding:20px 24px;flex:1;min-width:160px;">
+                <div style="font-size:26px;font-weight:800;font-family:'DM Mono',monospace;color:var(--green);">9+</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px;">API endpoints ready</div>
+            </div>
+            <div style="background:var(--purple-pale);border-radius:4px;padding:20px 24px;flex:1;min-width:160px;">
+                <div style="font-size:26px;font-weight:800;font-family:'DM Mono',monospace;color:var(--purple);">3</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px;">Access channels (Web, USSD, WhatsApp)</div>
+            </div>
+            <div style="background:var(--gold-pale);border-radius:4px;padding:20px 24px;flex:1;min-width:160px;">
+                <div style="font-size:26px;font-weight:800;font-family:'DM Mono',monospace;color:var(--gold);">KES</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px;">M-Pesa native integration</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="features-grid reveal">
+        <div class="feat-card">
+            <div class="feat-icon-wrap"><span>📊</span></div>
+            <h3>Real-Time Analytics</h3>
+            <p>Track sales, expenses, and profit with interactive dashboards. Get instant insights into your business performance as it happens.</p>
+            <span class="feat-tag tag-green">Live Data</span>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon-wrap"><span>🤖</span></div>
+            <h3>AI-Powered Forecasting</h3>
+            <p>Predict future sales and expenses with machine learning models trained on your business data. Make decisions with 85%+ accuracy.</p>
+            <span class="feat-tag tag-purple">ML Powered</span>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon-wrap"><span>📦</span></div>
+            <h3>Inventory Management</h3>
+            <p>Track stock levels in real time, receive low-stock alerts, and optimise your inventory to prevent stock-outs and overstocking.</p>
+            <span class="feat-tag tag-green">Auto Alerts</span>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon-wrap"><span>💳</span></div>
+            <h3>M-Pesa Integration</h3>
+            <p>Record transactions directly from M-Pesa. Apply for loans and build your credit score with consistent, verifiable business records.</p>
+            <span class="feat-tag tag-gold">M-Pesa Native</span>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon-wrap"><span>📄</span></div>
+            <h3>Report Generation</h3>
+            <p>Generate professional reports in PDF, CSV, and HTML for tax filing, audits, and loan applications in seconds.</p>
+            <span class="feat-tag tag-green">PDF · CSV · HTML</span>
+        </div>
+        <div class="feat-card">
+            <div class="feat-icon-wrap"><span>🚨</span></div>
+            <h3>Business Alerts</h3>
+            <p>Get smart alerts for low stock, unusual transactions, missed targets, and critical business events — before they become problems.</p>
+            <span class="feat-tag tag-purple">Proactive</span>
+        </div>
+    </div>
+</section>
+
+<!-- ── HOW IT WORKS ──────────────────────────────────────────── -->
+<section id="how">
+    <div class="section-header reveal" style="text-align:center;">
+        <span class="section-label">How It Works</span>
+        <h2 class="section-title">Up and running in minutes</h2>
+        <p class="section-sub" style="margin: 0 auto;">No technical expertise needed. BiasharaSmart Hub is built for real Kenyan business owners.</p>
+    </div>
+    <div class="steps">
+        <div class="step reveal">
+            <div class="step-num">01</div>
+            <h4>Create Your Account</h4>
+            <p>Register with your phone number, verify via OTP, and set up your business profile in under 3 minutes.</p>
+        </div>
+        <div class="step reveal reveal-d1">
+            <div class="step-num">02</div>
+            <h4>Connect Your Business</h4>
+            <p>Add your business details, inventory, and link your M-Pesa account for automatic transaction tracking.</p>
+        </div>
+        <div class="step reveal reveal-d2">
+            <div class="step-num">03</div>
+            <h4>Track Everything</h4>
+            <p>Record sales, expenses and stock movements via Web, USSD on any phone, or WhatsApp — wherever you are.</p>
+        </div>
+        <div class="step reveal reveal-d3">
+            <div class="step-num">04</div>
+            <h4>Grow with AI Insights</h4>
+            <p>Get forecasts, alerts, and recommendations that help you stock smarter, sell more, and plan with confidence.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ── CHANNELS ──────────────────────────────────────────────── -->
+<section id="channels">
+    <div class="section-header reveal" style="text-align:center;">
+        <span class="section-label">Multi-Channel Access</span>
+        <h2 class="section-title" style="color:#fff;">Access your business<br>from anywhere</h2>
+        <p class="section-sub" style="margin: 0 auto; color:rgba(255,255,255,0.45);">BiasharaSmart Hub works on every device — even feature phones with no data connection.</p>
+    </div>
+    <div class="channels-grid">
+        <div class="channel-card reveal">
+            <div class="channel-icon">🌐</div>
+            <h3>Web Dashboard</h3>
+            <p>Full-featured browser dashboard with interactive charts, inventory management, AI forecasts, and report generation. Works on any browser.</p>
+            <span class="channel-detail">app.biasharasmarthub.co.ke</span>
+        </div>
+        <div class="channel-card reveal reveal-d1">
+            <div class="channel-icon">📱</div>
+            <h3>USSD Access</h3>
+            <p>Record transactions and check your balance from any mobile phone — no internet needed. Perfect for low-connectivity areas across Kenya.</p>
+            <span class="channel-detail">Dial *123#</span>
+        </div>
+        <div class="channel-card reveal reveal-d2">
+            <div class="channel-icon">💬</div>
+            <h3>WhatsApp Bot</h3>
+            <p>Chat with your business data on WhatsApp. Ask questions, record sales, and get AI-powered summaries directly in your favourite app.</p>
+            <span class="channel-detail">WhatsApp +254XXXXXXXXX → "Hi"</span>
+        </div>
+    </div>
+</section>
+
+<!-- ── PRICING ──────────────────────────────────────────────── -->
+<section id="pricing">
+    <div class="section-header reveal" style="text-align:center;">
+        <span class="section-label">Pricing</span>
+        <h2 class="section-title">Simple, affordable plans</h2>
+        <p class="section-sub" style="margin: 0 auto;">Start free. Upgrade as you grow. All plans include M-Pesa integration.</p>
+    </div>
+    <div class="pricing-grid">
+        <div class="price-card reveal">
+            <div class="price-name">Free</div>
+            <div class="price-amount"><span class="price-currency">KES</span> 0</div>
+            <div class="price-period">Forever free</div>
+            <ul class="price-features">
+                <li><span class="check">✓</span> 1 Business profile</li>
+                <li><span class="check">✓</span> Basic sales tracking</li>
+                <li><span class="check">✓</span> USSD access</li>
+                <li><span class="check">✓</span> 50 transactions/month</li>
+                <li><span class="cross">✗</span> AI forecasting</li>
+                <li><span class="cross">✗</span> Report generation</li>
+            </ul>
+            <a href="/register/?plan=free" class="btn-price btn-price-outline">Get Started Free</a>
+        </div>
+            <div class="price-card featured reveal reveal-d1">
+                <div class="price-name">Pro</div>
+            <div class="price-amount"><span class="price-currency">KES</span> 999</div>
+            <div class="price-period">per month</div>
+            <ul class="price-features">
+                <li><span class="check">✓</span> 3 Business profiles</li>
+                <li><span class="check">✓</span> Full analytics dashboard</li>
+                <li><span class="check">✓</span> Web + USSD + WhatsApp</li>
+                <li><span class="check">✓</span> Unlimited transactions</li>
+                <li><span class="check">✓</span> AI forecasting</li>
+                <li><span class="check">✓</span> PDF & CSV reports</li>
+            </ul>
+            <a href="/register/?plan=pro" class="btn-price btn-price-solid">Start Basic →</a>
+        </div>
+        <div class="price-card reveal reveal-d2">
+            <div class="price-name">Enterprise</div>
+            <div class="price-amount"><span class="price-currency">KES</span> 2,499</div>
+            <div class="price-period">per month</div>
+            <ul class="price-features">
+                <li><span class="check">✓</span> Unlimited businesses</li>
+                <li><span class="check">✓</span> Priority AI models</li>
+                <li><span class="check">✓</span> All access channels</li>
+                <li><span class="check">✓</span> Unlimited transactions</li>
+                <li><span class="check">✓</span> Advanced forecasting</li>
+                <li><span class="check">✓</span> Loan application support</li>
+            </ul>
+            <a href="/register/?plan=enterprise" class="btn-price btn-price-outline">Go Pro →</a>
+        </div>
+    </div>
+</section>
+
+<!-- ── API ───────────────────────────────────────────────────── -->
+<section id="api">
+    <div class="api-layout">
+        <div class="reveal">
+            <span class="section-label">Developer API</span>
+            <h2 class="section-title">Build on top of BiasharaSmart</h2>
+            <p class="section-sub" style="margin-bottom:32px;">A clean REST API gives developers full access to business data, analytics, forecasts, and alerts. Perfect for integrations and custom apps.</p>
+            <div class="api-endpoints">
+                <div class="api-ep"><span class="ep-method ep-post">POST</span><span class="ep-url">/api/auth/register/</span><span class="ep-desc">User registration</span></div>
+                <div class="api-ep"><span class="ep-method ep-post">POST</span><span class="ep-url">/api/auth/login/</span><span class="ep-desc">Authentication</span></div>
+                <div class="api-ep"><span class="ep-method ep-post">POST</span><span class="ep-url">/api/auth/verify-otp/</span><span class="ep-desc">Phone verify</span></div>
+                <div class="api-ep"><span class="ep-method ep-get">GET</span><span class="ep-url">/api/businesses/</span><span class="ep-desc">List businesses</span></div>
+                <div class="api-ep"><span class="ep-method ep-post">POST</span><span class="ep-url">/api/transactions/</span><span class="ep-desc">Record sale</span></div>
+                <div class="api-ep"><span class="ep-method ep-get">GET</span><span class="ep-url">/api/analytics/dashboard/</span><span class="ep-desc">Dashboard data</span></div>
+                <div class="api-ep"><span class="ep-method ep-get">GET</span><span class="ep-url">/api/analytics/forecasts/</span><span class="ep-desc">AI predictions</span></div>
+                <div class="api-ep"><span class="ep-method ep-get">GET</span><span class="ep-url">/api/analytics/alerts/</span><span class="ep-desc">Business alerts</span></div>
+            </div>
+        </div>
+        <div class="api-terminal reveal reveal-d1">
+            <div class="terminal-bar">
+                <div class="term-dot red"></div>
+                <div class="term-dot yellow"></div>
+                <div class="term-dot green"></div>
+                <span class="term-label">POST /api/transactions/</span>
+            </div>
+            <div class="terminal-body">
+                <div class="t-line"><span class="t-comment"># Record a sale</span></div>
+                <div class="t-line"><span class="t-method">POST</span> <span class="t-url">https://api.biasharasmarthub.co.ke/api/transactions/</span></div>
+                <div style="height:12px;"></div>
+                <div class="t-line"><span class="t-comment"># Request body</span></div>
+                <div class="t-line"><span style="color:rgba(255,255,255,0.4)">{</span></div>
+                <div class="t-line" style="padding-left:16px;"><span class="t-key">"business"</span>: <span class="t-val">1</span>,</div>
+                <div class="t-line" style="padding-left:16px;"><span class="t-key">"type"</span>: <span class="t-string">"sale"</span>,</div>
+                <div class="t-line" style="padding-left:16px;"><span class="t-key">"amount"</span>: <span class="t-val">1500.00</span>,</div>
+                <div class="t-line" style="padding-left:16px;"><span class="t-key">"currency"</span>: <span class="t-string">"KES"</span>,</div>
+                <div class="t-line" style="padding-left:16px;"><span class="t-key">"payment_method"</span>: <span class="t-string">"mpesa"</span>,</div>
+                <div class="t-line" style="padding-left:16px;"><span class="t-key">"description"</span>: <span class="t-string">"Product sale"</span></div>
+                <div class="t-line"><span style="color:rgba(255,255,255,0.4)">}</span></div>
+                <div style="height:12px;"></div>
+                <div class="t-line"><span class="t-comment"># Response 201 Created</span></div>
+                <div class="t-line"><span style="color:rgba(255,255,255,0.4)">{</span></div>
+                <div class="t-line" style="padding-left:16px;"><span class="t-key">"id"</span>: <span class="t-val">2847</span>,</div>
+                <div class="t-line" style="padding-left:16px;"><span class="t-key">"status"</span>: <span class="t-string">"completed"</span>,</div>
+                <div class="t-line" style="padding-left:16px;"><span class="t-key">"mpesa_ref"</span>: <span class="t-string">"QHX4P2KR91"</span></div>
+                <div class="t-line"><span style="color:rgba(255,255,255,0.4)">}</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── TESTIMONIALS ──────────────────────────────────────────── -->
+<section id="testimonials">
+    <div class="section-header reveal" style="text-align:center;">
+        <span class="section-label">Testimonials</span>
+        <h2 class="section-title">Trusted by Kenyan SMEs</h2>
+        <p class="section-sub" style="margin: 0 auto;">Hear from business owners already using BiasharaSmart Hub to grow.</p>
+    </div>
+    <div class="testimonials-grid">
+        <div class="testi-card reveal">
+            <div class="testi-stars">★★★★★</div>
+            <div class="testi-quote">"</div>
+            <p class="testi-text">The AI forecasting helped me stock the right products before the festive season. I saved KES 40,000 in dead stock and increased my sales by 30%.</p>
+            <div class="testi-author">
+                <div class="testi-avatar">W</div>
+                <div>
+                    <div class="testi-name">Wanjiku Kamau</div>
+                    <div class="testi-role">Retail Shop · Nairobi</div>
+                </div>
+            </div>
+        </div>
+        <div class="testi-card reveal reveal-d1">
+            <div class="testi-stars">★★★★★</div>
+            <div class="testi-quote">"</div>
+            <p class="testi-text">USSD access is a game changer. I record every sale from my market stall using just my basic phone. The WhatsApp reports at end of day are incredible.</p>
+            <div class="testi-author">
+                <div class="testi-avatar">O</div>
+                <div>
+                    <div class="testi-name">Otieno Mwangi</div>
+                    <div class="testi-role">Market Trader · Kisumu</div>
+                </div>
+            </div>
+        </div>
+        <div class="testi-card reveal reveal-d2">
+            <div class="testi-stars">★★★★★</div>
+            <div class="testi-quote">"</div>
+            <p class="testi-text">My bank approved my business loan because of the transaction history from BiasharaSmart Hub. The M-Pesa records and PDF reports made the application simple.</p>
+            <div class="testi-author">
+                <div class="testi-avatar">F</div>
+                <div>
+                    <div class="testi-name">Fatuma Abdi</div>
+                    <div class="testi-role">Salon Owner · Mombasa</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── CTA ───────────────────────────────────────────────────── -->
+<section id="cta">
+    <div class="cta-content">
+        <span class="section-label" style="background:rgba(26,122,74,0.15);color:#6ee7a8;">Get Started Today</span>
+        <h2 class="section-title" style="margin-top:14px;">Your business intelligence<br>starts here</h2>
+        <p class="section-sub">Join Kenyan SMEs already using BiasharaSmart Hub. Free plan available — no credit card needed.</p>
+        <div class="cta-btns">
+            <a href="/register/?plan=free" class="btn-primary" style="font-size:15px;padding:16px 32px;">Create Free Account →</a>
+            <a href="/login/" class="btn-secondary" style="font-size:15px;padding:15px 32px;">Login</a>
+        </div>
+        <p class="cta-note">🇰🇪 Part of Kenya Vision 2030 · KES billing · M-Pesa ready</p>
+    </div>
+</section>
+
+<!-- ── FOOTER ────────────────────────────────────────────────── -->
+<footer>
+    <div class="footer-top">
+        <div class="footer-brand">
+            <a href="/" class="nav-brand" style="margin-bottom:12px;display:inline-flex;">
+                <div class="nav-logo" style="width:30px;height:30px;font-size:14px;">B</div>
+                <div class="nav-brand-text" style="margin-left:10px;">BiasharaSmart Hub</div>
+            </a>
+            <p>AI-powered business intelligence for Kenyan small and medium enterprises. Built for Vision 2030.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Product</h4>
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#api">API Docs</a>
+            <a href="#channels">Access Channels</a>
+        </div>
+        <div class="footer-col">
+            <h4>Company</h4>
+            <a href="#">About Us</a>
+            <a href="#">Blog</a>
+            <a href="#">Contact</a>
+            <a href="#">Careers</a>
+        </div>
+        <div class="footer-col">
+            <h4>Legal</h4>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Cookie Policy</a>
+            <a href="#">Data Protection</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>© 2026 BiasharaSmart Hub. All rights reserved.</span>
+        <span class="ke-badge">🇰🇪 Made in Kenya</span>
+        <div style="display:flex;gap:20px;">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+// ── Mobile Nav ─────────────────────────────────────────────────
+document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('mobileNav').classList.add('open');
+});
+document.getElementById('mobileClose').addEventListener('click', closeMobileNav);
+function closeMobileNav() {
+    document.getElementById('mobileNav').classList.remove('open');
+}
+
+// ── Scroll Reveal ──────────────────────────────────────────────
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.12 });
+revealEls.forEach(el => observer.observe(el));
+
+// ── Nav scroll style ───────────────────────────────────────────
+window.addEventListener('scroll', () => {
+    const nav = document.getElementById('mainNav');
+    if (window.scrollY > 60) {
+        nav.style.background = 'rgba(10,15,30,0.98)';
+        nav.style.borderBottomColor = 'rgba(255,255,255,0.1)';
+    } else {
+        nav.style.background = 'rgba(10,15,30,0.92)';
+        nav.style.borderBottomColor = 'rgba(255,255,255,0.06)';
+    }
+});
+</script>
 </body>
 </html>

@@ -1,10 +1,508 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suppliers - Admin Panel | BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-pale: #d8f3dc; --gold: #e9c46a;
+            --error: #c1121f; --error-pale: #fce4e4; --warn: #d4860a;
+            --warn-pale: #fef3cd; --muted: #6b7280; --border: #e2e0d8;
+            --admin: #7c3aed; --admin-pale: #ede9fe;
+            --blue: #0ea5e9; --blue-pale: #e0f2fe;
+            --purple: #7c3aed; --purple-pale: #ede9fe;
+            --sidebar-w: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; }
+        .sidebar { width: var(--sidebar-w); background: #1a0533; min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-badge { display: inline-block; background: var(--admin); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 8px; }
+        .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .brand-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 3px; }
+        .sidebar-nav { padding: 16px 0; flex: 1; overflow-y: auto; }
+        .nav-section { padding: 12px 24px 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5); text-decoration: none; transition: all 0.15s; border-left: 2px solid transparent; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: #c4b5fd; background: rgba(124,58,237,0.15); border-left-color: var(--admin); }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .admin-pill { display: flex; align-items: center; gap: 10px; }
+        .admin-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--admin); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .admin-info { flex: 1; min-width: 0; }
+        .admin-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .admin-role { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+        .logout-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.3); font-size: 16px; padding: 4px; transition: color 0.15s; }
+        .logout-btn:hover { color: var(--error); }
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-left h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+        .topbar-right { display: flex; gap: 10px; align-items: center; }
+        .content { padding: 28px 32px; flex: 1; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+        .btn-admin { background: var(--admin); color: #fff; }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--ink); }
+        .btn-danger { background: none; color: var(--error); border: 1.5px solid var(--border); }
+        .btn-danger:hover { background: var(--error-pale); border-color: var(--error); }
+        .btn-purple { background: var(--purple); color: #fff; }
+        .btn-purple:hover { background: #6d28d9; }
+        .btn-sm { padding: 5px 10px; font-size: 11px; }
+        @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 18px 20px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; display: flex; align-items: center; gap: 14px; position: relative; overflow: hidden; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .stat-card.purple::before { background: var(--purple); }
+        .stat-card.green::before { background: var(--accent); }
+        .stat-card.gold::before { background: var(--gold); }
+        .stat-card.blue::before { background: var(--blue); }
+        .stat-card:nth-child(1){animation-delay:.05s}.stat-card:nth-child(2){animation-delay:.1s}.stat-card:nth-child(3){animation-delay:.15s}.stat-card:nth-child(4){animation-delay:.2s}
+        .stat-icon-wrap { width: 40px; height: 40px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .stat-icon-wrap.purple { background: var(--purple-pale); }
+        .stat-icon-wrap.green { background: var(--accent-pale); }
+        .stat-icon-wrap.gold { background: #fef3cd; }
+        .stat-icon-wrap.blue { background: var(--blue-pale); }
+        .stat-body { flex: 1; }
+        .stat-val { font-size: 22px; font-weight: 700; font-family: 'DM Mono', monospace; line-height: 1; }
+        .stat-lbl { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+        .panel { background: #fff; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) 0.2s both; margin-bottom: 20px; }
+        .panel-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--paper); flex-wrap: wrap; gap: 10px; }
+        .panel-header h3 { font-size: 13px; font-weight: 700; }
+        .panel-tag { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); background: #fff; padding: 3px 8px; border-radius: 2px; border: 1px solid var(--border); }
+        .toolbar { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+        .search-wrap { position: relative; flex: 1; min-width: 200px; }
+        .search-wrap input { width: 100%; padding: 8px 12px 8px 32px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'Sora', sans-serif; background: var(--paper); }
+        .search-wrap input:focus { outline: none; border-color: var(--admin); background: #fff; }
+        .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 12px; pointer-events: none; }
+        .filter-select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'Sora', sans-serif; background: #fff; cursor: pointer; }
+        .filter-select:focus { outline: none; border-color: var(--admin); }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { padding: 10px 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); background: var(--paper); white-space: nowrap; }
+        .data-table td { padding: 13px 20px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #fafaf8; }
+        .badge { font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.06em; display: inline-block; }
+        .badge-green { background: var(--accent-pale); color: var(--accent); }
+        .badge-purple { background: var(--purple-pale); color: var(--purple); }
+        .badge-gold { background: #fef3cd; color: var(--warn); }
+        .badge-red { background: var(--error-pale); color: var(--error); }
+        .badge-blue { background: var(--blue-pale); color: var(--blue); }
+        .badge-gray { background: var(--paper); border: 1px solid var(--border); color: var(--muted); }
+        .sup-cell { display: flex; align-items: center; gap: 10px; }
+        .sup-logo { width: 32px; height: 32px; border-radius: 4px; background: var(--purple-pale); color: var(--purple); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
+        .empty-icon { font-size: 36px; margin-bottom: 10px; }
+        .empty-state h4 { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,23,0.55); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; animation: fade-in 0.2s ease; }
+        .modal { background: #fff; border-radius: 4px; width: 100%; max-width: 560px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.2), 4px 4px 0 0 var(--purple); animation: rise 0.3s cubic-bezier(0.16,1,0.3,1) both; margin: auto; }
+        .modal-lg { max-width: 720px; }
+        .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .modal-header h3 { font-size: 15px; font-weight: 700; }
+        .modal-header p { font-size: 11px; color: var(--muted); margin-top: 3px; }
+        .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--muted); }
+        .modal-close:hover { color: var(--ink); }
+        .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; }
+        .modal-footer { padding: 14px 24px; border-top: 1px solid var(--border); background: var(--paper); display: flex; gap: 10px; justify-content: flex-end; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.span2 { grid-column: span 2; }
+        label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink); }
+        label .opt { color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 10px; margin-left: 4px; }
+        input[type=text], input[type=tel], input[type=email], select, textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'Sora', sans-serif; color: var(--ink); background: var(--paper); transition: border-color 0.15s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--purple); background: #fff; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+        input::placeholder, textarea::placeholder { color: #b0aca0; }
+        textarea { resize: vertical; min-height: 70px; }
+        .req { color: var(--error); margin-left: 2px; }
+        .inline-alert { display: none; padding: 8px 12px; border-radius: 3px; font-size: 12px; margin-bottom: 12px; white-space: pre-line; }
+        .inline-alert.show { display: block; }
+        .inline-alert.error { background: var(--error-pale); color: var(--error); border-left: 3px solid var(--error); }
+        .spinner { display: none; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 3px; font-size: 13px; z-index: 300; display: none; }
+        .toast.show { display: block; animation: rise 0.3s ease; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .detail-item { background: var(--paper); border-radius: 3px; padding: 12px 14px; }
+        .detail-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 5px; }
+        .detail-value { font-size: 13px; font-weight: 600; }
+        .detail-value.big { font-size: 20px; font-weight: 800; color: var(--purple); font-family: 'DM Mono', monospace; }
+        .pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-top: 1px solid var(--border); background: var(--paper); }
+        .pagination-info { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
+        .pagination-btns { display: flex; gap: 6px; }
+        .page-btn { padding: 5px 10px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 12px; cursor: pointer; background: #fff; font-family: 'Sora', sans-serif; transition: all 0.15s; }
+        .page-btn:hover { border-color: var(--purple); color: var(--purple); }
+        .page-btn.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2,1fr); } .form-grid { grid-template-columns: 1fr; } .form-group.span2 { grid-column: span 1; } }
+        @media (max-width: 700px) { :root { --sidebar-w: 0px; } .sidebar { display: none; } .content { padding: 16px; } }
+    </style>
 </head>
 <body>
-$END$
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-badge">⚡ Admin Panel</div>
+        <div class="brand-name">BiasharaSmart Hub</div>
+        <div class="brand-sub">System Administration</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Overview</div>
+        <a class="nav-item" href="/admin-panel/"><span class="nav-icon">📊</span> Dashboard</a>
+        <div class="nav-section">Management</div>
+        <a class="nav-item" href="/admin-panel/users/"><span class="nav-icon">👥</span> Users</a>
+        <a class="nav-item" href="/admin-panel/businesses/"><span class="nav-icon">🏢</span> Businesses</a>
+        <a class="nav-item" href="/admin-panel/transactions/"><span class="nav-icon">💰</span> Transactions</a>
+        <a class="nav-item" href="/admin-panel/subscriptions/"><span class="nav-icon">💳</span> Subscriptions</a>
+        <div class="nav-section">Commerce</div>
+        <a class="nav-item" href="/admin-panel/customers/"><span class="nav-icon">👤</span> Customers</a>
+        <a class="nav-item active" href="/admin-panel/suppliers/"><span class="nav-icon">🚚</span> Suppliers</a>
+        <a class="nav-item" href="/admin-panel/pos/"><span class="nav-icon">🛒</span> Point of Sale</a>
+        <div class="nav-section">System</div>
+        <a class="nav-item" href="/admin-panel/analytics/"><span class="nav-icon">📈</span> Analytics</a>
+        <a class="nav-item" href="/admin-panel/alerts/"><span class="nav-icon">🚨</span> Alerts</a>
+        <a class="nav-item" href="/admin-panel/logs/"><span class="nav-icon">📋</span> Logs</a>
+        <a class="nav-item" href="/admin-panel/settings/"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="admin-pill">
+            <div class="admin-avatar">A</div>
+            <div class="admin-info">
+                <div class="admin-name">{{ user.first_name|default:user.username }}</div>
+                <div class="admin-role">superadmin</div>
+            </div>
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">✕</button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <h2>Suppliers</h2>
+            <p id="topbarSub">Loading supplier data…</p>
+        </div>
+        <div class="topbar-right">
+            <button class="btn btn-outline" onclick="exportCSV()">⬇️ Export CSV</button>
+            <button class="btn btn-purple" onclick="openModal('addSupplierModal')">＋ Add Supplier</button>
+        </div>
+    </header>
+    <div class="content">
+        <div class="stats-row">
+            <div class="stat-card purple"><div class="stat-icon-wrap purple">🚚</div><div class="stat-body"><div class="stat-val" id="statTotal">—</div><div class="stat-lbl">Total Suppliers</div></div></div>
+            <div class="stat-card green"><div class="stat-icon-wrap green">✅</div><div class="stat-body"><div class="stat-val" id="statActive">—</div><div class="stat-lbl">Active Suppliers</div></div></div>
+            <div class="stat-card gold"><div class="stat-icon-wrap gold">💸</div><div class="stat-body"><div class="stat-val" id="statSpend">—</div><div class="stat-lbl">Total Purchases</div></div></div>
+            <div class="stat-card blue"><div class="stat-icon-wrap blue">📅</div><div class="stat-body"><div class="stat-val" id="statNew">—</div><div class="stat-lbl">New This Month</div></div></div>
+        </div>
+        <div class="panel">
+            <div class="panel-header">
+                <h3>All Suppliers</h3>
+                <span class="panel-tag" id="tableCount">Loading…</span>
+            </div>
+            <div class="toolbar">
+                <div class="search-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search by name, phone, contact…" oninput="filterTable()">
+                </div>
+                <select class="filter-select" id="bizFilter" onchange="filterTable()">
+                    <option value="">All Businesses</option>
+                </select>
+                <select class="filter-select" id="catFilter" onchange="filterTable()">
+                    <option value="">All Categories</option>
+                    <option value="goods">Goods</option>
+                    <option value="services">Services</option>
+                    <option value="raw_materials">Raw Materials</option>
+                    <option value="equipment">Equipment</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Supplier</th>
+                            <th>Contact</th>
+                            <th>Category</th>
+                            <th>Business</th>
+                            <th>Total Purchases</th>
+                            <th>Status</th>
+                            <th>Added</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="8"><div class="empty-state"><div class="empty-icon">⏳</div>Loading suppliers…</div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <span class="pagination-info" id="paginationInfo">—</span>
+                <div class="pagination-btns" id="paginationBtns"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Supplier Modal -->
+<div class="modal-overlay" id="addSupplierModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div><h3>Add Supplier</h3><p>Fields marked <span class="req">*</span> are required</p></div>
+            <button class="modal-close" onclick="closeModal('addSupplierModal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="inline-alert error" id="addError"></div>
+            <div class="form-grid">
+                <div class="form-group span2"><label>Supplier Name <span class="req">*</span></label><input type="text" id="addName" placeholder="e.g. Nairobi Wholesale Ltd"></div>
+                <div class="form-group"><label>Contact Person <span class="opt">(optional)</span></label><input type="text" id="addContact" placeholder="John Kamau"></div>
+                <div class="form-group"><label>Phone <span class="req">*</span></label><input type="tel" id="addPhone" placeholder="0700 000 000"></div>
+                <div class="form-group"><label>Email <span class="opt">(optional)</span></label><input type="email" id="addEmail" placeholder="supplier@email.com"></div>
+                <div class="form-group"><label>Business <span class="req">*</span></label><select id="addBusiness"><option value="">Select business…</option></select></div>
+                <div class="form-group"><label>Category</label>
+                    <select id="addCategory">
+                        <option value="goods">Goods</option>
+                        <option value="services">Services</option>
+                        <option value="raw_materials">Raw Materials</option>
+                        <option value="equipment">Equipment</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group span2"><label>Address <span class="opt">(optional)</span></label><input type="text" id="addAddress" placeholder="e.g. Industrial Area, Nairobi"></div>
+                <div class="form-group span2"><label>Notes <span class="opt">(optional)</span></label><textarea id="addNotes" placeholder="Payment terms, delivery schedule…"></textarea></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('addSupplierModal')">Cancel</button>
+            <button class="btn btn-purple" id="addBtn" onclick="addSupplier()">
+                <span class="spinner" id="addSpinner"></span> Save Supplier
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- View Supplier Modal -->
+<div class="modal-overlay" id="viewModal">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <div><h3 id="viewName">Supplier Details</h3><p id="viewSub">—</p></div>
+            <button class="modal-close" onclick="closeModal('viewModal')">✕</button>
+        </div>
+        <div class="modal-body" id="viewBody"></div>
+        <div class="modal-footer">
+            <button class="btn btn-danger btn-sm" id="viewDeleteBtn">🗑️ Delete</button>
+            <button class="btn btn-outline" onclick="closeModal('viewModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
+async function apiFetch(url, opts = {}) { return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest', ...opts.headers }, ...opts }); }
+function fmt(n) { return 'KES ' + Number(n || 0).toLocaleString('en-KE', { maximumFractionDigits: 0 }); }
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3500); }
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); }));
+
+let allSuppliers = [], filtered = [], businesses = [];
+const PAGE_SIZE = 15;
+let currentPage = 1;
+const catLabels = { goods:'Goods', services:'Services', raw_materials:'Raw Materials', equipment:'Equipment', other:'Other' };
+const catBadge = { goods:'badge-green', services:'badge-blue', raw_materials:'badge-gold', equipment:'badge-purple', other:'badge-gray' };
+
+async function loadAll() {
+    try {
+        const [supRes, bizRes] = await Promise.all([
+            apiFetch('/api/businesses/suppliers/?page_size=1000'),
+            apiFetch('/api/businesses/?page_size=100')
+        ]);
+        if (supRes.ok) { const d = await supRes.json(); allSuppliers = d.results || d || []; }
+        if (bizRes.ok) { const d = await bizRes.json(); businesses = d.results || d || []; }
+    } catch(e) {}
+    populateBizFilter();
+    computeStats();
+    filtered = [...allSuppliers];
+    renderTable();
+}
+
+function computeStats() {
+    const total = allSuppliers.length;
+    const active = allSuppliers.filter(s => s.is_active !== false).length;
+    const spend = allSuppliers.reduce((sum, s) => sum + parseFloat(s.total_purchases || 0), 0);
+    const now = new Date();
+    const newMonth = allSuppliers.filter(s => {
+        const d = new Date(s.created_at);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statActive').textContent = active;
+    document.getElementById('statSpend').textContent = fmt(spend);
+    document.getElementById('statNew').textContent = newMonth;
+    document.getElementById('topbarSub').textContent = `${total} suppliers across ${businesses.length} businesses`;
+}
+
+function populateBizFilter() {
+    const sel = document.getElementById('bizFilter');
+    businesses.forEach(b => { const o = document.createElement('option'); o.value = b.id; o.textContent = b.name; sel.appendChild(o); });
+    const addSel = document.getElementById('addBusiness');
+    businesses.forEach(b => { const o = document.createElement('option'); o.value = b.id; o.textContent = b.name; addSel.appendChild(o); });
+}
+
+function filterTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const biz = document.getElementById('bizFilter').value;
+    const cat = document.getElementById('catFilter').value;
+    filtered = allSuppliers.filter(s => {
+        const text = `${s.name||''} ${s.phone_number||''} ${s.contact_person||''} ${s.email||''}`.toLowerCase();
+        return text.includes(q) && (!biz || String(s.business) === biz) && (!cat || s.category === cat);
+    });
+    currentPage = 1;
+    renderTable();
+}
+
+function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    const total = filtered.length;
+    const pages = Math.ceil(total / PAGE_SIZE) || 1;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const page = filtered.slice(start, start + PAGE_SIZE);
+    document.getElementById('tableCount').textContent = `${total} suppliers`;
+    document.getElementById('paginationInfo').textContent = `${start+1}–${Math.min(start+PAGE_SIZE, total)} of ${total}`;
+
+    if (!page.length) {
+        tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🚚</div><h4>No suppliers found</h4></div></td></tr>`;
+    } else {
+        tbody.innerHTML = page.map(s => {
+            const initials = (s.name||'S').split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+            const biz = businesses.find(b => b.id === (s.business || s.business_id));
+            const date = s.created_at ? new Date(s.created_at).toLocaleDateString('en-KE',{month:'short',day:'numeric',year:'numeric'}) : '—';
+            const active = s.is_active !== false;
+            return `<tr>
+                <td><div class="sup-cell"><div class="sup-logo">${initials}</div><div><div style="font-weight:600;font-size:13px;">${s.name||'—'}</div><div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">${s.email||'—'}</div></div></div></td>
+                <td><div style="font-size:13px;">${s.contact_person||'—'}</div><div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">${s.phone_number||'—'}</div></td>
+                <td><span class="badge ${catBadge[s.category]||'badge-gray'}">${catLabels[s.category]||s.category||'—'}</span></td>
+                <td><span class="badge badge-purple">${biz?biz.name:'—'}</span></td>
+                <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--purple);">${fmt(s.total_purchases)}</td>
+                <td><span class="badge ${active?'badge-green':'badge-red'}">${active?'Active':'Inactive'}</span></td>
+                <td style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">${date}</td>
+                <td><div style="display:flex;gap:6px;">
+                    <button class="btn btn-outline btn-sm" onclick="viewSupplier(${s.id})">View</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteSupplier(${s.id},'${(s.name||'').replace(/'/g,"\\'")}')">✕</button>
+                </div></td>
+            </tr>`;
+        }).join('');
+    }
+
+    const btns = document.getElementById('paginationBtns');
+    btns.innerHTML = '';
+    const prev = document.createElement('button'); prev.className='page-btn'; prev.textContent='← Prev'; prev.disabled=currentPage===1; prev.onclick=()=>{currentPage--;renderTable();}; btns.appendChild(prev);
+    for (let i=1;i<=pages;i++) {
+        const b=document.createElement('button'); b.className=`page-btn ${i===currentPage?'active':''}`; b.textContent=i; b.onclick=()=>{currentPage=i;renderTable();}; btns.appendChild(b);
+    }
+    const next=document.createElement('button'); next.className='page-btn'; next.textContent='Next →'; next.disabled=currentPage===pages; next.onclick=()=>{currentPage++;renderTable();}; btns.appendChild(next);
+}
+
+async function addSupplier() {
+    const errDiv = document.getElementById('addError');
+    errDiv.classList.remove('show');
+    const name = document.getElementById('addName').value.trim();
+    const phone = document.getElementById('addPhone').value.trim();
+    const bizId = document.getElementById('addBusiness').value;
+    if (!name)  { errDiv.textContent = 'Supplier name is required.'; errDiv.classList.add('show'); return; }
+    if (!phone) { errDiv.textContent = 'Phone number is required.'; errDiv.classList.add('show'); return; }
+    if (!bizId) { errDiv.textContent = 'Please select a business.'; errDiv.classList.add('show'); return; }
+
+    const payload = {
+        name, phone_number: phone, business: parseInt(bizId),
+        contact_person: document.getElementById('addContact').value.trim(),
+        email: document.getElementById('addEmail').value.trim(),
+        category: document.getElementById('addCategory').value,
+        address: document.getElementById('addAddress').value.trim(),
+        notes: document.getElementById('addNotes').value.trim(),
+    };
+    Object.keys(payload).forEach(k => { if (payload[k] === '') delete payload[k]; });
+
+    const spinner = document.getElementById('addSpinner');
+    const btn = document.getElementById('addBtn');
+    spinner.style.display = 'inline-block'; btn.disabled = true;
+    try {
+        const res = await apiFetch('/api/businesses/suppliers/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok || res.status === 201) {
+            allSuppliers.unshift(data); filtered = [...allSuppliers];
+            computeStats(); renderTable();
+            closeModal('addSupplierModal');
+            showToast('✅ Supplier added!');
+            ['addName','addContact','addPhone','addEmail','addAddress','addNotes'].forEach(id => document.getElementById(id).value='');
+            document.getElementById('addBusiness').value='';
+        } else {
+            errDiv.textContent = Object.entries(data).map(([f,e])=>`${f}: ${Array.isArray(e)?e[0]:e}`).join('\n');
+            errDiv.classList.add('show');
+        }
+    } catch(e) { errDiv.textContent='Network error.'; errDiv.classList.add('show'); }
+    finally { spinner.style.display='none'; btn.disabled=false; }
+}
+
+function viewSupplier(id) {
+    const s = allSuppliers.find(x => x.id === id);
+    if (!s) return;
+    const biz = businesses.find(b => b.id === (s.business || s.business_id));
+    document.getElementById('viewName').textContent = s.name || '—';
+    document.getElementById('viewSub').textContent = `Supplier #${s.id} · ${catLabels[s.category]||s.category||'—'}`;
+    document.getElementById('viewDeleteBtn').onclick = () => { closeModal('viewModal'); deleteSupplier(id, s.name); };
+    document.getElementById('viewBody').innerHTML = `
+        <div class="detail-grid">
+            <div class="detail-item"><div class="detail-label">Contact Person</div><div class="detail-value">${s.contact_person||'—'}</div></div>
+            <div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value">${s.phone_number||'—'}</div></div>
+            <div class="detail-item"><div class="detail-label">Email</div><div class="detail-value">${s.email||'—'}</div></div>
+            <div class="detail-item"><div class="detail-label">Address</div><div class="detail-value">${s.address||'—'}</div></div>
+            <div class="detail-item"><div class="detail-label">Business</div><div class="detail-value">${biz?biz.name:'—'}</div></div>
+            <div class="detail-item"><div class="detail-label">Category</div><div class="detail-value"><span class="badge ${catBadge[s.category]||'badge-gray'}">${catLabels[s.category]||'—'}</span></div></div>
+            <div class="detail-item"><div class="detail-label">Total Purchases</div><div class="detail-value big">${fmt(s.total_purchases)}</div></div>
+            <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge ${s.is_active!==false?'badge-green':'badge-red'}">${s.is_active!==false?'Active':'Inactive'}</span></div></div>
+        </div>
+        ${s.notes ? `<div style="background:var(--paper);border-radius:3px;padding:14px;font-size:13px;color:var(--muted);">${s.notes}</div>` : ''}
+    `;
+    openModal('viewModal');
+}
+
+async function deleteSupplier(id, name) {
+    if (!confirm(`Delete supplier "${name}"? This cannot be undone.`)) return;
+    try {
+        const res = await apiFetch(`/api/businesses/suppliers/${id}/`, { method:'DELETE', headers:{'X-CSRFToken':getCsrf()} });
+        if (res.ok || res.status === 204) {
+            allSuppliers = allSuppliers.filter(s => s.id !== id);
+            filtered = filtered.filter(s => s.id !== id);
+            computeStats(); renderTable();
+            showToast('🗑️ Supplier deleted.');
+        } else { showToast('❌ Could not delete.'); }
+    } catch(e) { showToast('❌ Network error.'); }
+}
+
+function exportCSV() {
+    const rows = [['ID','Name','Contact','Phone','Email','Category','Business','Total Purchases','Status','Added']];
+    filtered.forEach(s => {
+        const biz = businesses.find(b => b.id === (s.business||s.business_id));
+        rows.push([s.id,s.name,s.contact_person||'',s.phone_number,s.email||'',catLabels[s.category]||s.category,biz?biz.name:'',s.total_purchases||0,s.is_active!==false?'Active':'Inactive',s.created_at?new Date(s.created_at).toLocaleDateString():'']);
+    });
+    const csv = rows.map(r => r.map(v=>`"${v}"`).join(',')).join('\n');
+    const a = document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download=`suppliers_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    showToast('✅ CSV exported!');
+}
+
+loadAll();
+</script>
 </body>
 </html>

@@ -1,10 +1,805 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Business - BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-light: #40916c; --accent-pale: #d8f3dc; --gold: #e9c46a;
+            --error: #c1121f; --error-pale: #fce4e4; --warn: #d4860a;
+            --warn-pale: #fef3cd; --muted: #6b7280; --border: #e2e0d8;
+            --sidebar-w: 240px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; }
+
+        /* ── Sidebar ─────────────────────────────────────────── */
+        .sidebar { width: var(--sidebar-w); background: var(--ink); min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-badge { display: inline-block; background: var(--gold); color: var(--ink); font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 8px; }
+        .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .brand-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+        .sidebar-nav { padding: 16px 0; flex: 1; }
+        .nav-section { padding: 12px 24px 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.15s, background 0.15s; border-left: 2px solid transparent; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: var(--gold); background: rgba(233,196,106,0.08); border-left-color: var(--gold); }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .user-pill { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+        .logout-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.35); font-size: 16px; padding: 4px; transition: color 0.15s; flex-shrink: 0; }
+        .logout-btn:hover { color: var(--error); }
+
+        /* ── Main ───────────────────────────────────────────── */
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-left h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+        .content { padding: 28px 32px; flex: 1; max-width: 960px; }
+
+        /* ── Buttons ─────────────────────────────────────────── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-light); box-shadow: 0 4px 12px rgba(45,106,79,0.3); transform: translateY(-1px); }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--ink); }
+        .btn-danger-outline { background: #fff; color: var(--error); border: 1.5px solid var(--border); }
+        .btn-danger-outline:hover { border-color: var(--error); background: var(--error-pale); }
+
+        @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Business selector bar ───────────────────────────── */
+        .biz-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
+        .biz-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+        .biz-tab { padding: 8px 16px; border-radius: 3px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: #fff; color: var(--muted); transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
+        .biz-tab:hover { border-color: var(--accent); color: var(--accent); }
+        .biz-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+        .biz-tab .biz-initial { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .biz-tab.active .biz-initial { background: rgba(255,255,255,0.2); }
+
+        .add-biz-btn { padding: 8px 14px; border-radius: 3px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px dashed var(--border); background: var(--paper); color: var(--muted); transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+        .add-biz-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-pale); }
+
+        /* ── Business hero ───────────────────────────────────── */
+        .biz-hero { background: var(--ink); border-radius: 4px; padding: 28px 32px; margin-bottom: 20px; display: flex; align-items: center; gap: 24px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) 0.05s both; }
+        .biz-logo { width: 64px; height: 64px; border-radius: 4px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .biz-hero-info { flex: 1; }
+        .biz-hero-name { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .biz-hero-type { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; text-transform: capitalize; }
+        .biz-hero-meta { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+        .biz-hero-meta-item { font-size: 11px; font-family: 'DM Mono', monospace; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 5px; }
+        .biz-status { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 2px; font-size: 11px; font-weight: 700; }
+        .biz-status.active { background: var(--accent-pale); color: var(--accent); }
+        .biz-status.inactive { background: var(--error-pale); color: var(--error); }
+
+        /* ── Stats row ───────────────────────────────────────── */
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+        .stat-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 18px 20px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+        .stat-card:nth-child(1){animation-delay:.1s} .stat-card:nth-child(2){animation-delay:.15s} .stat-card:nth-child(3){animation-delay:.2s}
+        .stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+        .stat-value { font-size: 22px; font-weight: 700; font-family: 'DM Mono', monospace; }
+
+        /* ── Panels ──────────────────────────────────────────── */
+        .panel { background: #fff; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 20px; animation: rise 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+        .panel:nth-child(1){animation-delay:.25s} .panel:nth-child(2){animation-delay:.3s} .panel:nth-child(3){animation-delay:.35s}
+        .panel-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--paper); }
+        .panel-header h3 { font-size: 13px; font-weight: 700; }
+        .panel-body { padding: 24px; }
+        .panel-footer { padding: 16px 24px; border-top: 1px solid var(--border); background: var(--paper); display: flex; gap: 10px; align-items: center; }
+
+        /* ── Form ────────────────────────────────────────────── */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 7px; }
+        .form-group.span2 { grid-column: span 2; }
+        .form-group.span3 { grid-column: span 2; } /* same as span2 for 2-col grid */
+        label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink); }
+        label .opt { color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 10px; margin-left: 4px; }
+        input, select, textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--ink); background: var(--paper); transition: border-color 0.15s; }
+        select { font-family: 'Sora', sans-serif; cursor: pointer; }
+        textarea { font-family: 'Sora', sans-serif; font-size: 13px; resize: vertical; min-height: 80px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(45,106,79,0.1); }
+        input::placeholder, textarea::placeholder { color: #b0aca0; }
+
+        /* ── Section divider ─────────────────────────────────── */
+        .form-section-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0 0 12px; border-bottom: 1px solid var(--border); margin-bottom: 4px; grid-column: span 2; margin-top: 8px; }
+        .form-section-title:first-child { margin-top: 0; }
+
+        /* ── Alert ───────────────────────────────────────────── */
+        .alert { display: none; align-items: flex-start; gap: 10px; padding: 10px 14px; border-radius: 3px; font-size: 13px; margin-bottom: 16px; line-height: 1.5; white-space: pre-line; }
+        .alert.show { display: flex; animation: fade-in 0.2s ease; }
+        .alert-error { background: var(--error-pale); color: var(--error); border-left: 3px solid var(--error); }
+        .alert-success { background: var(--accent-pale); color: var(--accent); border-left: 3px solid var(--accent); }
+
+        /* ── Empty state ─────────────────────────────────────── */
+        .empty-biz { text-align: center; padding: 60px 20px; background: #fff; border: 1px solid var(--border); border-radius: 4px; }
+        .empty-biz .empty-icon { font-size: 48px; margin-bottom: 16px; }
+        .empty-biz h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .empty-biz p { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+        /* ── Modal ───────────────────────────────────────────── */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,23,0.55); z-index: 200; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+        .modal-overlay.show { display: flex; animation: fade-in 0.2s ease; }
+        .modal { background: #fff; border-radius: 4px; width: 100%; max-width: 580px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.2), 4px 4px 0 0 var(--accent); animation: rise 0.3s cubic-bezier(0.16,1,0.3,1) both; margin: auto; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .modal-header h3 { font-size: 15px; font-weight: 700; }
+        .modal-header p { font-size: 11px; color: var(--muted); margin-top: 3px; }
+        .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--muted); }
+        .modal-close:hover { color: var(--ink); }
+        .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); background: var(--paper); display: flex; gap: 10px; justify-content: flex-end; }
+
+        /* ── Required star ───────────────────────────────────── */
+        .req { color: var(--error); margin-left: 2px; }
+
+        /* ── Spinner ─────────────────────────────────────────── */
+        .spinner { display: none; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+        @media (max-width: 700px) {
+            :root { --sidebar-w: 0px; } .sidebar { display: none; }
+            .content { padding: 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.span2, .form-section-title { grid-column: span 1; }
+            .stats-row { grid-template-columns: 1fr; }
+            .biz-hero { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
 </head>
 <body>
-$END$
+
+<!-- ── Sidebar ────────────────────────────────────────────────── -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-badge">🇰🇪 SME Platform</div>
+        <div class="brand-name">BiasharaSmart Hub</div>
+        <div class="brand-sub">Business Dashboard</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Main</div>
+        <a class="nav-item" href="/dashboard/"><span class="nav-icon">📊</span> Overview</a>
+        <a class="nav-item" href="/transactions/"><span class="nav-icon">💰</span> Transactions</a>
+        <a class="nav-item" href="/inventory/"><span class="nav-icon">📦</span> Inventory</a>
+        <div class="nav-section">Insights</div>
+        <a class="nav-item" href="/analytics/"><span class="nav-icon">📈</span> Analytics</a>
+        <a class="nav-item" href="/reports/"><span class="nav-icon">📋</span> Reports</a>
+        <a class="nav-item" href="/alerts/"><span class="nav-icon">⚠️</span> Alerts</a>
+        <div class="nav-section">Account</div>
+        <a class="nav-item active" href="/business/"><span class="nav-icon">🏢</span> My Business</a>
+        <a class="nav-item" href="/settings/"><span class="nav-icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-pill">
+            <div class="user-avatar">{{ user.first_name|first|upper|default:"U" }}</div>
+            <div class="user-info">
+                <div class="user-name">{{ user.first_name|default:user.username }}</div>
+                <div class="user-role">{{ user.phone_number }}</div>
+            </div>
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn" title="Logout">✕</button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<!-- ── Main ──────────────────────────────────────────────────── -->
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <h2>My Business</h2>
+            <p id="topbarSub">Loading…</p>
+        </div>
+    </header>
+
+    <div class="content">
+        <div id="alertError" class="alert alert-error"></div>
+        <div id="alertSuccess" class="alert alert-success"></div>
+
+        <!-- Business selector -->
+        <div class="biz-bar">
+            <div class="biz-tabs" id="bizTabs">
+                <div style="color:var(--muted);font-size:13px;padding:8px 0;">Loading businesses…</div>
+            </div>
+            <button class="add-biz-btn" onclick="openAddModal()">＋ Add Business</button>
+        </div>
+
+        <!-- Content area -->
+        <div id="bizContent">
+            <div class="empty-biz">
+                <div class="empty-icon">⏳</div>
+                <h3>Loading…</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Add Business Modal ─────────────────────────────────────── -->
+<div class="modal-overlay" id="addBizModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <h3>Add New Business</h3>
+                <p>Fields marked <span class="req">*</span> are required</p>
+            </div>
+            <button class="modal-close" onclick="closeModal('addBizModal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div id="addBizError" class="alert alert-error"></div>
+            <div class="form-grid">
+
+                <!-- Basic Info -->
+                <div class="form-section-title">Basic Information</div>
+
+                <div class="form-group span2">
+                    <label>Business Name <span class="req">*</span></label>
+                    <input type="text" id="newBizName" placeholder="e.g. Mama Mboga Groceries">
+                </div>
+
+                <div class="form-group">
+                    <label>Sector <span class="req">*</span></label>
+                    <select id="newBizSector">
+    <option value="retail">Retail Shop</option>
+    <option value="services">Services</option>
+    <option value="manufacturing">Manufacturing</option>
+    <option value="agriculture">Agriculture</option>
+    <option value="transport">Transport & Logistics</option>
+    <option value="construction">Construction</option>
+    <option value="technology">Technology</option>
+    <option value="other">Other</option>
+</select>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number <span class="req">*</span></label>
+                    <input type="tel" id="newBizPhone" placeholder="254700 000 000">
+                </div>
+
+                <!-- Location -->
+                <div class="form-section-title">Location</div>
+
+                <div class="form-group">
+                    <label>County <span class="req">*</span></label>
+                    <select id="newBizCounty">
+                        <option value="">Select county…</option>
+                        <option value="Nairobi">Nairobi</option>
+                        <option value="Mombasa">Mombasa</option>
+                        <option value="Kisumu">Kisumu</option>
+                        <option value="Nakuru">Nakuru</option>
+                        <option value="Uasin Gishu">Uasin Gishu (Eldoret)</option>
+                        <option value="Kiambu">Kiambu</option>
+                        <option value="Machakos">Machakos</option>
+                        <option value="Meru">Meru</option>
+                        <option value="Nyeri">Nyeri</option>
+                        <option value="Kakamega">Kakamega</option>
+                        <option value="Kilifi">Kilifi</option>
+                        <option value="Bungoma">Bungoma</option>
+                        <option value="Garissa">Garissa</option>
+                        <option value="Kisii">Kisii</option>
+                        <option value="Migori">Migori</option>
+                        <option value="Siaya">Siaya</option>
+                        <option value="Homa Bay">Homa Bay</option>
+                        <option value="Embu">Embu</option>
+                        <option value="Laikipia">Laikipia</option>
+                        <option value="Nyandarua">Nyandarua</option>
+                        <option value="Murang'a">Murang'a</option>
+                        <option value="Kirinyaga">Kirinyaga</option>
+                        <option value="Turkana">Turkana</option>
+                        <option value="West Pokot">West Pokot</option>
+                        <option value="Trans Nzoia">Trans Nzoia</option>
+                        <option value="Nandi">Nandi</option>
+                        <option value="Baringo">Baringo</option>
+                        <option value="Elgeyo Marakwet">Elgeyo Marakwet</option>
+                        <option value="Kericho">Kericho</option>
+                        <option value="Bomet">Bomet</option>
+                        <option value="Narok">Narok</option>
+                        <option value="Kajiado">Kajiado</option>
+                        <option value="Makueni">Makueni</option>
+                        <option value="Kitui">Kitui</option>
+                        <option value="Tana River">Tana River</option>
+                        <option value="Lamu">Lamu</option>
+                        <option value="Taita Taveta">Taita Taveta</option>
+                        <option value="Kwale">Kwale</option>
+                        <option value="Tharaka Nithi">Tharaka Nithi</option>
+                        <option value="Isiolo">Isiolo</option>
+                        <option value="Marsabit">Marsabit</option>
+                        <option value="Samburu">Samburu</option>
+                        <option value="Mandera">Mandera</option>
+                        <option value="Wajir">Wajir</option>
+                        <option value="Vihiga">Vihiga</option>
+                        <option value="Busia">Busia</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Town <span class="req">*</span></label>
+                    <input type="text" id="newBizTown" placeholder="e.g. Westlands, CBD, Kikuyu">
+                </div>
+
+                <div class="form-group span2">
+                    <label>Location Description <span class="opt">(optional)</span></label>
+                    <input type="text" id="newBizLocation" placeholder="e.g. Next to Equity Bank, ground floor">
+                </div>
+
+                <!-- Optional Details -->
+                <div class="form-section-title">Additional Details <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:9px;">(optional)</span></div>
+
+                <div class="form-group">
+                    <label>Email <span class="opt">(optional)</span></label>
+                    <input type="email" id="newBizEmail" placeholder="business@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Registration Number <span class="opt">(optional)</span></label>
+                    <input type="text" id="newBizRegNum" placeholder="BN/2026/000000">
+                </div>
+
+                <div class="form-group span2">
+                    <label>Description <span class="opt">(optional)</span></label>
+                    <textarea id="newBizDesc" placeholder="Brief description of what your business does…" style="min-height:60px;"></textarea>
+                </div>
+
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('addBizModal')">Cancel</button>
+            <button class="btn btn-primary" id="addBizBtn" onclick="addBusiness()">
+                <span class="spinner" id="addBizSpinner"></span>
+                Save Business
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function getCsrf() {
+    return document.cookie.match(/csrftoken=([^;]+)/)?.[1]
+        || document.querySelector('[name=csrfmiddlewaretoken]')?.value
+        || '';
+}
+async function apiFetch(url, opts = {}) {
+    return fetch(url, {
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', ...opts.headers },
+        ...opts
+    });
+}
+
+let businesses  = [];
+let allTxns     = [];
+let activeBizId = null;
+
+const sectorLabels = {
+    retail: 'Retail Shop',
+    services: 'Services',
+    manufacturing: 'Manufacturing',
+    agriculture: 'Agriculture',
+    transport: 'Transport & Logistics',
+    construction: 'Construction',
+    technology: 'Technology',
+    other: 'Other'
+};
+
+// ── Load all data ─────────────────────────────────────────────────
+async function loadAll() {
+    try {
+        const [bizRes, txnRes] = await Promise.all([
+            apiFetch('/api/businesses/'),
+            apiFetch('/api/transactions/?page_size=500')
+        ]);
+        if (bizRes.ok) {
+            const d = await bizRes.json();
+            businesses = d.results || d || [];
+        }
+        if (txnRes.ok) {
+            const d = await txnRes.json();
+            allTxns = d.results || d || [];
+        }
+    } catch(e) {
+        console.error('Load error:', e);
+    }
+    renderTabs();
+    if (businesses.length) selectBiz(businesses[0].id);
+    else renderEmpty();
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────
+function renderTabs() {
+    const wrap = document.getElementById('bizTabs');
+    if (!businesses.length) { wrap.innerHTML = ''; return; }
+    wrap.innerHTML = businesses.map(b => `
+        <div class="biz-tab ${b.id === activeBizId ? 'active' : ''}" onclick="selectBiz(${b.id})">
+            <div class="biz-initial">${(b.name||'B')[0].toUpperCase()}</div>
+            ${b.name}
+        </div>`).join('');
+}
+
+function selectBiz(id) {
+    activeBizId = id;
+    renderTabs();
+    renderBizContent(businesses.find(b => b.id === id));
+}
+
+// ── Render business content ───────────────────────────────────────
+function renderBizContent(biz) {
+    if (!biz) return;
+
+    const txns     = allTxns.filter(t => t.business === biz.id || t.business_id === biz.id);
+    const sales    = txns.filter(t => t.transaction_type === 'sale');
+    const expenses = txns.filter(t => t.transaction_type === 'expense');
+    const revenue  = sales.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const spent    = expenses.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const profit   = revenue - spent;
+
+    document.getElementById('topbarSub').textContent =
+        `${businesses.length} business${businesses.length !== 1 ? 'es' : ''} registered`;
+
+    document.getElementById('bizContent').innerHTML = `
+        <!-- Hero -->
+        <div class="biz-hero">
+            <div class="biz-logo">${(biz.name||'B')[0].toUpperCase()}</div>
+            <div class="biz-hero-info">
+                <div class="biz-hero-name">${biz.name || '—'}</div>
+                <div class="biz-hero-type">${sectorLabels[biz.sector] || biz.sector || 'Business'}</div>
+                <div class="biz-hero-meta">
+                    ${biz.phone_number ? `<div class="biz-hero-meta-item">📞 ${biz.phone_number}</div>` : ''}
+                    ${biz.town || biz.county ? `<div class="biz-hero-meta-item">📍 ${[biz.town, biz.county].filter(Boolean).join(', ')}</div>` : ''}
+                    ${biz.registration_number ? `<div class="biz-hero-meta-item">📋 ${biz.registration_number}</div>` : ''}
+                    <span class="biz-status ${biz.is_active !== false ? 'active' : 'inactive'}">
+                        ${biz.is_active !== false ? '● Active' : '● Inactive'}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-value" style="color:var(--accent);">KES ${revenue.toLocaleString('en-KE', {maximumFractionDigits:0})}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Expenses</div>
+                <div class="stat-value" style="color:var(--error);">KES ${spent.toLocaleString('en-KE', {maximumFractionDigits:0})}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Net Profit</div>
+                <div class="stat-value" style="color:${profit >= 0 ? 'var(--accent)' : 'var(--error)'};">
+                    ${profit < 0 ? '-' : ''}KES ${Math.abs(profit).toLocaleString('en-KE', {maximumFractionDigits:0})}
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit: Basic Info -->
+        <div class="panel">
+            <div class="panel-header">
+                <h3>Business Details</h3>
+                <span style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;">ID #${biz.id}</span>
+            </div>
+            <div class="panel-body">
+                <div id="editAlertError" class="alert alert-error"></div>
+                <div class="form-grid">
+
+                    <div class="form-section-title">Basic Information</div>
+
+                    <div class="form-group span2">
+                        <label>Business Name <span class="req">*</span></label>
+                        <input type="text" id="editName" value="${esc(biz.name)}">
+                    </div>
+                    <div class="form-group">
+                        <label>Sector <span class="req">*</span></label>
+                        <select id="editSector">
+                            ${Object.entries(sectorLabels).map(([v,l]) =>
+                                `<option value="${v}" ${biz.sector === v ? 'selected' : ''}>${l}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number <span class="req">*</span></label>
+                        <input type="tel" id="editPhone" value="${esc(biz.phone_number)}" placeholder="0700 000 000">
+                    </div>
+                    <div class="form-group">
+                        <label>Email <span class="opt">(optional)</span></label>
+                        <input type="email" id="editEmail" value="${esc(biz.email)}" placeholder="business@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Registration Number <span class="opt">(optional)</span></label>
+                        <input type="text" id="editRegNum" value="${esc(biz.registration_number)}" placeholder="BN/2024/000000">
+                    </div>
+
+                    <div class="form-section-title">Location</div>
+
+                    <div class="form-group">
+                        <label>County <span class="req">*</span></label>
+                        <select id="editCounty">
+                            ${countyOptions(biz.county)}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Town <span class="req">*</span></label>
+                        <input type="text" id="editTown" value="${esc(biz.town)}" placeholder="e.g. Westlands">
+                    </div>
+                    <div class="form-group span2">
+                        <label>Location Description <span class="opt">(optional)</span></label>
+                        <input type="text" id="editLocation" value="${esc(biz.location_description)}" placeholder="e.g. Next to Equity Bank, ground floor">
+                    </div>
+
+                    <div class="form-section-title">M-Pesa Details <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:9px;">(optional)</span></div>
+
+                    <div class="form-group">
+                        <label>M-Pesa Till Number <span class="opt">(optional)</span></label>
+                        <input type="text" id="editTill" value="${esc(biz.mpesa_till_number)}" placeholder="e.g. 123456">
+                    </div>
+                    <div class="form-group">
+                        <label>M-Pesa Paybill <span class="opt">(optional)</span></label>
+                        <input type="text" id="editPaybill" value="${esc(biz.mpesa_paybill)}" placeholder="e.g. 522522">
+                    </div>
+                    <div class="form-group">
+                        <label>M-Pesa Account Number <span class="opt">(optional)</span></label>
+                        <input type="text" id="editMpesaAcc" value="${esc(biz.mpesa_account_number)}" placeholder="e.g. Your business name">
+                    </div>
+                    <div class="form-group">
+                        <label>KRA PIN <span class="opt">(optional)</span></label>
+                        <input type="text" id="editKraPIN" value="${esc(biz.kra_pin)}" placeholder="A000000000A">
+                    </div>
+
+                    <div class="form-section-title">Other</div>
+
+                    <div class="form-group">
+                        <label>Employee Count</label>
+                        <input type="number" id="editEmployees" value="${biz.employee_count || 1}" min="1" placeholder="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Date Established <span class="opt">(optional)</span></label>
+                        <input type="date" id="editDateEst" value="${biz.date_established || ''}">
+                    </div>
+                    <div class="form-group span2">
+                        <label>Description <span class="opt">(optional)</span></label>
+                        <textarea id="editDesc">${esc(biz.description)}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <button class="btn btn-primary" id="saveBtn" onclick="saveBusiness(${biz.id})">
+                    <span class="spinner" id="saveSpinner"></span>
+                    Save Changes
+                </button>
+                <button class="btn btn-danger-outline" onclick="confirmDeleteBiz(${biz.id}, '${esc(biz.name)}')">
+                    Delete Business
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function renderEmpty() {
+    document.getElementById('topbarSub').textContent = 'No businesses yet';
+    document.getElementById('bizContent').innerHTML = `
+        <div class="empty-biz">
+            <div class="empty-icon">🏢</div>
+            <h3>No Business Added Yet</h3>
+            <p>Add your first business to start tracking sales, expenses, and get AI insights.</p>
+            <button class="btn btn-primary" onclick="openAddModal()">＋ Add Your Business</button>
+        </div>`;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function esc(v) { return (v || '').toString().replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+const COUNTIES = [
+    'Nairobi','Mombasa','Kisumu','Nakuru','Uasin Gishu','Kiambu','Machakos',
+    'Meru','Nyeri','Kakamega','Kilifi','Bungoma','Garissa','Kisii','Migori',
+    'Siaya','Homa Bay','Embu','Laikipia','Nyandarua',"Murang'a",'Kirinyaga',
+    'Turkana','West Pokot','Trans Nzoia','Nandi','Baringo','Elgeyo Marakwet',
+    'Kericho','Bomet','Narok','Kajiado','Makueni','Kitui','Tana River',
+    'Lamu','Taita Taveta','Kwale','Tharaka Nithi','Isiolo','Marsabit',
+    'Samburu','Mandera','Wajir','Vihiga','Busia'
+];
+
+function countyOptions(selected) {
+    return `<option value="">Select county…</option>` +
+        COUNTIES.map(c => `<option value="${c}" ${c === selected ? 'selected' : ''}>${c}</option>`).join('');
+}
+
+// ── Save business ─────────────────────────────────────────────────
+async function saveBusiness(id) {
+    const errDiv = document.getElementById('editAlertError');
+    errDiv.classList.remove('show');
+
+    const name  = document.getElementById('editName').value.trim();
+    const phone = document.getElementById('editPhone').value.trim();
+    const county = document.getElementById('editCounty').value;
+    const town  = document.getElementById('editTown').value.trim();
+
+    if (!name)   { errDiv.textContent = 'Business name is required.'; errDiv.classList.add('show'); return; }
+    if (!phone)  { errDiv.textContent = 'Phone number is required.'; errDiv.classList.add('show'); return; }
+    if (!county) { errDiv.textContent = 'Please select a county.'; errDiv.classList.add('show'); return; }
+    if (!town)   { errDiv.textContent = 'Town is required.'; errDiv.classList.add('show'); return; }
+
+    const payload = {
+        name,
+        sector:               document.getElementById('editSector').value,
+        phone_number:         phone,
+        email:                document.getElementById('editEmail').value.trim(),
+        registration_number:  document.getElementById('editRegNum').value.trim(),
+        county,
+        town,
+        location_description: document.getElementById('editLocation').value.trim(),
+        mpesa_till_number:    document.getElementById('editTill').value.trim(),
+        mpesa_paybill:        document.getElementById('editPaybill').value.trim(),
+        mpesa_account_number: document.getElementById('editMpesaAcc').value.trim(),
+        kra_pin:              document.getElementById('editKraPIN').value.trim(),
+        employee_count:       parseInt(document.getElementById('editEmployees').value) || 1,
+        date_established:     document.getElementById('editDateEst').value || null,
+        description:          document.getElementById('editDesc').value.trim(),
+    };
+
+    // Remove empty optional strings so they don't fail validation
+    Object.keys(payload).forEach(k => { if (payload[k] === '') delete payload[k]; });
+
+    const spinner = document.getElementById('saveSpinner');
+    const btn = document.getElementById('saveBtn');
+    spinner.style.display = 'inline-block';
+    btn.disabled = true;
+
+    try {
+        const res = await apiFetch(`/api/businesses/${id}/`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            const idx = businesses.findIndex(b => b.id === id);
+            if (idx !== -1) businesses[idx] = { ...businesses[idx], ...data };
+            showSuccess('Business updated successfully!');
+            renderTabs();
+            renderBizContent(businesses.find(b => b.id === id));
+        } else {
+            const allErrors = Object.entries(data)
+                .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs[0] : errs}`)
+                .join('\n');
+            errDiv.textContent = allErrors || 'Failed to save. Please try again.';
+            errDiv.classList.add('show');
+        }
+    } catch(e) {
+        errDiv.textContent = 'Network error. Please try again.';
+        errDiv.classList.add('show');
+    } finally {
+        if (document.getElementById('saveSpinner')) {
+            document.getElementById('saveSpinner').style.display = 'none';
+            document.getElementById('saveBtn').disabled = false;
+        }
+    }
+}
+
+// ── Add business ──────────────────────────────────────────────────
+async function addBusiness() {
+    const errDiv = document.getElementById('addBizError');
+    errDiv.classList.remove('show');
+
+    const name   = document.getElementById('newBizName').value.trim();
+    const phone  = document.getElementById('newBizPhone').value.trim();
+    const county = document.getElementById('newBizCounty').value;
+    const town   = document.getElementById('newBizTown').value.trim();
+
+    // Client-side validation
+    if (!name)   { errDiv.textContent = 'Business name is required.'; errDiv.classList.add('show'); return; }
+    if (!phone)  { errDiv.textContent = 'Phone number is required.'; errDiv.classList.add('show'); return; }
+    if (!county) { errDiv.textContent = 'Please select a county.'; errDiv.classList.add('show'); return; }
+    if (!town)   { errDiv.textContent = 'Town is required.'; errDiv.classList.add('show'); return; }
+
+    const payload = {
+        name,
+        sector:               document.getElementById('newBizSector').value,
+        phone_number:         phone,
+        county,
+        town,
+        location_description: document.getElementById('newBizLocation').value.trim(),
+        email:                document.getElementById('newBizEmail').value.trim(),
+        registration_number:  document.getElementById('newBizRegNum').value.trim(),
+        description:          document.getElementById('newBizDesc').value.trim(),
+    };
+
+    // Remove empty optional strings
+    Object.keys(payload).forEach(k => { if (payload[k] === '') delete payload[k]; });
+
+    const spinner = document.getElementById('addBizSpinner');
+    const btn = document.getElementById('addBizBtn');
+    spinner.style.display = 'inline-block';
+    btn.disabled = true;
+
+    try {
+        const res = await apiFetch('/api/businesses/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok || res.status === 201) {
+            businesses.push(data);
+            closeModal('addBizModal');
+            showSuccess('Business added successfully!');
+            // Clear form
+            ['newBizName','newBizPhone','newBizTown','newBizLocation','newBizEmail','newBizRegNum','newBizDesc']
+                .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+            document.getElementById('newBizCounty').value = '';
+            renderTabs();
+            selectBiz(data.id);
+        } else {
+            // Show all field errors clearly
+            const allErrors = Object.entries(data)
+                .map(([field, errs]) => `${field}: ${Array.isArray(errs) ? errs[0] : errs}`)
+                .join('\n');
+            errDiv.textContent = allErrors || 'Failed to add business. Please try again.';
+            errDiv.classList.add('show');
+            console.error('API error:', data);
+        }
+    } catch(e) {
+        errDiv.textContent = 'Network error. Please check your connection.';
+        errDiv.classList.add('show');
+    } finally {
+        spinner.style.display = 'none';
+        btn.disabled = false;
+    }
+}
+
+// ── Delete business ───────────────────────────────────────────────
+function confirmDeleteBiz(id, name) {
+    if (!confirm(`Delete "${name}"?\n\nThis cannot be undone and will remove all associated data.`)) return;
+    deleteBusiness(id);
+}
+
+async function deleteBusiness(id) {
+    try {
+        const res = await apiFetch(`/api/businesses/${id}/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': getCsrf() }
+        });
+        if (res.ok || res.status === 204) {
+            businesses = businesses.filter(b => b.id !== id);
+            showSuccess('Business deleted.');
+            activeBizId = null;
+            renderTabs();
+            if (businesses.length) selectBiz(businesses[0].id);
+            else renderEmpty();
+        } else {
+            showError('Could not delete business. Please try again.');
+        }
+    } catch(e) {
+        showError('Network error. Please try again.');
+    }
+}
+
+// ── Modal ─────────────────────────────────────────────────────────
+function openAddModal() { document.getElementById('addBizModal').classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+});
+
+// ── Feedback toasts ───────────────────────────────────────────────
+function showSuccess(msg) {
+    const el = document.getElementById('alertSuccess');
+    el.textContent = '✅ ' + msg; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 4000);
+}
+function showError(msg) {
+    const el = document.getElementById('alertError');
+    el.textContent = '⚠️ ' + msg; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+// ── Boot ──────────────────────────────────────────────────────────
+loadAll();
+</script>
 </body>
 </html>
