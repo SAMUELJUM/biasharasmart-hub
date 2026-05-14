@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - BiasharaSmart Hub Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-light: #40916c; --accent-pale: #d8f3dc; --gold: #e9c46a;
+            --error: #c1121f; --error-pale: #fce4e4; --warn: #d4860a;
+            --warn-pale: #fef3cd; --muted: #6b7280; --border: #e2e0d8;
+            --admin: #7c3aed; --admin-pale: #ede9fe; --admin-dark: #5b21b6;
+            --blue: #0ea5e9; --blue-pale: #e0f2fe;
+            --sidebar-w: 260px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Sora', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; display: flex; }
+
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-w); background: linear-gradient(180deg, #0a0a1a 0%, #0f0f23 100%); min-height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
+        .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-badge { display: inline-block; background: linear-gradient(135deg, var(--admin), var(--admin-dark)); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 8px; }
+        .brand-name { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+        .brand-sub { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 3px; font-family: 'DM Mono', monospace; }
+        .sidebar-nav { padding: 20px 0; flex: 1; }
+        .nav-section { padding: 12px 24px 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+        .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.55); text-decoration: none; transition: all 0.15s; border-left: 2px solid transparent; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: var(--gold); background: rgba(233,196,106,0.08); border-left-color: var(--gold); }
+        .nav-icon { font-size: 16px; width: 22px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .admin-pill { display: flex; align-items: center; gap: 10px; }
+        .admin-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--admin), var(--admin-dark)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .admin-info { flex: 1; min-width: 0; }
+        .admin-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .admin-role { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'DM Mono', monospace; }
+        .logout-btn { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.3); font-size: 16px; padding: 4px; transition: color 0.15s; }
+        .logout-btn:hover { color: var(--error); }
+
+        /* Main */
+        .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; background: var(--paper); }
+        .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        .topbar-left h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+        .topbar-left p { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+        .topbar-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .content { padding: 28px 32px; flex: 1; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 3px; font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+        .btn-admin { background: var(--admin); color: #fff; }
+        .btn-admin:hover { background: var(--admin-dark); transform: translateY(-1px); }
+        .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
+        .btn-outline:hover { border-color: var(--admin); color: var(--admin); }
+        .btn-sm { padding: 5px 11px; font-size: 11px; }
+
+        /* Report Cards */
+        .report-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; margin-bottom: 32px; }
+        .report-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: transform 0.15s, box-shadow 0.15s; cursor: pointer; }
+        .report-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+        .report-card-header { padding: 20px; background: linear-gradient(135deg, var(--admin), var(--admin-dark)); color: #fff; }
+        .report-card-icon { font-size: 32px; margin-bottom: 12px; }
+        .report-card-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .report-card-desc { font-size: 11px; opacity: 0.8; }
+        .report-card-body { padding: 20px; }
+        .report-stats { display: flex; justify-content: space-between; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .report-stat { text-align: center; flex: 1; }
+        .report-stat-value { font-size: 22px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--accent); }
+        .report-stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+        .report-actions { display: flex; gap: 8px; }
+        .report-actions .btn { flex: 1; }
+
+        /* Panel */
+        .panel { background: #fff; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 24px; }
+        .panel-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--paper); }
+        .panel-header h3 { font-size: 13px; font-weight: 700; }
+
+        /* Filters */
+        .filters-bar { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 16px 20px; margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+        .filter-group { display: flex; flex-direction: column; gap: 6px; }
+        .filter-group label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); }
+        .filter-group select, .filter-group input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; background: #fff; }
+        .filter-group select:focus, .filter-group input:focus { outline: none; border-color: var(--admin); }
+
+        /* Data Table */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { padding: 10px 16px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); text-align: left; background: var(--paper); border-bottom: 1px solid var(--border); }
+        .data-table td { padding: 12px 16px; font-size: 12px; border-bottom: 1px solid var(--border); }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #fafaf8; }
+
+        /* Chart Container */
+        .chart-container { padding: 20px; min-height: 300px; }
+        .chart-placeholder { display: flex; align-items: center; justify-content: center; height: 200px; background: var(--paper); border-radius: 4px; color: var(--muted); }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 18px; border-radius: 3px; font-size: 13px; z-index: 300; display: none; animation: rise 0.3s ease; }
+        .toast.show { display: block; }
+        @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        .loading { opacity: 0.6; pointer-events: none; }
+        .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 6px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 700px) { :root { --sidebar-w: 0px; } .sidebar { display: none; } .content { padding: 16px; } .report-cards { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-badge">⚡ ADMIN</div>
+        <div class="brand-name">BiasharaSmart Hub</div>
+        <div class="brand-sub">Enterprise Administration</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Overview</div>
+        <a class="nav-item" href="/admin-panel/"><span class="nav-icon">📊</span> Dashboard</a>
+        <div class="nav-section">Management</div>
+        <a class="nav-item" href="/admin-panel/users/"><span class="nav-icon">👥</span> Users</a>
+        <a class="nav-item" href="/admin-panel/businesses/"><span class="nav-icon">🏢</span> Businesses</a>
+        <a class="nav-item" href="/admin-panel/transactions/"><span class="nav-icon">💰</span> Transactions</a>
+        <a class="nav-item" href="/admin-panel/subscriptions/"><span class="nav-icon">💳</span> Subscriptions</a>
+        <div class="nav-section">Commerce</div>
+        <a class="nav-item" href="/admin-panel/pos/"><span class="nav-icon">🛒</span> Point of Sale</a>
+        <a class="nav-item" href="/admin-panel/inventory/"><span class="nav-icon">📦</span> Inventory</a>
+        <a class="nav-item" href="/admin-panel/customers/"><span class="nav-icon">👤</span> Customers</a>
+        <a class="nav-item" href="/admin-panel/suppliers/"><span class="nav-icon">🚚</span> Suppliers</a>
+        <div class="nav-section">Insights</div>
+        <a class="nav-item" href="/admin-panel/analytics/"><span class="nav-icon">📈</span> Analytics</a>
+        <a class="nav-item" href="/admin-panel/alerts/"><span class="nav-icon">🚨</span> Alerts</a>
+        <a class="nav-item" href="/admin-panel/logs/"><span class="nav-icon">📋</span> Logs</a>
+        <div class="nav-section">Reports</div>
+        <a class="nav-item active" href="/admin-panel/reports/"><span class="nav-icon">📊</span> Reports</a>
+        <div class="nav-section">System</div>
+        <a class="nav-item" href="/admin-panel/settings/"><span class="nav-icon">⚙️</span> Settings</a>
+        <a class="nav-item" href="/admin/"><span class="nav-icon">🔧</span> Django Admin</a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="admin-pill">
+            <div class="admin-avatar" id="adminAvatar">A</div>
+            <div class="admin-info">
+                <div class="admin-name" id="adminName">Administrator</div>
+                <div class="admin-role" id="adminRole">System Admin</div>
+            </div>
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn" title="Logout">✕</button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<div class="main">
+    <header class="topbar">
+        <div class="topbar-left">
+            <h2>Reports Dashboard</h2>
+            <p><span class="live-dot" style="display:inline-block; width:8px; height:8px; background:var(--accent); border-radius:50%; animation:blink 1.4s infinite;"></span> Generate and export system reports</p>
+        </div>
+        <div class="topbar-right">
+            <span class="date-badge" id="currentTime"></span>
+            <button class="btn btn-outline btn-sm" onclick="window.location.href='/admin-panel/'">← Back</button>
+        </div>
+    </header>
+
+    <div class="content">
+        <!-- Report Type Cards -->
+        <div class="report-cards">
+            <div class="report-card" onclick="loadReport('sales')">
+                <div class="report-card-header">
+                    <div class="report-card-icon">💰</div>
+                    <div class="report-card-title">Sales Report</div>
+                    <div class="report-card-desc">Revenue, transactions, and top businesses</div>
+                </div>
+                <div class="report-card-body">
+                    <div class="report-stats">
+                        <div class="report-stat"><div class="report-stat-value" id="salesTotal">—</div><div class="report-stat-label">Total Revenue</div></div>
+                        <div class="report-stat"><div class="report-stat-value" id="salesCount">—</div><div class="report-stat-label">Transactions</div></div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); exportReport('sales', 'csv')">📥 CSV</button>
+                        <button class="btn btn-admin btn-sm" onclick="event.stopPropagation(); viewReport('sales')">View Details →</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-card" onclick="loadReport('inventory')">
+                <div class="report-card-header">
+                    <div class="report-card-icon">📦</div>
+                    <div class="report-card-title">Inventory Report</div>
+                    <div class="report-card-desc">Stock levels, valuation, and low stock alerts</div>
+                </div>
+                <div class="report-card-body">
+                    <div class="report-stats">
+                        <div class="report-stat"><div class="report-stat-value" id="inventoryTotal">—</div><div class="report-stat-label">Products</div></div>
+                        <div class="report-stat"><div class="report-stat-value" id="inventoryValue">—</div><div class="report-stat-label">Total Value</div></div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); exportReport('inventory', 'csv')">📥 CSV</button>
+                        <button class="btn btn-admin btn-sm" onclick="event.stopPropagation(); viewReport('inventory')">View Details →</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-card" onclick="loadReport('users')">
+                <div class="report-card-header">
+                    <div class="report-card-icon">👥</div>
+                    <div class="report-card-title">Users Report</div>
+                    <div class="report-card-desc">User growth, verification status, and plans</div>
+                </div>
+                <div class="report-card-body">
+                    <div class="report-stats">
+                        <div class="report-stat"><div class="report-stat-value" id="usersTotal">—</div><div class="report-stat-label">Total Users</div></div>
+                        <div class="report-stat"><div class="report-stat-value" id="usersActive">—</div><div class="report-stat-label">Active</div></div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); exportReport('users', 'csv')">📥 CSV</button>
+                        <button class="btn btn-admin btn-sm" onclick="event.stopPropagation(); viewReport('users')">View Details →</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-card" onclick="loadReport('businesses')">
+                <div class="report-card-header">
+                    <div class="report-card-icon">🏢</div>
+                    <div class="report-card-title">Businesses Report</div>
+                    <div class="report-card-desc">Business growth, plans, and activity</div>
+                </div>
+                <div class="report-card-body">
+                    <div class="report-stats">
+                        <div class="report-stat"><div class="report-stat-value" id="businessesTotal">—</div><div class="report-stat-label">Total Businesses</div></div>
+                        <div class="report-stat"><div class="report-stat-value" id="businessesActive">—</div><div class="report-stat-label">Active</div></div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); exportReport('businesses', 'csv')">📥 CSV</button>
+                        <button class="btn btn-admin btn-sm" onclick="event.stopPropagation(); viewReport('businesses')">View Details →</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-card" onclick="loadReport('transactions')">
+                <div class="report-card-header">
+                    <div class="report-card-icon">💸</div>
+                    <div class="report-card-title">Transactions Report</div>
+                    <div class="report-card-desc">Sales vs expenses, payment methods</div>
+                </div>
+                <div class="report-card-body">
+                    <div class="report-stats">
+                        <div class="report-stat"><div class="report-stat-value" id="transactionsSales">—</div><div class="report-stat-label">Sales</div></div>
+                        <div class="report-stat"><div class="report-stat-value" id="transactionsExpenses">—</div><div class="report-stat-label">Expenses</div></div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); exportReport('transactions', 'csv')">📥 CSV</button>
+                        <button class="btn btn-admin btn-sm" onclick="event.stopPropagation(); viewReport('transactions')">View Details →</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-card" onclick="loadReport('subscriptions')">
+                <div class="report-card-header">
+                    <div class="report-card-icon">💳</div>
+                    <div class="report-card-title">Subscriptions Report</div>
+                    <div class="report-card-desc">MRR, plan distribution, renewals</div>
+                </div>
+                <div class="report-card-body">
+                    <div class="report-stats">
+                        <div class="report-stat"><div class="report-stat-value" id="subscriptionsMRR">—</div><div class="report-stat-label">MRR</div></div>
+                        <div class="report-stat"><div class="report-stat-value" id="subscriptionsActive">—</div><div class="report-stat-label">Active</div></div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); exportReport('subscriptions', 'csv')">📥 CSV</button>
+                        <button class="btn btn-admin btn-sm" onclick="event.stopPropagation(); viewReport('subscriptions')">View Details →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>Report Period</label>
+                <select id="periodSelect">
+                    <option value="daily">Today</option>
+                    <option value="weekly">Last 7 Days</option>
+                    <option value="monthly" selected>This Month</option>
+                    <option value="yearly">This Year</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+            <div class="filter-group" id="dateRangeGroup" style="display: none;">
+                <label>Start Date</label>
+                <input type="date" id="startDate">
+            </div>
+            <div class="filter-group" id="dateRangeEndGroup" style="display: none;">
+                <label>End Date</label>
+                <input type="date" id="endDate">
+            </div>
+            <div class="filter-group">
+                <label>&nbsp;</label>
+                <button class="btn btn-admin btn-sm" onclick="refreshReportData()">Apply Filters</button>
+            </div>
+        </div>
+
+        <!-- Report Detail Panel -->
+        <div class="panel" id="reportDetailPanel" style="display: none;">
+            <div class="panel-header">
+                <h3 id="reportDetailTitle">Report Details</h3>
+                <div>
+                    <button class="btn btn-outline btn-sm" onclick="exportCurrentReport()">📥 Export CSV</button>
+                    <button class="btn btn-outline btn-sm" onclick="closeReportDetail()">✕ Close</button>
+                </div>
+            </div>
+            <div id="reportDetailContent" class="chart-container">
+                <div class="chart-placeholder">Select a report to view details</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentReportData = null;
+let currentReportType = null;
+
+function showToast(msg, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.background = isError ? '#c1121f' : '#0f1117';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+async function apiFetch(url) {
+    try {
+        const response = await fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        return await response.json();
+    } catch (e) { console.error(e); return null; }
+}
+
+function formatKES(amount) {
+    return 'KES ' + Number(amount || 0).toLocaleString('en-KE', { maximumFractionDigits: 0 });
+}
+
+// Update clock
+function updateClock() {
+    document.getElementById('currentTime').textContent = new Date().toLocaleTimeString('en-KE');
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// Date range toggle
+document.getElementById('periodSelect').addEventListener('change', function() {
+    const isCustom = this.value === 'custom';
+    document.getElementById('dateRangeGroup').style.display = isCustom ? 'flex' : 'none';
+    document.getElementById('dateRangeEndGroup').style.display = isCustom ? 'flex' : 'none';
+    if (!isCustom) refreshReportData();
+});
+
+// Load summary stats for cards
+async function loadSummaryStats() {
+    const promises = [
+        apiFetch('/admin-panel/reports/api/?type=sales&period=monthly'),
+        apiFetch('/admin-panel/reports/api/?type=inventory'),
+        apiFetch('/admin-panel/reports/api/?type=users&period=monthly'),
+        apiFetch('/admin-panel/reports/api/?type=businesses&period=monthly'),
+        apiFetch('/admin-panel/reports/api/?type=transactions&period=monthly'),
+        apiFetch('/admin-panel/reports/api/?type=subscriptions')
+    ];
+
+    const [sales, inventory, users, businesses, transactions, subscriptions] = await Promise.all(promises);
+
+    if (sales && sales.summary) {
+        document.getElementById('salesTotal').textContent = formatKES(sales.summary.total_sales);
+        document.getElementById('salesCount').textContent = sales.summary.total_transactions;
+    }
+
+    if (inventory && inventory.summary) {
+        document.getElementById('inventoryTotal').textContent = inventory.summary.total_products;
+        document.getElementById('inventoryValue').textContent = formatKES(inventory.summary.total_value);
+    }
+
+    if (users && users.summary) {
+        document.getElementById('usersTotal').textContent = users.summary.total_users;
+        document.getElementById('usersActive').textContent = users.summary.active_users;
+    }
+
+    if (businesses && businesses.summary) {
+        document.getElementById('businessesTotal').textContent = businesses.summary.total_businesses;
+        document.getElementById('businessesActive').textContent = businesses.summary.active_businesses;
+    }
+
+    if (transactions && transactions.summary) {
+        document.getElementById('transactionsSales').textContent = formatKES(transactions.summary.sales_total);
+        document.getElementById('transactionsExpenses').textContent = formatKES(transactions.summary.expenses_total);
+    }
+
+    if (subscriptions && subscriptions.summary) {
+        document.getElementById('subscriptionsMRR').textContent = formatKES(subscriptions.summary.monthly_recurring_revenue);
+        document.getElementById('subscriptionsActive').textContent = subscriptions.summary.active_subscriptions;
+    }
+}
+
+async function loadReport(type) {
+    const period = document.getElementById('periodSelect').value;
+    let url = `/admin-panel/reports/api/?type=${type}&period=${period}`;
+
+    if (period === 'custom') {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        if (startDate && endDate) url += `&start_date=${startDate}&end_date=${endDate}`;
+    }
+
+    const data = await apiFetch(url);
+    if (data && !data.error) {
+        currentReportData = data;
+        currentReportType = type;
+        displayReportDetail(type, data);
+    } else {
+        showToast('Failed to load report', true);
+    }
+}
+
+function displayReportDetail(type, data) {
+    const panel = document.getElementById('reportDetailPanel');
+    const title = document.getElementById('reportDetailTitle');
+    const content = document.getElementById('reportDetailContent');
+
+    title.textContent = getReportTitle(type);
+    panel.style.display = 'block';
+
+    let html = '';
+
+    // Summary cards
+    if (data.summary) {
+        html += `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-bottom:24px;">`;
+        for (const [key, value] of Object.entries(data.summary)) {
+            let displayValue = value;
+            if (typeof value === 'number' && (key.includes('revenue') || key.includes('value') || key.includes('sales') || key.includes('profit') || key.includes('mrr'))) {
+                displayValue = formatKES(value);
+            }
+            html += `<div style="background:var(--paper); padding:16px; border-radius:4px; text-align:center;">
+                        <div style="font-size:11px; color:var(--muted); text-transform:uppercase;">${key.replace(/_/g, ' ')}</div>
+                        <div style="font-size:24px; font-weight:700; font-family:monospace; color:var(--accent);">${displayValue}</div>
+                    </div>`;
+        }
+        html += `</div>`;
+    }
+
+    // Tables for different report types
+    if (type === 'sales' && data.daily_breakdown) {
+        html += `<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Date</th><th>Amount</th><th>Transactions</th></tr></thead><tbody>`;
+        data.daily_breakdown.forEach(day => {
+            html += `<tr><td>${day.date}</td><td>${formatKES(day.amount)}</td><td>${day.count}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+    }
+
+    if (type === 'top_businesses' && data.top_businesses) {
+        html += `<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Business</th><th>Total Sales</th><th>Transactions</th></tr></thead><tbody>`;
+        data.top_businesses.forEach(biz => {
+            html += `<tr><td>${biz.business__name || biz.name}</td><td>${formatKES(biz.total)}</td><td>${biz.count}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+    }
+
+    if (type === 'inventory' && data.by_category) {
+        html += `<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Category</th><th>Products</th><th>Value</th></tr></thead><tbody>`;
+        data.by_category.forEach(cat => {
+            html += `<tr><td>${cat.category || 'Uncategorized'}</td><td>${cat.count}</td><td>${formatKES(cat.value)}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+    }
+
+    if (type === 'users' && data.daily_signups) {
+        html += `<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Date</th><th>New Users</th></tr></thead><tbody>`;
+        data.daily_signups.forEach(day => {
+            html += `<tr><td>${day.date}</td><td>${day.count}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+    }
+
+    if (type === 'transactions' && data.by_payment_mode) {
+        html += `<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Payment Method</th><th>Total Amount</th><th>Transactions</th></tr></thead><tbody>`;
+        data.by_payment_mode.forEach(pm => {
+            html += `<tr><td>${pm.payment_mode || 'Other'}</td><td>${formatKES(pm.total)}</td><td>${pm.count}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+    }
+
+    if (type === 'subscriptions' && data.by_plan) {
+        html += `<div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Plan</th><th>Subscribers</th><th>Revenue</th></tr></thead><tbody>`;
+        data.by_plan.forEach(plan => {
+            html += `<tr><td>${plan.plan_name || 'Free'}</td><td>${plan.count}</td><td>${formatKES(plan.total_revenue)}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+    }
+
+    if (html === '') {
+        html = '<div class="chart-placeholder">No detailed data available for this report</div>';
+    }
+
+    content.innerHTML = html;
+    content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function getReportTitle(type) {
+    const titles = {
+        sales: '📊 Sales Report',
+        inventory: '📦 Inventory Report',
+        users: '👥 Users Report',
+        businesses: '🏢 Businesses Report',
+        transactions: '💰 Transactions Report',
+        subscriptions: '💳 Subscriptions Report',
+        alerts: '🚨 Alerts Report',
+        financial: '🏦 Financial Report'
+    };
+    return titles[type] || 'Report Details';
+}
+
+function viewReport(type) {
+    loadReport(type);
+}
+
+async function exportReport(type, format) {
+    const period = document.getElementById('periodSelect').value;
+    let url = `/admin-panel/reports/api/?type=${type}&format=${format}&period=${period}`;
+
+    if (period === 'custom') {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        if (startDate && endDate) url += `&start_date=${startDate}&end_date=${endDate}`;
+    }
+
+    window.open(url, '_blank');
+    showToast(`Exporting ${type} report...`);
+}
+
+function exportCurrentReport() {
+    if (currentReportType) {
+        exportReport(currentReportType, 'csv');
+    }
+}
+
+function closeReportDetail() {
+    document.getElementById('reportDetailPanel').style.display = 'none';
+    currentReportData = null;
+    currentReportType = null;
+}
+
+function refreshReportData() {
+    if (currentReportType) {
+        loadReport(currentReportType);
+    }
+    loadSummaryStats();
+}
+
+// Initialize
+loadSummaryStats();
+
+// Set default dates for custom range
+const today = new Date().toISOString().split('T')[0];
+const lastMonth = new Date();
+lastMonth.setMonth(lastMonth.getMonth() - 1);
+document.getElementById('startDate').value = lastMonth.toISOString().split('T')[0];
+document.getElementById('endDate').value = today;
+</script>
+</body>
+</html>

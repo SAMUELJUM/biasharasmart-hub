@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import views as auth_views
+from . import views as admin_views
 from . import views
 
 staff_required = staff_member_required(login_url='/login/')
@@ -35,6 +36,7 @@ urlpatterns = [
     path('customers/', views.customers_view, name='admin_customers'),
     path('suppliers/', views.suppliers_view, name='admin_suppliers'),
     path('pos/', views.pos_view, name='admin_pos'),
+    path('api/analytics/alerts/create-global/', views.create_global_alert),
 
     # Settings
     path('settings/', staff_required(views.admin_settings), name='admin-settings'),

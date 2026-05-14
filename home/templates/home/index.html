@@ -81,7 +81,6 @@
             text-align: center;
         }
 
-        /* Decorative grid */
         .hero::before {
             content: '';
             position: absolute; inset: 0;
@@ -92,7 +91,6 @@
             mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
         }
 
-        /* Glow blobs */
         .hero-blob { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
         .blob-1 { width: 500px; height: 500px; background: rgba(26,122,74,0.18); top: -100px; left: -100px; animation: float1 8s ease-in-out infinite; }
         .blob-2 { width: 400px; height: 400px; background: rgba(124,58,237,0.15); bottom: -80px; right: -80px; animation: float2 10s ease-in-out infinite; }
@@ -155,7 +153,6 @@
         }
         .btn-secondary:hover { color: #fff; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); }
 
-        /* Stats bar */
         .hero-stats {
             display: flex; align-items: center; justify-content: center; gap: 0;
             background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
@@ -170,7 +167,6 @@
         .hero-stat-val { font-size: 24px; font-weight: 800; color: #fff; font-family: 'DM Mono', monospace; letter-spacing: -0.02em; }
         .hero-stat-lbl { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
 
-        /* Scroll cue */
         .scroll-cue { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; color: rgba(255,255,255,0.25); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; animation: fadeUp 1s 1s both; cursor: pointer; }
         .scroll-arrow { width: 20px; height: 20px; border-right: 2px solid rgba(255,255,255,0.2); border-bottom: 2px solid rgba(255,255,255,0.2); transform: rotate(45deg); animation: bounce 2s infinite; }
         @keyframes bounce { 0%,100%{transform:rotate(45deg) translateY(0)} 50%{transform:rotate(45deg) translateY(4px)} }
@@ -438,7 +434,8 @@
     <a href="#channels" onclick="closeMobileNav()">Access</a>
     <a href="#pricing" onclick="closeMobileNav()">Pricing</a>
     <a href="#api" onclick="closeMobileNav()">API</a>
-    <a href="/login/" onclick="closeMobileNav()">Login</a><a href="/register/?plan=free" onclick="closeMobileNav()" style="color:#6ee7a8;">Get Started →</a>
+    <a href="/login/" onclick="closeMobileNav()">Login</a>
+    <a href="/register/?plan=free" onclick="closeMobileNav()" style="color:#6ee7a8;">Get Started →</a>
 </div>
 
 <!-- ── HERO ──────────────────────────────────────────────────── -->
@@ -599,13 +596,13 @@
             <div class="channel-icon">📱</div>
             <h3>USSD Access</h3>
             <p>Record transactions and check your balance from any mobile phone — no internet needed. Perfect for low-connectivity areas across Kenya.</p>
-            <span class="channel-detail">Dial *123#</span>
+            <span class="channel-detail">Dial *384*65933#</span>
         </div>
         <div class="channel-card reveal reveal-d2">
             <div class="channel-icon">💬</div>
             <h3>WhatsApp Bot</h3>
             <p>Chat with your business data on WhatsApp. Ask questions, record sales, and get AI-powered summaries directly in your favourite app.</p>
-            <span class="channel-detail">WhatsApp +254XXXXXXXXX → "Hi"</span>
+            <span class="channel-detail">WhatsApp +14155238886 → "Hi"</span>
         </div>
     </div>
 </section>
@@ -632,8 +629,8 @@
             </ul>
             <a href="/register/?plan=free" class="btn-price btn-price-outline">Get Started Free</a>
         </div>
-            <div class="price-card featured reveal reveal-d1">
-                <div class="price-name">Pro</div>
+        <div class="price-card featured reveal reveal-d1">
+            <div class="price-name">Pro</div>
             <div class="price-amount"><span class="price-currency">KES</span> 999</div>
             <div class="price-period">per month</div>
             <ul class="price-features">
@@ -793,26 +790,26 @@
         </div>
         <div class="footer-col">
             <h4>Company</h4>
-            <a href="#">About Us</a>
-            <a href="#">Blog</a>
-            <a href="#">Contact</a>
-            <a href="#">Careers</a>
+            <a href="/about/">About Us</a>
+            <a href="/blog/">Blog</a>
+            <a href="/contact-support/">Contact</a>
+            <a href="/careers/">Careers</a>
         </div>
         <div class="footer-col">
             <h4>Legal</h4>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-            <a href="#">Cookie Policy</a>
-            <a href="#">Data Protection</a>
+            <a href="/privacy-policy/">Privacy Policy</a>
+            <a href="/terms/">Terms of Service</a>
+            <a href="/cookie-policy/">Cookie Policy</a>
+            <a href="/data-protection/">Data Protection</a>
         </div>
     </div>
     <div class="footer-bottom">
         <span>© 2026 BiasharaSmart Hub. All rights reserved.</span>
         <span class="ke-badge">🇰🇪 Made in Kenya</span>
         <div style="display:flex;gap:20px;">
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Contact</a>
+            <a href="/privacy-policy/">Privacy</a>
+            <a href="/terms/">Terms</a>
+            <a href="/contact-support/">Contact</a>
         </div>
     </div>
 </footer>

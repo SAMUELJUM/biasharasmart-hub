@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us — BiasharaSmart Hub | AI for Kenyan SMEs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #f6f4ef;
+            color: #0a0f1e;
+        }
+        :root {
+            --ink: #0a0f1e;
+            --paper: #f6f4ef;
+            --white: #ffffff;
+            --green: #1a7a4a;
+            --green-light: #2d9e65;
+            --green-pale: #d4f5e3;
+            --purple: #7c3aed;
+            --muted: #6b7280;
+            --border: #e5e3dc;
+        }
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 5vw; height: 68px;
+            background: rgba(10,15,30,0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-logo {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: linear-gradient(135deg, #1a7a4a, #7c3aed);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800; color: #fff;
+        }
+        .nav-brand-text { font-size: 15px; font-weight: 700; color: #fff; }
+        .nav-links { display: flex; align-items: center; gap: 32px; }
+        .nav-links a { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6); text-decoration: none; }
+        .nav-links a:hover { color: #fff; }
+        .btn-nav-register { font-size: 13px; font-weight: 700; color: #fff; text-decoration: none; padding: 9px 18px; background: #1a7a4a; border-radius: 3px; }
+        .page-header {
+            background: #0a0f1e;
+            padding: 120px 5vw 80px;
+            text-align: center;
+        }
+        .page-header h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 800; color: #fff; }
+        .page-header p { color: rgba(255,255,255,0.5); max-width: 640px; margin: 16px auto 0; }
+        .breadcrumb { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 24px; font-family: 'DM Mono', monospace; }
+        .breadcrumb a { color: #2d9e65; text-decoration: none; }
+        .page-content { max-width: 860px; margin: 0 auto; padding: 72px 5vw; }
+        .values-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; margin: 48px 0; }
+        .value-card { text-align: center; padding: 24px; background: #fff; border: 1px solid var(--border); border-radius: 4px; }
+        .value-icon { font-size: 32px; margin-bottom: 12px; }
+        .value-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+        .value-card p { font-size: 0.85rem; color: var(--muted); }
+        h2 { font-size: 1.8rem; font-weight: 700; margin: 48px 0 16px; }
+        p { line-height: 1.7; color: var(--muted); margin-bottom: 16px; }
+        footer { background: #07090f; color: rgba(255,255,255,0.4); padding: 64px 5vw 32px; margin-top: 0; }
+        .footer-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        @media (max-width: 768px) { .values-grid { grid-template-columns: 1fr; } .nav-links { display: none; } }
+    </style>
+</head>
+<body>
+    <nav><a href="/" class="nav-brand"><div class="nav-logo">B</div><div><div class="nav-brand-text">BiasharaSmart Hub</div></div></a><div class="nav-links"><a href="/#features">Features</a><a href="/#how">How It Works</a><a href="/#channels">Access</a><a href="/#pricing">Pricing</a><a href="/#api">API</a></div><a href="/register/" class="btn-nav-register">Get Started →</a></nav>
+    <div class="page-header"><div class="breadcrumb"><a href="/">Home</a> / About Us</div><h1>About BiasharaSmart Hub</h1><p>Empowering Kenyan SMEs with AI-driven business intelligence</p></div>
+    <div class="page-content">
+        <p><strong>BiasharaSmart Hub</strong> was born from a simple observation: Kenyan small and medium enterprises are the backbone of our economy, yet most lack access to affordable, intelligent business tools. We set out to change that.</p>
+        <h2>Our Mission</h2>
+        <p>To democratize business intelligence for every Kenyan entrepreneur. We believe that running a business shouldn't mean guessing — every SME deserves real-time insights, accurate forecasts, and easy access to their data, regardless of technical skill or internet connectivity.</p>
+        <div class="values-grid"><div class="value-card"><div class="value-icon">🇰🇪</div><h4>Kenya First</h4><p>Built specifically for Kenyan SMEs with M-Pesa integration, USSD access, and local support.</p></div><div class="value-card"><div class="value-icon">🤖</div><h4>AI for Good</h4><p>Machine learning models that help business owners make smarter decisions, not replace them.</p></div><div class="value-card"><div class="value-icon">🌱</div><h4>Sustainable Growth</h4><p>Affordable pricing ensures that growth isn't reserved for large corporations.</p></div></div>
+        <h2>Our Story</h2>
+        <p>Founded in 2026 by a team of MMUST developers, data scientists, and business advisors, BiasharaSmart Hub launched after 18 months of research alongside 200+ small business owners across Nairobi, Kisumu, Mombasa, and rural regions. We learned that the biggest challenges aren't just about bookkeeping — they're about visibility, forecasting, and access to credit. Our platform addresses all three.</p>
+        <h2>Vision 2030 Alignment</h2>
+        <p>BiasharaSmart Hub directly supports Kenya's Vision 2030 economic pillar by digitizing SMEs, improving financial inclusion, and creating data-driven entrepreneurship. We're proud to be part of Kenya's digital transformation journey.</p>
+    </div>
+    <footer><div class="footer-bottom"><span>© 2026 BiasharaSmart Hub</span><span>🇰🇪 Made in Kenya</span><div><a href="/privacy-policy/" style="color:rgba(255,255,255,0.4); text-decoration:none;">Privacy</a> | <a href="/terms-of-service/" style="color:rgba(255,255,255,0.4); text-decoration:none;">Terms</a></div></div></footer>
+</body>
+</html>

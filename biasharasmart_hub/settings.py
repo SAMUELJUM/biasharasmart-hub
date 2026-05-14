@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,12 +26,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
-    
+
     # Third-party apps
     'rest_framework',
     'corsheaders',
     'django_extensions',
-    
+
     # Local apps
     'home',
     'accounts',
@@ -55,7 +56,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'accounts.middleware.OnboardingMiddleware',
-
 ]
 
 ROOT_URLCONF = 'biasharasmart_hub.urls'
@@ -79,7 +79,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'biasharasmart_hub.wsgi.application'
 
 # Database
-# Using SQLite for development as specified
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -89,18 +88,10 @@ DATABASES = {
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 # Internationalization
@@ -109,7 +100,7 @@ TIME_ZONE = 'Africa/Nairobi'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# Static files
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -118,17 +109,18 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
+# Auth
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/admin-panel/'
-
-# Default primary key field type
+AUTH_USER_MODEL = 'accounts.User'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom user model
-AUTH_USER_MODEL = 'accounts.User'
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.PhoneNumberAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
-# REST Framework settings
+# REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
@@ -138,23 +130,22 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 50
+    'PAGE_SIZE': 50,
 }
 
-# CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React development server
-    "http://127.0.0.1:3000",
-]
-
-# JWT settings
-from datetime import timedelta
+# JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
-# Celery settings
+# CORS
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# Celery
 CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379')
 CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379')
 CELERY_ACCEPT_CONTENT = ['application/json']
@@ -162,29 +153,32 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Africa/Nairobi'
 
-# Africa's Talking settings
+# Africa's Talking
 AFRICASTALKING_API_KEY = os.getenv('AFRICASTALKING_API_KEY')
 AFRICASTALKING_USERNAME = os.getenv('AFRICASTALKING_USERNAME', 'sandbox')
+AT_API_KEY = os.getenv('AFRICASTALKING_API_KEY')
+AT_SHORTCODE = '*384*65933#'                     # your USSD shortcode
+AT_WHATSAPP_SENDER = '+254708956980'
 
-# Safaricom Daraja settings
-SAFARICOM_CONSUMER_KEY = os.getenv('SAFARICOM_CONSUMER_KEY')
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_WHATSAPP_NUMBER = os.getenv('TWILIO_WHATSAPP_NUMBER', 'whatsapp:+14155238886')
+
+# Safaricom Daraja / M-Pesa
+SAFARICOM_CONSUMER_KEY    = os.getenv('SAFARICOM_CONSUMER_KEY')
 SAFARICOM_CONSUMER_SECRET = os.getenv('SAFARICOM_CONSUMER_SECRET')
-SAFARICOM_ENVIRONMENT = 'sandbox'  # Change to 'production' for live
-# M-Pesa Settings
-MPESA_CONSUMER_KEY     = os.getenv('SAFARICOM_CONSUMER_KEY')
-MPESA_CONSUMER_SECRET  = os.getenv('SAFARICOM_CONSUMER_SECRET')
-MPESA_SHORTCODE        = os.getenv('MPESA_SHORTCODE', '174379')
-MPESA_PASSKEY          = os.getenv('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')
-MPESA_ENV              = os.getenv('MPESA_ENV', 'sandbox')
-MPESA_CALLBACK_URL     = os.getenv('MPESA_CALLBACK_URL', '')
+SAFARICOM_ENVIRONMENT     = os.getenv('SAFARICOM_ENVIRONMENT', 'sandbox')
 
+MPESA_CONSUMER_KEY    = os.getenv('SAFARICOM_CONSUMER_KEY')
+MPESA_CONSUMER_SECRET = os.getenv('SAFARICOM_CONSUMER_SECRET')
+MPESA_SHORTCODE       = os.getenv('MPESA_SHORTCODE', '174379')
+MPESA_PASSKEY         = os.getenv('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')
+MPESA_ENV             = os.getenv('MPESA_ENV', 'sandbox')
+MPESA_CALLBACK_URL    = os.getenv('MPESA_CALLBACK_URL', '')
 
-AUTHENTICATION_BACKENDS = [
-    'accounts.backends.PhoneNumberAuthBackend',  # Custom backend
-    'django.contrib.auth.backends.ModelBackend',  # Default backend
-]
+# Gemini
+GEMINI_API_KEY    = os.getenv('GEMINI_API_KEY')
+GEMINI_MODEL_NAME = 'gemini-2.0-flash'
 
-# settings.py
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-GEMINI_MODEL_NAME = 'gemini-1.5-flash'
-#ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+# Anthropic (uncomment when needed)
+# ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')

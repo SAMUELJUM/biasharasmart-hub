@@ -2,6 +2,9 @@ from django.urls import path
 from . import views
 from .views import settings_page
 from .views import AdminUserListView, AdminUserDetailView
+from django.contrib import admin
+from django.urls import path, include
+
 
 urlpatterns = [
     # API endpoints

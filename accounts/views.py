@@ -469,10 +469,9 @@ You are helping {user.get_full_name() or user.username}.
     # Models tried in order — each has its own separate quota bucket.
     # gemini-1.5-flash-8b is the most generous free tier model.
     FALLBACK_MODELS = [
-        'gemini-2.0-flash-lite',
-        'gemini-1.5-flash',
-        'gemini-1.5-flash-8b',
-        'gemini-1.0-pro',
+        'models/gemini-2.0-flash',
+        'models/gemini-2.0-flash-lite',
+        'models/gemini-2.5-flash',
     ]
 
     def _is_quota_error(exc):
@@ -653,10 +652,9 @@ def chat_debug(request):
 
     # 4. Try each model with a simple ping
     MODELS = [
-        'gemini-2.0-flash-lite',
-        'gemini-1.5-flash',
-        'gemini-1.5-flash-8b',
-        'gemini-1.0-pro',
+        'models/gemini-2.0-flash',
+        'models/gemini-2.0-flash-lite',
+        'models/gemini-2.5-flash',
     ]
     results['4_models'] = {}
     for model_name in MODELS:
@@ -685,6 +683,105 @@ def chat_debug(request):
         results['5_context'] = f'FAILED: {traceback.format_exc()}'
 
     return JsonResponse(results, json_dumps_params={'indent': 2})
+
+
+
+# ============================================================================
+# FORGOT PASSWORD VIEWS  — add these to the bottom of accounts/views.py
+# ============================================================================
+
+def forgot_password_page(request):
+    """Step 1: user enters phone number → OTP is sent."""
+    if request.method == 'POST':
+        phone_number = request.POST.get('phone_number', '').strip()
+        try:
+            user = User.objects.get(phone_number=phone_number)
+            otp = user.generate_otp()
+            send_sms_otp(user.phone_number, otp)
+            syslog('info', 'auth',
+                   f'Password reset OTP sent to {phone_number}',
+                   f'User ID: {user.id}', user=user, request=request)
+            request.session['reset_phone'] = phone_number
+            return redirect(f'/reset-otp/?phone={phone_number}')
+        except User.DoesNotExist:
+            return render(request, 'accounts/forgot_password.html', {
+                'error': 'No account found with that phone number.'
+            })
+
+    return render(request, 'accounts/forgot_password.html')
+
+
+def reset_otp_page(request):
+    """Step 2: user verifies OTP."""
+    phone_number = request.GET.get('phone') or request.session.get('reset_phone', '')
+
+    if request.method == 'POST':
+        phone_number = request.POST.get('phone_number', '').strip()
+        otp_code     = request.POST.get('otp', '').strip()
+        try:
+            user = User.objects.get(phone_number=phone_number)
+            if user.verify_otp(otp_code):
+                request.session['reset_phone']    = phone_number
+                request.session['reset_verified'] = True
+                syslog('info', 'auth',
+                       f'Password reset OTP verified for {phone_number}',
+                       f'User ID: {user.id}', user=user, request=request)
+                return redirect('/reset-password/')
+            else:
+                return render(request, 'accounts/reset_otp.html', {
+                    'phone': phone_number,
+                    'error': 'Invalid or expired OTP. Please try again.'
+                })
+        except User.DoesNotExist:
+            return render(request, 'accounts/reset_otp.html', {
+                'phone': phone_number,
+                'error': 'User not found.'
+            })
+
+    return render(request, 'accounts/reset_otp.html', {'phone': phone_number})
+
+
+def reset_password_page(request):
+    """Step 3: user sets a new password."""
+    if not request.session.get('reset_verified'):
+        return redirect('/forgot-password/')
+
+    phone_number = request.session.get('reset_phone', '')
+
+    if request.method == 'POST':
+        new_password     = request.POST.get('new_password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+
+        if new_password != confirm_password:
+            return render(request, 'accounts/reset_password.html', {
+                'error': 'Passwords do not match.'
+            })
+
+        if len(new_password) < 8:
+            return render(request, 'accounts/reset_password.html', {
+                'error': 'Password must be at least 8 characters.'
+            })
+
+        try:
+            user = User.objects.get(phone_number=phone_number)
+            user.set_password(new_password)
+            user.save()
+
+            # Clear session flags
+            del request.session['reset_verified']
+            del request.session['reset_phone']
+
+            syslog('success', 'auth',
+                   f'Password reset successful for {phone_number}',
+                   f'User ID: {user.id}', user=user, request=request)
+
+            return redirect('/login/?message=password_reset_success')
+        except User.DoesNotExist:
+            return redirect('/forgot-password/')
+
+    return render(request, 'accounts/reset_password.html')
+
+
 
 
 def logout_view(request):

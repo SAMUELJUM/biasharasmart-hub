@@ -11,6 +11,12 @@ class Product(models.Model):
     barcode = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True)
 
+
+    # Expiry tracking
+    expiry_date = models.DateField(null=True, blank=True, help_text="Product expiry date")
+    manufactured_date = models.DateField(null=True, blank=True)
+    batch_number = models.CharField(max_length=100, blank=True, null=True)
+
     # Pricing
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     cost_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -46,6 +52,7 @@ class Product(models.Model):
         indexes = [
             models.Index(fields=['business', 'is_active']),
             models.Index(fields=['sku']),
+            models.Index(fields=['expiry_date']),
         ]
 
     def __str__(self):
@@ -98,3 +105,4 @@ class StockMovement(models.Model):
             product.save()
 
         super().save(*args, **kwargs)
+

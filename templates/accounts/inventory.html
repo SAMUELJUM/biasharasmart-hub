@@ -69,6 +69,20 @@
         .stat-lbl { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
         .stat-val.loading { color: var(--border); animation: pulse 1.2s infinite; }
 
+        /* ── Expiry Alert Styles ── */
+        .expiry-panel { margin-top: 24px; }
+        .expiry-list { max-height: 300px; overflow-y: auto; }
+        .expiry-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+        .expiry-item:last-child { border-bottom: none; }
+        .expiry-item:hover { background: var(--paper); }
+        .expiry-product-info { flex: 1; }
+        .expiry-product-name { font-weight: 600; font-size: 13px; color: var(--ink); }
+        .expiry-product-details { font-size: 11px; color: var(--muted); margin-top: 2px; }
+        .expiry-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 2px; font-family: 'DM Mono', monospace; }
+        .expiry-critical { background: var(--error-pale); color: var(--error); }
+        .expiry-warning { background: var(--warn-pale); color: var(--warn); }
+        .expiry-info { background: var(--accent-pale); color: var(--accent); }
+
         /* ── Toolbar ─────────────────────────────────────────── */
         .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
         .search-wrap { position: relative; flex: 1; min-width: 200px; }
@@ -100,7 +114,6 @@
         .stock-out { background: var(--error-pale); color: var(--error); }
 
         .price-col { font-family: 'DM Mono', monospace; font-weight: 500; }
-
         .row-actions { display: flex; gap: 6px; }
 
         .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
@@ -111,21 +124,23 @@
         @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ── Modal ───────────────────────────────────────────── */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,17,23,0.55); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
         .modal-overlay.show { display: flex; animation: fade-in 0.2s ease; }
-        .modal { background: #fff; border-radius: 4px; width: 100%; max-width: 520px; box-shadow: 0 20px 60px rgba(0,0,0,0.2), 4px 4px 0 0 var(--accent); animation: rise 0.3s cubic-bezier(0.16,1,0.3,1) both; overflow: hidden; }
+        .modal { background: #fff; border-radius: 4px; width: 100%; max-width: 600px; box-shadow: 0 20px 60px rgba(0,0,0,0.2), 4px 4px 0 0 var(--accent); animation: rise 0.3s cubic-bezier(0.16,1,0.3,1) both; overflow: hidden; }
         .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
         .modal-header h3 { font-size: 15px; font-weight: 700; }
         .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--muted); transition: color 0.15s; }
         .modal-close:hover { color: var(--ink); }
-        .modal-body { padding: 24px; }
+        .modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; }
         .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); background: var(--paper); display: flex; gap: 10px; justify-content: flex-end; }
 
         .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
         .form-group:last-child { margin-bottom: 0; }
-        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
         label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink); }
         label .req { color: var(--error); margin-left: 2px; }
         input, select, textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 3px; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--ink); background: var(--paper); transition: border-color 0.15s; }
@@ -142,7 +157,7 @@
         .alert-success { background: var(--accent-pale); color: var(--accent); border-left: 3px solid var(--accent); }
 
         @media (max-width: 1100px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 700px) { :root { --sidebar-w: 0px; } .sidebar { display: none; } .content { padding: 16px; } .topbar { padding: 12px 16px; } .stats-row { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 700px) { :root { --sidebar-w: 0px; } .sidebar { display: none; } .content { padding: 16px; } .topbar { padding: 12px 16px; } .stats-row { grid-template-columns: 1fr 1fr; } .form-row-3 { grid-template-columns: 1fr; } .form-row-2 { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -159,6 +174,8 @@
         <a class="nav-item" href="/dashboard/"><span class="nav-icon">📊</span> Overview</a>
         <a class="nav-item" href="/transactions/"><span class="nav-icon">💰</span> Transactions</a>
         <a class="nav-item active" href="/inventory/"><span class="nav-icon">📦</span> Inventory</a>
+        <div class="nav-section">Sales</div>
+        <a class="nav-item" href="/dashboard/#pos"><span class="nav-icon">🛒</span> Point of Sale</a>
         <div class="nav-section">Insights</div>
         <a class="nav-item" href="/analytics/"><span class="nav-icon">📈</span> Analytics</a>
         <a class="nav-item" href="/reports/"><span class="nav-icon">📋</span> Reports</a>
@@ -186,8 +203,8 @@
 <div class="main">
     <header class="topbar">
         <div class="topbar-left">
-            <h2>Inventory</h2>
-            <p id="topbarSub">Loading stock…</p>
+            <h2>Inventory Management</h2>
+            <p id="topbarSub">Track stock levels and expiry dates</p>
         </div>
         <div class="topbar-right">
             <button class="btn btn-outline" onclick="openModal('addProductModal')">＋ Add Product</button>
@@ -198,25 +215,24 @@
 
         <!-- Stats -->
         <div class="stats-row">
-            <div class="stat-card">
-                <div class="stat-icon-wrap green">📦</div>
-                <div class="stat-body"><div class="stat-val loading" id="statTotal">—</div><div class="stat-lbl">Total Products</div></div>
+            <div class="stat-card"><div class="stat-icon-wrap green">📦</div><div><div class="stat-val loading" id="statTotal">—</div><div class="stat-lbl">Total Products</div></div></div>
+            <div class="stat-card"><div class="stat-icon-wrap yellow">⚠️</div><div><div class="stat-val loading" id="statLow">—</div><div class="stat-lbl">Low Stock</div></div></div>
+            <div class="stat-card"><div class="stat-icon-wrap red">🚫</div><div><div class="stat-val loading" id="statOut">—</div><div class="stat-lbl">Out of Stock</div></div></div>
+            <div class="stat-card"><div class="stat-icon-wrap blue">💰</div><div><div class="stat-val loading" id="statValue">—</div><div class="stat-lbl">Stock Value</div></div></div>
+        </div>
+
+        <!-- Expiry Alerts Panel -->
+        <div class="panel expiry-panel">
+            <div class="panel-header">
+                <h3>📅 Expiry Alerts</h3>
+                <span class="panel-tag" id="expiryCount">0</span>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon-wrap yellow">⚠️</div>
-                <div class="stat-body"><div class="stat-val loading" id="statLow">—</div><div class="stat-lbl">Low Stock</div></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon-wrap red">🚫</div>
-                <div class="stat-body"><div class="stat-val loading" id="statOut">—</div><div class="stat-lbl">Out of Stock</div></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon-wrap blue">💰</div>
-                <div class="stat-body"><div class="stat-val loading" id="statValue">—</div><div class="stat-lbl">Stock Value</div></div>
+            <div id="expiryList" class="expiry-list">
+                <div class="empty-state"><div class="empty-icon">⏳</div><p>Loading expiry alerts...</p></div>
             </div>
         </div>
 
-        <!-- Alerts -->
+        <!-- Action Alerts -->
         <div id="alertError" class="alert alert-error"></div>
         <div id="alertSuccess" class="alert alert-success"></div>
 
@@ -237,7 +253,7 @@
             </select>
         </div>
 
-        <!-- Table -->
+        <!-- Products Table -->
         <div class="panel">
             <div class="panel-header">
                 <h3>Products</h3>
@@ -248,10 +264,10 @@
                     <thead>
                         <tr>
                             <th onclick="sortBy('name')">Product ↕</th>
-                            <th onclick="sortBy('quantity')">Stock ↕</th>
-                            <th onclick="sortBy('reorder_level')">Reorder Level ↕</th>
-                            <th onclick="sortBy('price')">Selling Price ↕</th>
-                            <th onclick="sortBy('cost_price')">Cost Price ↕</th>
+                            <th onclick="sortBy('current_quantity')">Stock ↕</th>
+                            <th onclick="sortBy('reorder_level')">Reorder ↕</th>
+                            <th onclick="sortBy('expiry_date')">Expiry Date ↕</th>
+                            <th onclick="sortBy('unit_price')">Price ↕</th>
                             <th>Business</th>
                             <th>Actions</th>
                         </tr>
@@ -265,7 +281,7 @@
     </div>
 </div>
 
-<!-- ── Add Product Modal ──────────────────────────────────────── -->
+<!-- ── Add Product Modal (with Expiry Fields) ──────────────────── -->
 <div class="modal-overlay" id="addProductModal">
     <div class="modal">
         <div class="modal-header">
@@ -280,49 +296,70 @@
             </div>
             <div class="form-group">
                 <label>Product Name <span class="req">*</span></label>
-                <input type="text" id="addName" placeholder="e.g. Unga wa Ndizi 2kg">
+                <input type="text" id="addName" placeholder="e.g. Fresh Milk 1L">
             </div>
-            <div class="form-group">
-                <label>SKU / Code</label>
-                <input type="text" id="addSku" placeholder="e.g. UGW-001" style="font-family:'DM Mono',monospace;">
-            </div>
-            <div class="form-grid-2">
+            <div class="form-row-2">
                 <div class="form-group">
-                    <label>Selling Price (KES) <span class="req">*</span></label>
+                    <label>SKU / Barcode</label>
+                    <input type="text" id="addSku" placeholder="e.g. MLK-001">
+                </div>
+                <div class="form-group">
+                    <label>Unit</label>
+                    <select id="addUnit">
+                        <option value="pieces">Pieces</option>
+                        <option value="kg">Kilograms</option>
+                        <option value="liters">Liters</option>
+                        <option value="boxes">Boxes</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label>Selling Price <span class="req">*</span></label>
                     <input type="number" id="addPrice" placeholder="0.00" min="0" step="0.01">
                 </div>
                 <div class="form-group">
-                    <label>Cost Price (KES)</label>
+                    <label>Cost Price</label>
                     <input type="number" id="addCostPrice" placeholder="0.00" min="0" step="0.01">
                 </div>
-            </div>
-            <div class="form-grid-2">
                 <div class="form-group">
-                    <label>Current Stock (Qty) <span class="req">*</span></label>
-                    <input type="number" id="addQty" placeholder="0" min="0">
+                    <label>Current Stock <span class="req">*</span></label>
+                    <input type="number" id="addQty" placeholder="0" min="0" step="0.01">
                 </div>
+            </div>
+            <div class="form-row-3">
                 <div class="form-group">
                     <label>Reorder Level</label>
-                    <input type="number" id="addReorder" placeholder="5" min="0">
+                    <input type="number" id="addReorder" placeholder="5" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Batch Number</label>
+                    <input type="text" id="addBatch" placeholder="BATCH-001">
+                </div>
+                <div class="form-group">
+                    <label>Supplier</label>
+                    <input type="text" id="addSupplier" placeholder="Supplier name">
                 </div>
             </div>
-            <div class="form-group">
-                <label>Unit</label>
-                        <select id="addUnit">
-            <option value="pieces">Pieces</option>
-            <option value="kg">Kilograms</option>
-            <option value="liters">Liters</option>
-            <option value="meters">Meters</option>
-            <option value="boxes">Boxes</option>
-            <option value="dozens">Dozens</option>
-            <option value="other">Other</option>
-        </select>
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label>Manufactured Date</label>
+                    <input type="date" id="addManufactured">
+                </div>
+                <div class="form-group">
+                    <label>Expiry Date</label>
+                    <input type="date" id="addExpiry">
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <div></div>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal('addProductModal')">Cancel</button>
             <button class="btn btn-primary" onclick="addProduct()">
-                <span id="addSpinner" style="display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+                <span id="addSpinner" style="display:none;"></span>
                 Save Product
             </button>
         </div>
@@ -341,34 +378,34 @@
             <div class="form-group">
                 <label>Action</label>
                 <select id="restockAction">
-                    <option value="add">➕ Add stock (received new stock)</option>
+                    <option value="add">➕ Add stock</option>
                     <option value="set">✏️ Set exact quantity</option>
-                    <option value="remove">➖ Remove stock (damaged/lost)</option>
+                    <option value="remove">➖ Remove stock</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>Quantity <span class="req">*</span></label>
-                <input type="number" id="restockQty" placeholder="0" min="1">
+                <input type="number" id="restockQty" placeholder="0" min="1" step="0.01">
             </div>
             <div class="form-group">
-                <label>Note (optional)</label>
+                <label>Note</label>
                 <input type="text" id="restockNote" placeholder="e.g. Received from supplier">
             </div>
-            <div style="background:var(--warn-pale);border-left:3px solid var(--warn);padding:10px 14px;border-radius:3px;font-size:12px;color:var(--warn);">
+            <div style="background:var(--warn-pale);border-left:3px solid var(--warn);padding:10px 14px;border-radius:3px;font-size:12px;">
                 Current stock: <strong id="restockCurrent">—</strong> units
             </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal('restockModal')">Cancel</button>
             <button class="btn btn-primary" onclick="submitRestock()" style="background:var(--warn);">
-                <span id="restockSpinner" style="display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+                <span id="restockSpinner" style="display:none;"></span>
                 Update Stock
             </button>
         </div>
     </div>
 </div>
 
-<!-- ── Edit Product Modal ─────────────────────────────────────── -->
+<!-- ── Edit Product Modal (with Expiry Fields) ─────────────────── -->
 <div class="modal-overlay" id="editProductModal">
     <div class="modal">
         <div class="modal-header">
@@ -380,66 +417,114 @@
             <input type="hidden" id="editProductId">
             <div class="form-group">
                 <label>Product Name <span class="req">*</span></label>
-                <input type="text" id="editName" placeholder="Product name">
+                <input type="text" id="editName">
             </div>
-            <div class="form-group">
-                <label>SKU / Code</label>
-                <input type="text" id="editSku" placeholder="e.g. UGW-001">
-            </div>
-            <div class="form-grid-2">
+            <div class="form-row-2">
                 <div class="form-group">
-                    <label>Selling Price (KES) <span class="req">*</span></label>
-                    <input type="number" id="editPrice" placeholder="0.00" min="0" step="0.01">
+                    <label>SKU / Barcode</label>
+                    <input type="text" id="editSku">
                 </div>
                 <div class="form-group">
-                    <label>Cost Price (KES)</label>
-                    <input type="number" id="editCostPrice" placeholder="0.00" min="0" step="0.01">
+                    <label>Unit</label>
+                    <select id="editUnit">
+                        <option value="pieces">Pieces</option>
+                        <option value="kg">Kilograms</option>
+                        <option value="liters">Liters</option>
+                        <option value="boxes">Boxes</option>
+                    </select>
                 </div>
             </div>
-            <div class="form-grid-2">
+            <div class="form-row-3">
                 <div class="form-group">
-                    <label>Current Stock (Qty)</label>
-                    <input type="number" id="editQty" placeholder="0" min="0">
+                    <label>Selling Price</label>
+                    <input type="number" id="editPrice" step="0.01">
                 </div>
+                <div class="form-group">
+                    <label>Cost Price</label>
+                    <input type="number" id="editCostPrice" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Current Stock</label>
+                    <input type="number" id="editQty" step="0.01">
+                </div>
+            </div>
+            <div class="form-row-3">
                 <div class="form-group">
                     <label>Reorder Level</label>
-                    <input type="number" id="editReorder" placeholder="5" min="0">
+                    <input type="number" id="editReorder" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Batch Number</label>
+                    <input type="text" id="editBatch">
+                </div>
+                <div class="form-group">
+                    <label>Supplier</label>
+                    <input type="text" id="editSupplier">
                 </div>
             </div>
-            <div class="form-group">
-                <label>Unit</label>
-                <select id="editUnit">
-                    <option value="pieces">Pieces</option>
-                    <option value="kg">Kilograms</option>
-                    <option value="liters">Liters</option>
-                    <option value="meters">Meters</option>
-                    <option value="boxes">Boxes</option>
-                    <option value="dozens">Dozens</option>
-                    <option value="other">Other</option>
-                </select>
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label>Manufactured Date</label>
+                    <input type="date" id="editManufactured">
+                </div>
+                <div class="form-group">
+                    <label>Expiry Date</label>
+                    <input type="date" id="editExpiry">
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <div></div>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-danger btn-sm" onclick="deleteProduct()">🗑️ Delete</button>
             <button class="btn btn-outline" onclick="closeModal('editProductModal')">Cancel</button>
             <button class="btn btn-primary" onclick="saveEditProduct()">
-                <span id="editSpinner" style="display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+                <span id="editSpinner" style="display:none;"></span>
                 Save Changes
             </button>
         </div>
     </div>
 </div>
 
-
-
-
-
 <script>
-// ── Auth handled server-side by @login_required ───────────────────
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
 function getCsrf() { return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''; }
 async function apiFetch(url, opts = {}) {
     return fetch(url, { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest', ...opts.headers }, ...opts });
 }
+
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function showGlobalError(msg) {
+    const el = document.getElementById('alertError');
+    el.textContent = '⚠️ ' + msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+function showGlobalSuccess(msg) {
+    const el = document.getElementById('alertSuccess');
+    el.textContent = '✅ ' + msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// Click outside to close modals
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('show');
+    });
+});
+
+// ============================================================================
+// LOAD DATA
+// ============================================================================
 
 let allProducts = [];
 let allBusinesses = [];
@@ -447,25 +532,24 @@ let activeRestockId = null;
 let sortKey = 'name';
 let sortAsc = true;
 
-// ── Load businesses ───────────────────────────────────────────────
 async function loadBusinesses() {
     try {
         const res = await apiFetch('/api/businesses/');
         if (res.ok) {
             const data = await res.json();
             allBusinesses = data.results || data || [];
-            // Populate filters
             const bFilter = document.getElementById('businessFilter');
             const bSelect = document.getElementById('addBusiness');
+            bFilter.innerHTML = '<option value="all">All businesses</option>';
+            bSelect.innerHTML = '';
             allBusinesses.forEach(b => {
                 bFilter.innerHTML += `<option value="${b.id}">${b.name}</option>`;
                 bSelect.innerHTML += `<option value="${b.id}">${b.name}</option>`;
             });
         }
-    } catch(e) {}
+    } catch(e) { console.error('Failed to load businesses:', e); }
 }
 
-// ── Load products ─────────────────────────────────────────────────
 async function loadProducts() {
     try {
         const res = await apiFetch('/api/inventory/');
@@ -473,52 +557,120 @@ async function loadProducts() {
             const data = await res.json();
             allProducts = data.results || data || [];
             updateStats();
+            renderExpiryAlerts();
             renderTable();
         } else {
-            renderEmpty('Could not load inventory. Check your API.');
+            renderEmpty('Could not load inventory.');
         }
     } catch(e) {
+        console.error('Error loading products:', e);
         renderEmpty('Network error loading inventory.');
     }
 }
 
-// ── Stats ─────────────────────────────────────────────────────────
+// ============================================================================
+// EXPIRY ALERTS
+// ============================================================================
+
+function renderExpiryAlerts() {
+    const today = new Date();
+    const expiryList = document.getElementById('expiryList');
+
+    const expiringProducts = allProducts.filter(p => {
+        if (!p.expiry_date) return false;
+        const expiryDate = new Date(p.expiry_date);
+        const daysUntil = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+        return daysUntil <= 30;
+    });
+
+    expiringProducts.sort((a, b) => {
+        const daysA = Math.ceil((new Date(a.expiry_date) - today) / (1000 * 60 * 60 * 24));
+        const daysB = Math.ceil((new Date(b.expiry_date) - today) / (1000 * 60 * 60 * 24));
+        return daysA - daysB;
+    });
+
+    document.getElementById('expiryCount').textContent = expiringProducts.length;
+
+    if (expiringProducts.length === 0) {
+        expiryList.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><p>No products approaching expiry</p></div>';
+        return;
+    }
+
+    expiryList.innerHTML = expiringProducts.map(p => {
+        const expiryDate = new Date(p.expiry_date);
+        const daysUntil = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+        let badgeClass = 'expiry-info';
+        let badgeText = `${daysUntil} days left`;
+        let statusIcon = '🔵';
+
+        if (daysUntil <= 0) {
+            badgeClass = 'expiry-critical';
+            badgeText = 'EXPIRED';
+            statusIcon = '❌';
+        } else if (daysUntil <= 7) {
+            badgeClass = 'expiry-critical';
+            badgeText = `${daysUntil} day${daysUntil !== 1 ? 's' : ''} left - CRITICAL`;
+            statusIcon = '🔴';
+        } else if (daysUntil <= 14) {
+            badgeClass = 'expiry-warning';
+            badgeText = `${daysUntil} days left`;
+            statusIcon = '🟡';
+        }
+
+        const expiryFormatted = expiryDate.toLocaleDateString('en-KE', { year: 'numeric', month: 'short', day: 'numeric' });
+        const quantity = p.current_quantity || 0;
+
+        return `
+            <div class="expiry-item">
+                <div class="expiry-product-info">
+                    <div class="expiry-product-name">${p.name || 'Unknown'}</div>
+                    <div class="expiry-product-details">Expires: ${expiryFormatted} · Stock: ${quantity} units · Batch: ${p.batch_number || 'N/A'}</div>
+                </div>
+                <div class="expiry-badge ${badgeClass}">${statusIcon} ${badgeText}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================================================
+// STATS & TABLE RENDERING
+// ============================================================================
+
 function updateStats() {
     const total = allProducts.length;
-    const low   = allProducts.filter(p => p.current_quantity > 0 && p.current_quantity <= (p.reorder_level || 5)).length;
-    const out   = allProducts.filter(p => p.current_quantity <= 0).length;
+    const low = allProducts.filter(p => p.current_quantity > 0 && p.current_quantity <= (p.reorder_level || 5)).length;
+    const out = allProducts.filter(p => p.current_quantity <= 0).length;
     const value = allProducts.reduce((s, p) => s + ((p.cost_price || 0) * (p.current_quantity || 0)), 0);
-    stopLoading('statTotal', total);
-    stopLoading('statLow', low);
-    stopLoading('statOut', out);
-    stopLoading('statValue', 'KES ' + value.toLocaleString('en-KE', { maximumFractionDigits: 0 }));
 
+    updateStatCard('statTotal', total);
+    updateStatCard('statLow', low);
+    updateStatCard('statOut', out);
+    updateStatCard('statValue', 'KES ' + value.toLocaleString('en-KE', { maximumFractionDigits: 0 }));
     document.getElementById('topbarSub').textContent = `${total} products · ${low} low stock · ${out} out of stock`;
 }
 
-function stopLoading(id, val) {
+function updateStatCard(id, val) {
     const el = document.getElementById(id);
     if (el) { el.textContent = val; el.classList.remove('loading'); }
 }
 
-// ── Render table ──────────────────────────────────────────────────
 function renderTable() {
-    const search   = document.getElementById('searchInput').value.toLowerCase();
-    const stockF   = document.getElementById('stockFilter').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const stockF = document.getElementById('stockFilter').value;
     const businessF = document.getElementById('businessFilter').value;
 
     let filtered = allProducts.filter(p => {
         const matchSearch = !search || (p.name || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search);
-        const qty = p.quantity || 0;
+        const qty = p.current_quantity || 0;
         const reorder = p.reorder_level || 5;
         const matchStock = stockF === 'all' || (stockF === 'ok' && qty > reorder) || (stockF === 'low' && qty > 0 && qty <= reorder) || (stockF === 'out' && qty <= 0);
         const matchBiz = businessF === 'all' || String(p.business) === businessF || String(p.business_id) === businessF;
         return matchSearch && matchStock && matchBiz;
     });
 
-    // Sort
     filtered.sort((a, b) => {
-        let av = a[sortKey] ?? ''; let bv = b[sortKey] ?? '';
+        let av = a[sortKey] ?? '';
+        let bv = b[sortKey] ?? '';
         if (typeof av === 'string') av = av.toLowerCase();
         if (typeof bv === 'string') bv = bv.toLowerCase();
         return sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
@@ -532,92 +684,85 @@ function renderTable() {
     }
 
     document.getElementById('productBody').innerHTML = filtered.map(p => {
-        const qty     = p.current_quantity || 0;
+        const qty = p.current_quantity || 0;
         const reorder = p.reorder_level || 5;
         const stockClass = qty <= 0 ? 'stock-out' : qty <= reorder ? 'stock-low' : 'stock-ok';
         const stockLabel = qty <= 0 ? '🚫 Out of stock' : qty <= reorder ? `⚠️ ${qty}` : `✓ ${qty}`;
         const bizName = allBusinesses.find(b => b.id === p.business || b.id === p.business_id)?.name || '—';
-       const price   = p.unit_price ? 'KES ' + Number(p.unit_price).toLocaleString('en-KE') : '—';
-        const costPrice = p.cost_price ? 'KES ' + Number(p.cost_price).toLocaleString('en-KE') : '—';
+        const price = p.unit_price ? 'KES ' + Number(p.unit_price).toLocaleString('en-KE') : '—';
+
+        let expiryDisplay = '—';
+        let expiryClass = '';
+        if (p.expiry_date) {
+            const expiryDate = new Date(p.expiry_date);
+            expiryDisplay = expiryDate.toLocaleDateString('en-KE');
+            const today = new Date();
+            const daysUntil = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+            if (daysUntil <= 7) expiryClass = 'expiry-critical';
+            else if (daysUntil <= 30) expiryClass = 'expiry-warning';
+        }
 
         return `<tr>
-            <td>
-                <div class="product-name">${p.name || '—'}</div>
-                ${p.sku ? `<div class="product-sku">${p.sku}</div>` : ''}
-            </td>
+            <td><div class="product-name">${p.name || '—'}</div>${p.sku ? `<div class="product-sku">${p.sku}</div>` : ''}</td>
             <td><span class="stock-badge ${stockClass}">${stockLabel}</span></td>
-            <td style="font-family:'DM Mono',monospace;color:var(--muted);">${reorder}</td>
+            <td style="font-family:'DM Mono',monospace;">${reorder}</td>
+            <td class="${expiryClass}" style="font-family:'DM Mono',monospace; font-size:12px;">${expiryDisplay}</td>
             <td class="price-col">${price}</td>
-            <td class="price-col" style="color:var(--muted);">${costPrice}</td>
             <td style="font-size:12px;color:var(--muted);">${bizName}</td>
-            <td>
-                <div class="row-actions">
-                    <button class="btn btn-outline btn-sm" onclick="openRestock(${p.id}, '${(p.name||'').replace(/'/g,"\\'")}', ${qty})">📦 Restock</button>
-                    <button class="btn btn-outline btn-sm" onclick="editProduct(${p.id})">✏️</button>
-                </div>
-            </td>
+            <td><div class="row-actions"><button class="btn btn-outline btn-sm" onclick="openRestock(${p.id}, '${(p.name || '').replace(/'/g, "\\'")}', ${qty})">📦 Restock</button><button class="btn btn-outline btn-sm" onclick="editProduct(${p.id})">✏️ Edit</button></div></td>
         </tr>`;
     }).join('');
 }
 
 function renderEmpty(msg) {
-    document.getElementById('productBody').innerHTML = `
-        <tr><td colspan="7">
-            <div class="empty-state">
-                <div class="empty-icon">📦</div>
-                <h4>${msg}</h4>
-                <p>Add products to start tracking your inventory.</p>
-                <button class="btn btn-primary" onclick="openModal('addProductModal')">＋ Add Product</button>
-            </div>
-        </td></tr>`;
+    document.getElementById('productBody').innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📦</div><h4>${msg}</h4><p>Add products to start tracking your inventory.</p><button class="btn btn-primary" onclick="openModal('addProductModal')">＋ Add Product</button></div></td></tr>`;
 }
 
 function filterProducts() { renderTable(); }
+function sortBy(key) { if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = true; } renderTable(); }
 
-function sortBy(key) {
-    if (sortKey === key) sortAsc = !sortAsc;
-    else { sortKey = key; sortAsc = true; }
-    renderTable();
-}
-
-// ── Modal helpers ─────────────────────────────────────────────────
-function openModal(id) { document.getElementById(id).classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-
-// Click outside to close
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', function(e) {
-        if (e.target === this) this.classList.remove('show');
-    });
-});
+// ============================================================================
+// ADD PRODUCT (with Expiry Fields)
+// ============================================================================
 
 async function addProduct() {
     const errDiv = document.getElementById('addAlertError');
     errDiv.classList.remove('show');
 
-    const name  = document.getElementById('addName').value.trim();
-    const biz   = document.getElementById('addBusiness').value;
+    const biz = document.getElementById('addBusiness').value;
+    const name = document.getElementById('addName').value.trim();
     const price = parseFloat(document.getElementById('addPrice').value);
-    const qty   = parseInt(document.getElementById('addQty').value);
+    const qty = parseFloat(document.getElementById('addQty').value);
 
-    if (!biz)                { errDiv.textContent = 'Please select a business.'; errDiv.classList.add('show'); return; }
-    if (!name)               { errDiv.textContent = 'Please enter a product name.'; errDiv.classList.add('show'); return; }
-    if (!price || price < 0) { errDiv.textContent = 'Please enter a valid selling price.'; errDiv.classList.add('show'); return; }
+    if (!biz) { errDiv.textContent = 'Please select a business.'; errDiv.classList.add('show'); return; }
+    if (!name) { errDiv.textContent = 'Please enter a product name.'; errDiv.classList.add('show'); return; }
+    if (isNaN(price) || price < 0) { errDiv.textContent = 'Please enter a valid selling price.'; errDiv.classList.add('show'); return; }
     if (isNaN(qty) || qty < 0) { errDiv.textContent = 'Please enter a valid quantity.'; errDiv.classList.add('show'); return; }
 
     const payload = {
-        business:         parseInt(biz),
-        name:             name,
-        sku:              document.getElementById('addSku').value.trim() || '',
-        unit_price:       price,
-        cost_price:       parseFloat(document.getElementById('addCostPrice').value) || 0,
-        current_quantity: qty,           // ← was 'quantity' (undefined variable)
-        reorder_level:    parseInt(document.getElementById('addReorder').value) || 5,
-        unit:             document.getElementById('addUnit').value,
-        is_active:        true,
+        business: parseInt(biz),
+        name: name,
+        sku: document.getElementById('addSku').value.trim() || '',
+        unit_price: price,
+        cost_price: parseFloat(document.getElementById('addCostPrice').value) || 0,
+        current_quantity: qty,
+        reorder_level: parseFloat(document.getElementById('addReorder').value) || 5,
+        unit: document.getElementById('addUnit').value,
+        batch_number: document.getElementById('addBatch').value.trim() || '',
+        manufactured_date: document.getElementById('addManufactured').value || null,
+        expiry_date: document.getElementById('addExpiry').value || null,
+        supplier_name: document.getElementById('addSupplier').value.trim() || '',
+        is_active: true,
     };
 
-    document.getElementById('addSpinner').style.display = 'inline-block';
+    const spinner = document.getElementById('addSpinner');
+    spinner.style.display = 'inline-block';
+    spinner.style.width = '14px';
+    spinner.style.height = '14px';
+    spinner.style.border = '2px solid rgba(255,255,255,0.4)';
+    spinner.style.borderTopColor = '#fff';
+    spinner.style.borderRadius = '50%';
+    spinner.style.animation = 'spin 0.7s linear infinite';
 
     try {
         const res = await apiFetch('/api/inventory/', {
@@ -625,27 +770,37 @@ async function addProduct() {
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
             body: JSON.stringify(payload)
         });
-        const data = await res.json();
         if (res.ok || res.status === 201) {
             closeModal('addProductModal');
             showGlobalSuccess('Product added successfully!');
             await loadProducts();
-            ['addName','addSku','addPrice','addCostPrice','addQty','addReorder']
-                .forEach(id => document.getElementById(id).value = '');
+            document.getElementById('addName').value = '';
+            document.getElementById('addSku').value = '';
+            document.getElementById('addPrice').value = '';
+            document.getElementById('addCostPrice').value = '';
+            document.getElementById('addQty').value = '';
+            document.getElementById('addReorder').value = '5';
+            document.getElementById('addBatch').value = '';
+            document.getElementById('addManufactured').value = '';
+            document.getElementById('addExpiry').value = '';
+            document.getElementById('addSupplier').value = '';
         } else {
-            const msg = data.detail || data.non_field_errors?.[0] || Object.values(data)[0]?.[0] || 'Failed to add product.';
-            errDiv.textContent = msg;
+            const data = await res.json();
+            errDiv.textContent = data.detail || 'Failed to add product.';
             errDiv.classList.add('show');
         }
     } catch(e) {
         errDiv.textContent = 'Network error. Please try again.';
         errDiv.classList.add('show');
     } finally {
-        document.getElementById('addSpinner').style.display = 'none';
+        spinner.style.display = 'none';
     }
 }
 
-// ── Restock ───────────────────────────────────────────────────────
+// ============================================================================
+// RESTOCK
+// ============================================================================
+
 function openRestock(id, name, currentQty) {
     activeRestockId = id;
     document.getElementById('restockName').textContent = name;
@@ -662,52 +817,53 @@ async function submitRestock() {
     errDiv.classList.remove('show');
 
     const action = document.getElementById('restockAction').value;
-    const qty    = parseInt(document.getElementById('restockQty').value);
+    const qty = parseFloat(document.getElementById('restockQty').value);
 
     if (!qty || qty <= 0) { errDiv.textContent = 'Please enter a valid quantity.'; errDiv.classList.add('show'); return; }
 
-    document.getElementById('restockSpinner').style.display = 'inline-block';
+    const product = allProducts.find(p => p.id === activeRestockId);
+    if (!product) { errDiv.textContent = 'Product not found.'; errDiv.classList.add('show'); return; }
+
+    let newQty = product.current_quantity || 0;
+    if (action === 'add') newQty += qty;
+    else if (action === 'set') newQty = qty;
+    else if (action === 'remove') newQty = Math.max(0, newQty - qty);
+
+    const spinner = document.getElementById('restockSpinner');
+    spinner.style.display = 'inline-block';
+    spinner.style.width = '14px';
+    spinner.style.height = '14px';
+    spinner.style.border = '2px solid rgba(255,255,255,0.4)';
+    spinner.style.borderTopColor = '#fff';
+    spinner.style.borderRadius = '50%';
+    spinner.style.animation = 'spin 0.7s linear infinite';
 
     try {
-        const res = await apiFetch(`/api/inventory/${activeRestockId}/update_stock/`, {
-            method: 'POST',
+        const patchRes = await apiFetch(`/api/inventory/${activeRestockId}/`, {
+            method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
-           body: JSON.stringify({ action, quantity: qty, note: document.getElementById('restockNote').value })
+            body: JSON.stringify({ current_quantity: newQty })
         });
 
-        if (res.ok) {
+        if (patchRes.ok) {
             closeModal('restockModal');
             showGlobalSuccess('Stock updated successfully!');
             await loadProducts();
         } else {
-            // Fallback: try PATCH on the product directly
-            const product = allProducts.find(p => p.id === activeRestockId);
-            if (product) {
-                let newQty = product.current_quantity || 0;
-                if (action === 'add') newQty += qty;
-                else if (action === 'set') newQty = qty;
-                else if (action === 'remove') newQty = Math.max(0, newQty - qty);
-
-                const patchRes = await apiFetch(`/api/inventory/${activeRestockId}/`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
-                    body: JSON.stringify({ current_quantity: newQty })
-                });
-                if (patchRes.ok) {
-                    closeModal('restockModal');
-                    showGlobalSuccess('Stock updated!');
-                    await loadProducts();
-                } else {
-                    errDiv.textContent = 'Could not update stock. Please try again.'; errDiv.classList.add('show');
-                }
-            }
+            errDiv.textContent = 'Could not update stock. Please try again.';
+            errDiv.classList.add('show');
         }
     } catch(e) {
-        errDiv.textContent = 'Network error. Please try again.'; errDiv.classList.add('show');
+        errDiv.textContent = 'Network error. Please try again.';
+        errDiv.classList.add('show');
     } finally {
-        document.getElementById('restockSpinner').style.display = 'none';
+        spinner.style.display = 'none';
     }
 }
+
+// ============================================================================
+// EDIT PRODUCT
+// ============================================================================
 
 function editProduct(id) {
     const p = allProducts.find(p => p.id === id);
@@ -721,6 +877,10 @@ function editProduct(id) {
     document.getElementById('editQty').value = p.current_quantity || 0;
     document.getElementById('editReorder').value = p.reorder_level || 5;
     document.getElementById('editUnit').value = p.unit || 'pieces';
+    document.getElementById('editBatch').value = p.batch_number || '';
+    document.getElementById('editManufactured').value = p.manufactured_date || '';
+    document.getElementById('editExpiry').value = p.expiry_date || '';
+    document.getElementById('editSupplier').value = p.supplier_name || '';
     document.getElementById('editAlertError').classList.remove('show');
 
     openModal('editProductModal');
@@ -730,24 +890,35 @@ async function saveEditProduct() {
     const errDiv = document.getElementById('editAlertError');
     errDiv.classList.remove('show');
 
-    const id    = document.getElementById('editProductId').value;
-    const name  = document.getElementById('editName').value.trim();
+    const id = document.getElementById('editProductId').value;
+    const name = document.getElementById('editName').value.trim();
     const price = parseFloat(document.getElementById('editPrice').value);
 
-    if (!name)               { errDiv.textContent = 'Product name is required.'; errDiv.classList.add('show'); return; }
-    if (!price || price < 0) { errDiv.textContent = 'Please enter a valid price.'; errDiv.classList.add('show'); return; }
+    if (!name) { errDiv.textContent = 'Product name is required.'; errDiv.classList.add('show'); return; }
+    if (isNaN(price) || price < 0) { errDiv.textContent = 'Please enter a valid price.'; errDiv.classList.add('show'); return; }
 
     const payload = {
-        name,
-        sku:              document.getElementById('editSku').value.trim(),
-        unit_price:       price,
-        cost_price:       parseFloat(document.getElementById('editCostPrice').value) || 0,
-        current_quantity: parseInt(document.getElementById('editQty').value) || 0,
-        reorder_level:    parseInt(document.getElementById('editReorder').value) || 5,
-        unit:             document.getElementById('editUnit').value,
+        name: name,
+        sku: document.getElementById('editSku').value.trim(),
+        unit_price: price,
+        cost_price: parseFloat(document.getElementById('editCostPrice').value) || 0,
+        current_quantity: parseFloat(document.getElementById('editQty').value) || 0,
+        reorder_level: parseFloat(document.getElementById('editReorder').value) || 5,
+        unit: document.getElementById('editUnit').value,
+        batch_number: document.getElementById('editBatch').value.trim(),
+        manufactured_date: document.getElementById('editManufactured').value || null,
+        expiry_date: document.getElementById('editExpiry').value || null,
+        supplier_name: document.getElementById('editSupplier').value.trim(),
     };
 
-    document.getElementById('editSpinner').style.display = 'inline-block';
+    const spinner = document.getElementById('editSpinner');
+    spinner.style.display = 'inline-block';
+    spinner.style.width = '14px';
+    spinner.style.height = '14px';
+    spinner.style.border = '2px solid rgba(255,255,255,0.4)';
+    spinner.style.borderTopColor = '#fff';
+    spinner.style.borderRadius = '50%';
+    spinner.style.animation = 'spin 0.7s linear infinite';
 
     try {
         const res = await apiFetch(`/api/inventory/${id}/`, {
@@ -755,26 +926,25 @@ async function saveEditProduct() {
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
             body: JSON.stringify(payload)
         });
-        const data = await res.json();
         if (res.ok) {
             closeModal('editProductModal');
             showGlobalSuccess('Product updated successfully!');
             await loadProducts();
         } else {
-            const msg = Object.values(data)[0]?.[0] || 'Failed to update product.';
-            errDiv.textContent = msg;
+            const data = await res.json();
+            errDiv.textContent = Object.values(data)[0]?.[0] || 'Failed to update product.';
             errDiv.classList.add('show');
         }
     } catch(e) {
         errDiv.textContent = 'Network error. Please try again.';
         errDiv.classList.add('show');
     } finally {
-        document.getElementById('editSpinner').style.display = 'none';
+        spinner.style.display = 'none';
     }
 }
 
 async function deleteProduct() {
-    const id   = document.getElementById('editProductId').value;
+    const id = document.getElementById('editProductId').value;
     const name = document.getElementById('editName').value;
 
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
@@ -796,24 +966,12 @@ async function deleteProduct() {
     }
 }
 
-function showGlobalError(msg) {
-    const el = document.getElementById('alertError');
-    el.textContent = '⚠️ ' + msg;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 5000);
-}
+// ============================================================================
+// BOOT
+// ============================================================================
 
-function showGlobalSuccess(msg) {
-    const el = document.getElementById('alertSuccess');
-    el.textContent = '✅ ' + msg;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 4000);
-}
-
-// ── Boot ──────────────────────────────────────────────────────────
 loadBusinesses();
 loadProducts();
 </script>
-
 </body>
 </html>

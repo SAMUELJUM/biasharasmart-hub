@@ -7,80 +7,93 @@ from django.contrib.auth.decorators import login_required
 from .models import MpesaTransaction
 from .mpesa import MpesaClient
 
+# api/views/mpesa.py
 logger = logging.getLogger(__name__)
 
 
 @login_required(login_url='/login/')
 def stk_push(request):
-    """Initiate STK Push payment"""
+    """STK Push for POS - Fully compatible with current frontend"""
     if request.method != 'POST':
-        return JsonResponse({'error': 'POST required'}, status=405)
+        return JsonResponse({'error': 'POST method required'}, status=405)
 
     try:
-        body         = json.loads(request.body)
-        phone        = body.get('phone_number', '').strip()
-        amount       = body.get('amount')
-        business_id  = body.get('business_id')
-        description  = body.get('description', 'Payment')
-        reference    = body.get('reference', 'BiasharaSmart')
-    except Exception:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        data = json.loads(request.body)
 
-    # Validate
-    if not phone or not amount or not business_id:
-        return JsonResponse({'error': 'phone_number, amount and business_id are required'}, status=400)
+        phone = data.get('phone_number') or data.get('phone')
+        amount = data.get('amount')
+        business_id = data.get('business_id') or data.get('business')
+        description = data.get('description', 'POS Sale')
+        reference = data.get('reference') or data.get('account_reference', f'POS-{business_id}')
 
+    except Exception as e:
+        logger.error(f"JSON Parse Error: {e}")
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+
+    # Validation
+    if not all([phone, amount, business_id]):
+        return JsonResponse({
+            'error': 'phone_number, amount and business_id are required'
+        }, status=400)
+
+    # Get Business with permission check
     try:
         from businesses.models import Business
         business = Business.objects.get(id=business_id, owner=request.user)
-    except Exception:
-        return JsonResponse({'error': 'Business not found'}, status=404)
+    except Business.DoesNotExist:
+        return JsonResponse({'error': 'Business not found or access denied'}, status=404)
 
-    # Get callback URL
-    callback_url = settings.MPESA_CALLBACK_URL
+    # Clean phone number
+    phone = ''.join(filter(str.isdigit, str(phone)))
+    if phone.startswith('0'):
+        phone = '254' + phone[1:]
+    if not phone.startswith('2547') or len(phone) != 12:
+        return JsonResponse({'error': 'Invalid Kenyan phone number. Use 07XXXXXXXX format'}, status=400)
+
+    callback_url = getattr(settings, 'MPESA_CALLBACK_URL', None)
     if not callback_url:
-        return JsonResponse({'error': 'MPESA_CALLBACK_URL not configured. Start ngrok first.'}, status=500)
+        return JsonResponse({'error': 'MPESA_CALLBACK_URL is not configured in settings'}, status=500)
 
     try:
-        client   = MpesaClient()
+        client = MpesaClient()
         response = client.stk_push(
-            phone_number      = phone,
-            amount            = amount,
-            account_reference = reference,
-            description       = description,
-            callback_url      = callback_url,
+            phone_number=phone,
+            amount=int(amount),
+            account_reference=reference,
+            description=description,
+            callback_url=callback_url,
         )
 
-        logger.info(f'STK Push response: {response}')
+        logger.info(f"STK Push Response: {response}")
 
         if response.get('ResponseCode') == '0':
             # Save pending transaction
             mpesa_txn = MpesaTransaction.objects.create(
-                business            = business,
-                phone_number        = phone,
-                amount              = amount,
-                description         = description,
-                account_reference   = reference,
-                merchant_request_id = response.get('MerchantRequestID', ''),
-                checkout_request_id = response.get('CheckoutRequestID', ''),
-                status              = 'pending',
+                business=business,
+                phone_number=phone,
+                amount=amount,
+                description=description,
+                account_reference=reference,
+                merchant_request_id=response.get('MerchantRequestID'),
+                checkout_request_id=response.get('CheckoutRequestID'),
+                status='pending',
             )
+
             return JsonResponse({
-                'success':            True,
-                'message':            'STK Push sent. Check your phone.',
+                'success': True,
+                'message': 'STK Push sent successfully. Check your phone.',
                 'checkout_request_id': mpesa_txn.checkout_request_id,
-                'merchant_request_id': mpesa_txn.merchant_request_id,
             })
+
         else:
             return JsonResponse({
                 'success': False,
-                'message': response.get('errorMessage') or response.get('ResponseDescription', 'STK Push failed'),
+                'message': response.get('ResponseDescription', 'Failed to initiate STK Push')
             }, status=400)
 
     except Exception as e:
-        logger.error(f'STK Push error: {e}')
+        logger.error(f"STK Push Error: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
-
 
 @csrf_exempt
 def mpesa_callback(request):

@@ -7,7 +7,11 @@ from datetime import timedelta
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 import json
-
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Alert
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser
 from accounts.models import User
 from businesses.models import Business
 from transactions.models import Transaction
@@ -437,43 +441,6 @@ def admin_settings(request):
 # TEST AND DEBUG ENDPOINTS
 # ============================================================================
 
-def admin_test(request):
-    """Simple test view to check if admin panel is accessible without authentication"""
-    return HttpResponse(f"""
-    <html>
-        <head>
-            <title>Admin Test Page</title>
-            <style>
-                body {{ font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }}
-                h1 {{ color: #333; }}
-                .success {{ color: green; font-weight: bold; }}
-                .info {{ background: #f0f0f0; padding: 20px; border-radius: 5px; }}
-                .links {{ margin-top: 20px; }}
-                .links a {{ display: inline-block; margin-right: 15px; color: #0066cc; }}
-            </style>
-        </head>
-        <body>
-            <h1>Admin Panel Test Page</h1>
-            <p class="success">✅ Admin panel is accessible at this URL!</p>
-            <div class="info">
-                <h3>Debug Information:</h3>
-                <p><strong>Time:</strong> {timezone.now()}</p>
-                <p><strong>User authenticated:</strong> {request.user.is_authenticated}</p>
-                <p><strong>User:</strong> {request.user}</p>
-                <p><strong>Session key:</strong> {request.session.session_key}</p>
-            </div>
-            <div class="links">
-                <p><strong>Test Links:</strong></p>
-                <a href="/admin-panel/">➡️ Go to Admin Dashboard (requires login)</a><br>
-                <a href="/admin-panel/health/">🏥 Health Check</a><br>
-                <a href="/login/?next=/admin-panel/">🔑 Login with next parameter</a><br>
-                <a href="/login/">🔐 Login page</a><br>
-                <a href="/dashboard/">📊 Regular Dashboard</a>
-            </div>
-        </body>
-    </html>
-    """)
-
 
 def admin_health_check(request):
     """Simple health check endpoint to verify admin panel is accessible"""
@@ -503,3 +470,83 @@ def suppliers_view(request):
 @staff_member_required
 def pos_view(request):
     return render(request, 'admin_panel/pos.html')
+
+
+
+@api_view(['POST'])
+def create_global_alert(request):
+    data = request.data
+
+    title = data.get('title')
+    message = data.get('message')
+    alert_type = data.get('alert_type')
+    severity = data.get('severity')
+    suggested_action = data.get('suggested_action')
+    target = data.get('target')
+    business_ids = data.get('business_ids', [])
+
+    if target == 'all':
+        businesses = Business.objects.all()
+    else:
+        businesses = Business.objects.filter(id__in=business_ids)
+
+    alerts = []
+    for biz in businesses:
+        alert = Alert.objects.create(
+            business=biz,
+            title=title,
+            message=message,
+            alert_type=alert_type,
+            severity=severity,
+            suggested_action=suggested_action
+        )
+        alerts.append(alert)
+
+    return Response({
+        "success": True,
+        "created": len(alerts)
+    })
+
+
+# =============================================================================
+# API: CREATE GLOBAL ALERT (🔥 FIXED)
+# =============================================================================
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])   # ✅ ONLY ADMINS CAN CALL
+def create_global_alert(request):
+
+    data = request.data
+
+    # ✅ Validate required fields
+    required_fields = ['title', 'message', 'alert_type', 'severity']
+    for field in required_fields:
+        if not data.get(field):
+            return Response({"error": f"{field} is required"}, status=400)
+
+    target = data.get('target', 'all')
+    business_ids = data.get('business_ids', [])
+
+    # ✅ Select businesses
+    if target == 'all':
+        businesses = Business.objects.all()
+    else:
+        businesses = Business.objects.filter(id__in=business_ids)
+
+    created_count = 0
+
+    for biz in businesses:
+        Alert.objects.create(
+            business=biz,
+            title=data['title'],
+            message=data['message'],
+            alert_type=data['alert_type'],
+            severity=data['severity'],
+            suggested_action=data.get('suggested_action', '')
+        )
+        created_count += 1
+
+    return Response({
+        "success": True,
+        "created": created_count
+    }, status=201)

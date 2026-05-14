@@ -14,9 +14,13 @@
             --accent-pale: #d8f3dc;
             --gold: #e9c46a;
             --error: #c1121f;
+            --error-dark: #9b0f19;
             --error-pale: #fce4e4;
+            --warning: #d4860a;
+            --warning-pale: #fef3cd;
             --muted: #6b7280;
             --border: #e2e0d8;
+            --success: #0a7c4d;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -62,7 +66,7 @@
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 440px;
+            max-width: 460px;
             animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
@@ -71,27 +75,68 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Header badge */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--gold);
-            color: var(--ink);
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding: 5px 12px;
-            border-radius: 2px;
-            margin-bottom: 24px;
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Logo Section */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .logo-circle {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 12px auto;
+            background: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .logo-emoji {
+            font-size: 36px;
+        }
+
+        .logo-title {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #2d6a4f;
+            margin-bottom: 4px;
+        }
+
+        .logo-subtitle {
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+            color: #6b7280;
+            letter-spacing: 0.5px;
+        }
+
+        /* Card */
         .card {
             background: #fff;
             border: 1px solid var(--border);
             border-radius: 4px;
-            padding: 40px;
+            padding: 32px 36px;
             box-shadow:
                 0 1px 2px rgba(0,0,0,0.04),
                 0 8px 32px rgba(0,0,0,0.06),
@@ -99,53 +144,88 @@
         }
 
         .card-header {
-            margin-bottom: 32px;
+            margin-bottom: 28px;
+            text-align: center;
         }
 
         .card-header h1 {
-            font-size: 26px;
+            font-size: 22px;
             font-weight: 700;
             color: var(--ink);
             letter-spacing: -0.03em;
-            line-height: 1.1;
+            margin-bottom: 6px;
         }
 
         .card-header p {
             font-size: 13px;
             color: var(--muted);
-            margin-top: 6px;
         }
 
-        /* Alert banners */
+        /* Professional Alert Styles */
         .alert {
             display: none;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 12px 14px;
+            padding: 14px 16px;
             border-radius: 3px;
             font-size: 13px;
             line-height: 1.5;
-            margin-bottom: 24px;
-            animation: fade-in 0.2s ease;
+            margin-bottom: 20px;
+            animation: slideDown 0.3s ease-out;
+            position: relative;
         }
 
-        .alert.show { display: flex; }
+        .alert.show { display: block; }
 
+        /* Error Alert */
         .alert-error {
             background: var(--error-pale);
-            color: var(--error);
-            border-left: 3px solid var(--error);
+            border-left: 4px solid var(--error);
+            color: var(--error-dark);
         }
 
+        .alert-error::before {
+            content: '⚠️';
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        /* Success Alert */
         .alert-success {
             background: var(--accent-pale);
-            color: var(--accent);
-            border-left: 3px solid var(--accent);
+            border-left: 4px solid var(--success);
+            color: var(--success);
         }
 
-        @keyframes fade-in {
-            from { opacity: 0; transform: translateY(-4px); }
-            to { opacity: 1; transform: translateY(0); }
+        .alert-success::before {
+            content: '✓';
+            margin-right: 10px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Warning Alert */
+        .alert-warning {
+            background: var(--warning-pale);
+            border-left: 4px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .alert-warning::before {
+            content: '⚠️';
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        /* Info Alert */
+        .alert-info {
+            background: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+            color: #0369a1;
+        }
+
+        .alert-info::before {
+            content: 'ℹ️';
+            margin-right: 10px;
+            font-size: 14px;
         }
 
         /* Form */
@@ -163,9 +243,23 @@
             margin-bottom: 8px;
         }
 
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 16px;
+            pointer-events: none;
+        }
+
         input {
             width: 100%;
-            padding: 11px 14px;
+            padding: 11px 14px 11px 40px;
             border: 1.5px solid var(--border);
             border-radius: 3px;
             font-size: 15px;
@@ -184,6 +278,23 @@
             box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
         }
 
+        input.error {
+            border-color: var(--error);
+            background: var(--error-pale);
+        }
+
+        .field-error {
+            font-size: 11px;
+            color: var(--error);
+            margin-top: 5px;
+            font-family: 'DM Mono', monospace;
+            display: none;
+        }
+
+        .field-error.show {
+            display: block;
+        }
+
         .input-hint {
             font-size: 11px;
             color: var(--muted);
@@ -198,6 +309,7 @@
 
         .password-wrap input {
             padding-right: 42px;
+            padding-left: 40px;
         }
 
         .toggle-pw {
@@ -272,8 +384,6 @@
             animation: spin 0.7s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-
         /* Divider */
         .divider {
             display: flex;
@@ -327,7 +437,7 @@
             margin-top: 24px;
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 24px;
         }
 
         .footer-links a {
@@ -339,17 +449,73 @@
 
         .footer-links a:hover { color: var(--accent); }
 
-        /* Django messages support */
-        .django-messages { margin-bottom: 20px; }
+        /* Help tooltip */
+        .help-tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+        }
+
+        .help-tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--ink);
+            color: #fff;
+            text-align: center;
+            border-radius: 3px;
+            padding: 6px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            font-size: 11px;
+            font-family: 'Sora', sans-serif;
+            font-weight: normal;
+            text-transform: none;
+            letter-spacing: normal;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .help-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .card {
+                padding: 24px 20px;
+            }
+            .logo-circle {
+                width: 55px;
+                height: 55px;
+            }
+            .logo-emoji {
+                font-size: 28px;
+            }
+            .logo-title {
+                font-size: 18px;
+            }
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="badge">🇰🇪 Kenyan SME Platform</div>
+    <!-- Logo Section (matching receipt design) -->
+    <div class="logo-section">
+        <div class="logo-circle">
+            <div class="logo-emoji">🏪</div>
+        </div>
+        <div class="logo-title">BiasharaSmart Hub</div>
+        <div class="logo-subtitle">✨ SME Business Platform ✨</div>
+    </div>
 
     <div class="card">
         <div class="card-header">
-            <h1>BiasharaSmart Hub</h1>
+            <h1>Welcome Back</h1>
             <p>Sign in to your business dashboard</p>
         </div>
 
@@ -364,45 +530,60 @@
         </div>
         {% endif %}
 
-        <!-- JS-driven alerts -->
-        <div id="alertError" class="alert alert-error" role="alert"></div>
-        <div id="alertSuccess" class="alert alert-success" role="alert"></div>
+        <!-- Professional JS-driven alerts -->
+        <div id="alertContainer">
+            <div id="alertError" class="alert alert-error" role="alert"></div>
+            <div id="alertSuccess" class="alert alert-success" role="alert"></div>
+            <div id="alertWarning" class="alert alert-warning" role="alert"></div>
+            <div id="alertInfo" class="alert alert-info" role="alert"></div>
+        </div>
 
-        <!--
-            ACTION: POST to /login/ for session-based auth.
-            Django's login_page view will call authenticate() + auth_login()
-            and redirect to /admin-panel/ or /dashboard/ from the server.
-        -->
         <form id="loginForm" method="POST" action="/login/" novalidate>
             {% csrf_token %}
 
-            <!-- Preserve ?next= for Django's redirect logic -->
             {% if next %}
             <input type="hidden" name="next" value="{{ next }}">
             {% endif %}
 
             <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input
-                    type="tel"
-                    id="phone"
-                    name="phone_number"
-                    placeholder="254712345678"
-                    autocomplete="tel"
-                    required
-                    value="{{ request.POST.phone_number|default:'' }}"
-                >
-                <div class="input-hint">Format: 254XXXXXXXXX</div>
+                <label for="phone">
+                    Phone Number
+                    <span class="help-tooltip">
+                        ℹ️
+                        <span class="tooltip-text">Use the format: 254 followed by 9 digits (e.g., 254712345678)</span>
+                    </span>
+                </label>
+                <div class="input-wrapper">
+                    <span class="input-icon">📱</span>
+                    <input
+                        type="tel"
+                        id="phone"
+                        name="phone_number"
+                        placeholder="254712345678"
+                        autocomplete="tel"
+                        required
+                        value="{{ request.POST.phone_number|default:'' }}"
+                    >
+                </div>
+                <div class="field-error" id="phoneError"></div>
+                <div class="input-hint">Format: 254XXXXXXXXX (12 digits total)</div>
             </div>
 
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">
+                    Password
+                    <span class="help-tooltip">
+                        ℹ️
+                        <span class="tooltip-text">Your account password must be at least 8 characters</span>
+                    </span>
+                </label>
                 <div class="password-wrap">
+                    <span class="input-icon">🔒</span>
                     <input
                         type="password"
                         id="password"
                         name="password"
-                        placeholder="••••••••"
+                        placeholder="Enter your password"
                         autocomplete="current-password"
                         required
                     >
@@ -412,6 +593,10 @@
                             <circle cx="12" cy="12" r="3"/>
                         </svg>
                     </button>
+                </div>
+                <div class="field-error" id="passwordError"></div>
+                <div class="input-hint">
+                    <a href="/forgot-password/" style="color: var(--muted); text-decoration: none;">Forgot password?</a>
                 </div>
             </div>
 
@@ -425,12 +610,13 @@
 
         <div class="ussd-block">
             <p>No internet? Access your account via USSD</p>
-            <div class="ussd-code">*123#</div>
+            <div class="ussd-code">*384*65933#</div>
         </div>
 
         <div class="footer-links">
             <a href="/register/">Create account</a>
-            <a href="/forgot-password/">Forgot password?</a>
+            <a href="/forgot-password/">Reset password</a>
+            <a href="/contact-support/">Need help?</a>
         </div>
     </div>
 </div>
@@ -447,50 +633,216 @@ function togglePassword() {
         : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
 }
 
-// ── Form submit — loading state only (actual auth is server-side) ─
-document.getElementById('loginForm').addEventListener('submit', function() {
+// ── Phone number validation ──────────────────────────────────────
+function validatePhoneNumber(phone) {
+    const cleaned = phone.replace(/\D/g, '');
+
+    if (cleaned.length === 0) {
+        return { valid: false, message: 'Phone number is required' };
+    }
+
+    if (cleaned.startsWith('254') && cleaned.length === 12) {
+        return { valid: true, message: '' };
+    }
+
+    if (cleaned.startsWith('0') && cleaned.length === 10) {
+        return { valid: true, message: '', converted: '254' + cleaned.slice(1) };
+    }
+
+    if (cleaned.startsWith('7') && cleaned.length === 9) {
+        return { valid: true, message: '', converted: '254' + cleaned };
+    }
+
+    return {
+        valid: false,
+        message: 'Invalid phone number. Use format: 254XXXXXXXXX (12 digits)'
+    };
+}
+
+// ── Password validation ──
+function validatePassword(password) {
+    if (!password || password.length === 0) {
+        return { valid: false, message: 'Password is required' };
+    }
+    if (password.length < 8) {
+        return { valid: false, message: 'Password must be at least 8 characters' };
+    }
+    return { valid: true, message: '' };
+}
+
+// ── Show alert with professional styling ──
+function showAlert(type, message, duration = 5000) {
+    const alerts = ['alertError', 'alertSuccess', 'alertWarning', 'alertInfo'];
+    alerts.forEach(id => {
+        const alertEl = document.getElementById(id);
+        if (alertEl) {
+            alertEl.classList.remove('show');
+            alertEl.textContent = '';
+        }
+    });
+
+    const alertEl = document.getElementById(`alert${type.charAt(0).toUpperCase() + type.slice(1)}`);
+    if (alertEl) {
+        alertEl.textContent = message;
+        alertEl.classList.add('show');
+
+        if (type !== 'error') {
+            setTimeout(() => {
+                alertEl.classList.remove('show');
+            }, duration);
+        }
+    }
+}
+
+// ── Clear field errors ──
+function clearFieldErrors() {
+    document.getElementById('phoneError').classList.remove('show');
+    document.getElementById('passwordError').classList.remove('show');
+    document.getElementById('phone').classList.remove('error');
+    document.getElementById('password').classList.remove('error');
+}
+
+// ── Show field error ──
+function showFieldError(field, message) {
+    const errorEl = document.getElementById(`${field}Error`);
+    const inputEl = document.getElementById(field === 'phone' ? 'phone' : 'password');
+    if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.classList.add('show');
+    }
+    if (inputEl) {
+        inputEl.classList.add('error');
+    }
+}
+
+// ── Client-side validation before submit ──
+function validateForm() {
+    clearFieldErrors();
+
+    let phoneInput = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    let isValid = true;
+
+    const phoneValidation = validatePhoneNumber(phoneInput);
+    if (!phoneValidation.valid) {
+        showFieldError('phone', phoneValidation.message);
+        isValid = false;
+    } else if (phoneValidation.converted) {
+        document.getElementById('phone').value = phoneValidation.converted;
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+        showFieldError('password', passwordValidation.message);
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+// ── Form submit ──
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    clearFieldErrors();
+
+    if (!validateForm()) {
+        e.preventDefault();
+        showAlert('warning', 'Please fix the errors above before continuing.', 4000);
+        return;
+    }
+
     const btn = document.getElementById('loginBtn');
     const spinner = document.getElementById('spinner');
     const btnText = document.getElementById('btnText');
     btn.disabled = true;
     spinner.style.display = 'block';
-    btnText.textContent = 'Signing in…';
+    btnText.textContent = 'Authenticating...';
 });
 
-// ── Surface Django form errors passed via query param ────────────
-// The server can append ?error=invalid_credentials to the redirect
-// back to /login/ on failure. This avoids a separate error template.
+// ── URL error handling ──
 (function() {
     const params = new URLSearchParams(window.location.search);
-    const errorDiv = document.getElementById('alertError');
 
     const errorMap = {
-        'invalid_credentials': 'Incorrect phone number or password. Please try again.',
-        'account_inactive':    'Your account is inactive. Contact support.',
-        'unverified':          'Please verify your phone number before logging in.',
+        'invalid_credentials': {
+            message: 'The phone number or password you entered is incorrect. Please check your credentials and try again.',
+            type: 'error'
+        },
+        'account_inactive': {
+            message: 'Your account has been deactivated. Please contact our support team at support@biasharasmart.co.ke for assistance.',
+            type: 'error'
+        },
+        'unverified': {
+            message: 'Please verify your phone number before logging in. Check your SMS for the verification code or request a new one.',
+            type: 'warning'
+        },
+        'too_many_attempts': {
+            message: 'Too many failed login attempts. Please wait 5 minutes before trying again.',
+            type: 'error'
+        },
+        'session_expired': {
+            message: 'Your previous session has expired. Please log in again to continue.',
+            type: 'info'
+        }
     };
 
-    const err = params.get('error');
-    if (err && errorMap[err]) {
-        errorDiv.textContent = errorMap[err];
-        errorDiv.classList.add('show');
+    const errorKey = params.get('error');
+    if (errorKey && errorMap[errorKey]) {
+        const error = errorMap[errorKey];
+        showAlert(error.type, error.message, error.type === 'error' ? 8000 : 5000);
+
+        if (errorKey === 'invalid_credentials') {
+            document.getElementById('phone').classList.add('error');
+            document.getElementById('password').classList.add('error');
+        } else if (errorKey === 'unverified') {
+            document.getElementById('phone').classList.add('error');
+            showFieldError('phone', 'Please verify your phone number first');
+        }
     }
 
-    // Clean the URL so refreshing doesn't re-show the error
-    if (err) {
-        params.delete('error');
-        const clean = window.location.pathname + (params.toString() ? '?' + params : '');
-        window.history.replaceState({}, '', clean);
-
-
-// Add to login.html script — clears stale tokens when user lands on login page
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_id');
-        localStorage.removeItem('pending_phone');
+    const message = params.get('message');
+    if (message === 'password_reset_success') {
+        showAlert('success', 'Password reset successful! You can now log in with your new password.', 5000);
+    } else if (message === 'registration_success') {
+        showAlert('success', 'Account created successfully! Please check your phone for verification code.', 6000);
     }
 
+    if (errorKey || message) {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
+    }
 })();
+
+// ── Clear storage on login page load ──
+localStorage.removeItem('access_token');
+localStorage.removeItem('refresh_token');
+localStorage.removeItem('user_id');
+localStorage.removeItem('pending_phone');
+
+// ── Real-time input handling ──
+document.getElementById('phone').addEventListener('input', function(e) {
+    let value = this.value.replace(/\D/g, '');
+    if (value.length > 12) {
+        this.value = value.slice(0, 12);
+    }
+    this.classList.remove('error');
+    document.getElementById('phoneError').classList.remove('show');
+});
+
+document.getElementById('password').addEventListener('input', function() {
+    this.classList.remove('error');
+    document.getElementById('passwordError').classList.remove('show');
+});
+
+// ── Format phone on blur ──
+document.getElementById('phone').addEventListener('blur', function() {
+    let value = this.value.replace(/\D/g, '');
+
+    if (value.startsWith('0') && value.length === 10) {
+        this.value = '254' + value.slice(1);
+    } else if (value.startsWith('7') && value.length === 9) {
+        this.value = '254' + value;
+    }
+});
 </script>
 </body>
 </html>

@@ -8,6 +8,9 @@ from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenRefreshView
 from accounts import views as accounts_views
 from accounts.views import settings_page
+from django.views.generic import TemplateView
+from django.views.generic.base import RedirectView
+
 
 
 admin.site.site_url = '/admin-panel/'
@@ -17,6 +20,7 @@ urlpatterns = [
     path('', include('home.urls')),
 
     # HTML pages (user-facing)
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=True)),
     path('login/', accounts_views.login_page, name='login'),
     path('register/', accounts_views.register_page, name='register'),
     path('verify-otp/', accounts_views.verify_otp_page, name='verify-otp'),
@@ -32,6 +36,19 @@ urlpatterns = [
     path('business/',      accounts_views.business_page,      name='business'),
     path("settings/", settings_page, name="settings"),
     path('api/mpesa/', include('mpesa.urls')),
+    path('integrations/', include('integrations.urls')),
+
+    path('about/', TemplateView.as_view(template_name='accounts/about.html'), name='about'),
+    path('blog/', TemplateView.as_view(template_name='accounts/blog.html'), name='blog'),
+    path('careers/', TemplateView.as_view(template_name='accounts/careers.html'), name='careers'),
+    path('privacy-policy/', TemplateView.as_view(template_name='accounts/privacy-policy.html'), name='privacy-policy'),
+    path('terms-of-service/', TemplateView.as_view(template_name='accounts/terms-of-service.html'),
+         name='terms-of-service'),
+    path('cookie-policy/', TemplateView.as_view(template_name='accounts/cookie-policy.html'), name='cookie-policy'),
+    path('data-protection/', TemplateView.as_view(template_name='accounts/data-protection.html'),
+         name='data-protection'),
+    path('terms/', TemplateView.as_view(template_name='accounts/terms.html'), name='terms'),
+    path('contact-support/', TemplateView.as_view(template_name='accounts/contact_support.html'), name='contact-support'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
 
     # Admin
@@ -46,6 +63,13 @@ urlpatterns = [
     path('api/inventory/', include('inventory.urls')),
     path('api/analytics/', include('analytics.urls')),
     path('api/reports/', include('reports.urls')),
+
+
+# Password reset flow
+    path('forgot-password/', accounts_views.forgot_password_page, name='forgot-password'),
+    path('reset-otp/',       accounts_views.reset_otp_page,       name='reset-otp'),
+    path('reset-password/',  accounts_views.reset_password_page,  name='reset-password'),
+
 
 ]
 

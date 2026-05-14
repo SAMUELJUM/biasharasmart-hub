@@ -183,7 +183,7 @@ class CreditScoreSerializer(serializers.ModelSerializer):
         ratings = {
             'A': 'Excellent - Low risk, eligible for premium loan products',
             'B': 'Good - Moderate risk, eligible for standard loans',
-            'C': 'Fair - Acceptable risk,可能需要 collateral',
+            'C': 'Fair - Acceptable risk, may require collateral',
             'D': 'Poor - High risk, limited loan options',
             'E': 'Very Poor - Very high risk, consider alternative financing'
         }
@@ -211,7 +211,7 @@ class CreditScoreSerializer(serializers.ModelSerializer):
                 'max_amount': obj.average_balance * 1.5,
                 'interest_rate': '18-22%',
                 'products': ['Micro Loan', 'Group Loan'],
-                'requirements': ['可能需要 guarantor']
+                'requirements': ['May require guarantor']
             }
         elif obj.score >= 50:
             return {
@@ -243,7 +243,7 @@ class CreditScoreHistorySerializer(serializers.ModelSerializer):
 
 
 # ============================================================================
-# ALERT SERIALIZERS
+# ALERT SERIALIZERS - FIXED VERSION
 # ============================================================================
 
 class AlertSerializer(serializers.ModelSerializer):
@@ -297,28 +297,53 @@ class AlertSerializer(serializers.ModelSerializer):
             'resolved_at'
         ]
 
+    def _get_attr(self, obj, attr_name, default=None):
+        """Helper to safely get attribute from both model instances and dicts"""
+        if isinstance(obj, dict):
+            return obj.get(attr_name, default)
+        return getattr(obj, attr_name, default)
+
     def get_time_ago(self, obj):
-        """Calculate time ago string"""
+        """Calculate time ago string - FIXED to handle both model instances and dicts"""
         from django.utils.timesince import timesince
         from django.utils import timezone
 
-        if obj.created_at:
-            return f"{timesince(obj.created_at, timezone.now())} ago"
+        created_at = self._get_attr(obj, 'created_at')
+        if created_at:
+            return f"{timesince(created_at, timezone.now())} ago"
         return None
 
     def get_formatted_created_at(self, obj):
-        """Format created at date"""
-        if obj.created_at:
-            return obj.created_at.strftime('%d %b %Y %H:%M')
+        """Format created at date - FIXED to handle both model instances and dicts"""
+        created_at = self._get_attr(obj, 'created_at')
+        if created_at:
+            return created_at.strftime('%d %b %Y %H:%M')
         return None
 
     def get_action_url(self, obj):
-        """Generate action URL based on alert type"""
-        if obj.alert_type == 'low_stock' and obj.related_product:
-            return f"/inventory/products/{obj.related_product.id}/reorder/"
-        elif obj.alert_type == 'reorder_suggestion' and obj.related_product:
-            return f"/inventory/products/{obj.related_product.id}/reorder/"
-        elif obj.alert_type == 'payment_due':
+        """Generate action URL based on alert type - FIXED to handle both model instances and dicts"""
+        # Safely get alert_type and related_product
+        alert_type = self._get_attr(obj, 'alert_type')
+        related_product = self._get_attr(obj, 'related_product')
+
+        if alert_type == 'low_stock' and related_product:
+            # Handle both object and ID
+            if hasattr(related_product, 'id'):
+                product_id = related_product.id
+            elif isinstance(related_product, dict):
+                product_id = related_product.get('id')
+            else:
+                product_id = related_product
+            return f"/inventory/products/{product_id}/reorder/"
+        elif alert_type == 'reorder_suggestion' and related_product:
+            if hasattr(related_product, 'id'):
+                product_id = related_product.id
+            elif isinstance(related_product, dict):
+                product_id = related_product.get('id')
+            else:
+                product_id = related_product
+            return f"/inventory/products/{product_id}/reorder/"
+        elif alert_type == 'payment_due':
             return "/transactions/add/?type=expense"
         return None
 

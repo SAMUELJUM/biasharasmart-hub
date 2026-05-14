@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117;
+            --paper: #f8f7f2;
+            --accent: #2d6a4f;
+            --accent-light: #40916c;
+            --accent-pale: #d8f3dc;
+            --gold: #e9c46a;
+            --error: #c1121f;
+            --muted: #6b7280;
+            --border: #e2e0d8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background-color: var(--paper);
+            min-height: 100vh;
+            padding: 24px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 48px 48px;
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -120px;
+            right: -120px;
+            width: 480px;
+            height: 480px;
+            background: radial-gradient(circle, #d8f3dc 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Logo Section */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .logo-circle {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 12px auto;
+            background: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .logo-emoji {
+            font-size: 36px;
+        }
+
+        .logo-title {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #2d6a4f;
+            margin-bottom: 4px;
+        }
+
+        .logo-subtitle {
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+            color: #6b7280;
+            letter-spacing: 0.5px;
+        }
+
+        /* Card */
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+            padding: 32px 36px;
+            color: #fff;
+        }
+
+        .card-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+        }
+
+        .card-header p {
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        .card-body {
+            padding: 36px;
+        }
+
+        /* Content Styling */
+        .content-section {
+            margin-bottom: 32px;
+        }
+
+        .content-section h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .content-section h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ink);
+            margin: 20px 0 12px 0;
+        }
+
+        .content-section p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .content-section ul, .content-section ol {
+            margin: 12px 0 12px 24px;
+        }
+
+        .content-section li {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        /* Plan Comparison Table */
+        .plan-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        .plan-table th {
+            background: var(--paper);
+            padding: 12px;
+            text-align: center;
+            font-weight: 700;
+            color: var(--ink);
+            border: 1px solid var(--border);
+        }
+
+        .plan-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+
+        .plan-table td:first-child {
+            text-align: left;
+            font-weight: 600;
+            background: var(--paper);
+            color: var(--ink);
+        }
+
+        .check-mark {
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .x-mark {
+            color: var(--error);
+            font-size: 18px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-free {
+            background: var(--paper);
+            color: var(--muted);
+        }
+
+        .badge-pro {
+            background: #ede9fe;
+            color: #7c3aed;
+        }
+
+        .badge-enterprise {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Alert Box */
+        .alert-box {
+            background: var(--accent-pale);
+            border-left: 4px solid var(--accent);
+            padding: 16px 20px;
+            border-radius: 3px;
+            margin: 20px 0;
+        }
+
+        .alert-box p {
+            margin-bottom: 0;
+            color: var(--accent);
+        }
+
+        /* Footer */
+        .card-footer {
+            background: var(--paper);
+            padding: 20px 36px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--accent);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background: var(--accent-light);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: var(--ink);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            background: var(--paper);
+            transform: translateY(-1px);
+        }
+
+        .last-updated {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 700px) {
+            .card-header {
+                padding: 24px 20px;
+            }
+            .card-body {
+                padding: 24px 20px;
+            }
+            .card-footer {
+                padding: 16px 20px;
+                flex-direction: column;
+                text-align: center;
+            }
+            .plan-table {
+                font-size: 11px;
+            }
+            .plan-table th, .plan-table td {
+                padding: 8px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Logo Section -->
+    <div class="logo-section">
+        <div class="logo-circle">
+            <div class="logo-emoji">🏪</div>
+        </div>
+        <div class="logo-title">BiasharaSmart Hub</div>
+        <div class="logo-subtitle">✨ SME Business Platform ✨</div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h1>Terms of Service</h1>
+            <p>Last updated: April 23, 2026</p>
+        </div>
+
+        <div class="card-body">
+            <div class="content-section">
+                <h2>1. Acceptance of Terms</h2>
+                <p>By accessing or using BiasharaSmart Hub ("the Platform"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use the Platform. These Terms apply to all users, including Free, Pro, and Enterprise plan subscribers.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>2. Subscription Plans</h2>
+                <p>BiasharaSmart Hub offers three subscription tiers to accommodate businesses of different sizes and needs:</p>
+
+                <h3>2.1 Free Plan</h3>
+                <p>The Free Plan is designed for small businesses and entrepreneurs starting their journey. It includes basic features with usage limits. Free Plan users may have limited access to advanced analytics, reporting, and support. There is no cost for the Free Plan, but BiasharaSmart Hub reserves the right to modify features or impose reasonable usage limits.</p>
+
+                <h3>2.2 Pro Plan</h3>
+                <p>The Pro Plan offers advanced features including real-time analytics, priority support, enhanced reporting, and API access. Pro Plan subscribers pay a monthly or annual subscription fee. Pricing is available on our website. Pro Plan includes:</p>
+                <ul>
+                    <li>Unlimited transactions</li>
+                    <li>Advanced inventory management</li>
+                    <li>Priority customer support (response within 24 hours)</li>
+                    <li>Export reports in multiple formats (PDF, Excel, CSV)</li>
+                    <li>API access for integrations</li>
+                    <li>Advanced analytics and forecasting</li>
+                </ul>
+
+                <h3>2.3 Enterprise Plan</h3>
+                <p>The Enterprise Plan is tailored for large businesses with complex needs. It includes all Pro features plus dedicated account management, custom integrations, SLA guarantees, and volume-based pricing. Contact our sales team for custom pricing.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>3. Plan Comparison</h2>
+                <table class="plan-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Free</th>
+                            <th>Pro</th>
+                            <th>Enterprise</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Monthly Transactions</td>
+                            <td>Up to 100</td>
+                            <td>Unlimited</td>
+                            <td>Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td>Products in Inventory</td>
+                            <td>Up to 50</td>
+                            <td>Unlimited</td>
+                            <td>Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td>Businesses/Stores</td>
+                            <td>1</td>
+                            <td>Up to 5</td>
+                            <td>Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td>M-Pesa Integration</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Real-time Analytics</td>
+                            <td>Basic</td>
+                            <td>Advanced</td>
+                            <td>Custom</td>
+                        </tr>
+                        <tr>
+                            <td>AI Assistant</td>
+                            <td>Limited</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>API Access</td>
+                            <td>✗</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Priority Support</td>
+                            <td>✗</td>
+                            <td>✓</td>
+                            <td>24/7 Dedicated</td>
+                        </tr>
+                        <tr>
+                            <td>Data Export</td>
+                            <td>CSV only</td>
+                            <td>All formats</td>
+                            <td>All formats + API</td>
+                        </tr>
+                        <tr>
+                            <td>Custom Reports</td>
+                            <td>✗</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>SLA Guarantee</td>
+                            <td>✗</td>
+                            <td>✗</td>
+                            <td>99.9% uptime</td>
+                        </tr>
+                        <tr>
+                            <td>Account Manager</td>
+                            <td>✗</td>
+                            <td>✗</td>
+                            <td>✓</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="content-section">
+                <h2>4. Billing and Payments</h2>
+                <p><strong>4.1 Subscription Fees:</strong> Pro and Enterprise plan fees are billed in advance on a monthly or annual basis, depending on your selection. All fees are non-refundable except as required by law.</p>
+                <p><strong>4.2 Payment Methods:</strong> We accept M-Pesa, credit/debit cards, and bank transfers. All payments are processed securely through our payment partners.</p>
+                <p><strong>4.3 Automatic Renewal:</strong> Subscriptions automatically renew at the end of each billing cycle unless cancelled. You may cancel your subscription at any time from your account settings.</p>
+                <p><strong>4.4 Price Changes:</strong> BiasharaSmart Hub reserves the right to change subscription fees upon 30 days' notice. Price changes will not affect your current billing cycle.</p>
+                <p><strong>4.5 Free Plan Limitations:</strong> BiasharaSmart Hub may impose reasonable limits on Free Plan usage, including transaction volume, storage, and API calls. Excessive use may result in temporary suspension.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>5. User Obligations</h2>
+                <p><strong>5.1 Account Security:</strong> You are responsible for maintaining the security of your account credentials. Notify us immediately of any unauthorized access.</p>
+                <p><strong>5.2 Accurate Information:</strong> You agree to provide accurate, current, and complete information during registration and to update it as necessary.</p>
+                <p><strong>5.3 Prohibited Activities:</strong> You may not:</p>
+                <ul>
+                    <li>Use the Platform for illegal activities</li>
+                    <li>Attempt to bypass usage limits or security measures</li>
+                    <li>Share your account credentials with unauthorized users</li>
+                    <li>Use the Platform to store or transmit malicious code</li>
+                    <li>Interfere with the Platform's operation</li>
+                    <li>Reverse engineer or copy the Platform's code</li>
+                </ul>
+                <p><strong>5.4 Compliance with Laws:</strong> You agree to comply with all applicable Kenyan laws and regulations when using the Platform.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>6. Data Privacy</h2>
+                <p>Your privacy is important to us. Our collection and use of personal information is governed by our <a href="/privacy/" style="color: var(--accent); text-decoration: none;">Privacy Policy</a>. By using the Platform, you consent to the collection and use of your information as described in the Privacy Policy.</p>
+                <p><strong>Data Ownership:</strong> You retain ownership of all data you submit to the Platform. BiasharaSmart Hub does not claim ownership of your business data.</p>
+                <p><strong>Data Processing:</strong> We process data to provide, maintain, and improve the Platform. We implement industry-standard security measures to protect your data.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>7. Service Availability</h2>
+                <p><strong>7.1 Uptime Guarantee:</strong> BiasharaSmart Hub strives for 99.5% uptime for Pro and Enterprise plans. Free Plan is provided on an "as-is" basis without uptime guarantees.</p>
+                <p><strong>7.2 Maintenance:</strong> Scheduled maintenance will be announced in advance. Emergency maintenance may occur without notice.</p>
+                <p><strong>7.3 Service Changes:</strong> We may modify or discontinue features with reasonable notice. For paid plans, significant changes affecting core functionality will be communicated 30 days in advance.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>8. Cancellation and Termination</h2>
+                <p><strong>8.1 By User:</strong> You may cancel your subscription at any time from your account settings. Cancellation becomes effective at the end of the current billing period.</p>
+                <p><strong>8.2 By BiasharaSmart Hub:</strong> We may suspend or terminate your access for violations of these Terms, non-payment, or illegal activities. Upon termination, you will lose access to your data. We are not responsible for data loss after termination.</p>
+                <p><strong>8.3 Data Export upon Termination:</strong> Upon cancellation, you may export your data using available export features. Pro and Enterprise users receive a 30-day data access period after cancellation.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>9. Limitation of Liability</h2>
+                <p>To the maximum extent permitted by law, BiasharaSmart Hub shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or business opportunities, arising from your use of the Platform. Our total liability shall not exceed the amount paid by you in the preceding 12 months.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>10. Disclaimer of Warranties</h2>
+                <p>The Platform is provided "as is" without warranties of any kind. For Free Plan users, the service is provided without any warranties. For paid plans, we warrant that the service will perform substantially as described.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>11. Indemnification</h2>
+                <p>You agree to indemnify and hold harmless BiasharaSmart Hub, its officers, employees, and affiliates from any claims, damages, or expenses arising from your violation of these Terms or your use of the Platform.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>12. Governing Law</h2>
+                <p>These Terms shall be governed by and construed in accordance with the laws of Kenya. Any disputes arising under these Terms shall be subject to the exclusive jurisdiction of the courts of Nairobi, Kenya.</p>
+            </div>
+
+            <div class="content-section">
+                <h2>13. Modifications to Terms</h2>
+                <p>BiasharaSmart Hub may modify these Terms at any time. We will notify users of material changes via email or platform notification. Your continued use of the Platform after changes constitutes acceptance of the modified Terms.</p>
+            </div>
+
+            <div class="alert-box">
+                <p><strong>📢 Need help choosing a plan?</strong> Contact our sales team at <strong>sales@biasharasmart.co.ke</strong> or call <strong>+254 788504029</strong> for personalized assistance.</p>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <div class="last-updated">
+                <strong>Last Updated:</strong> April 23, 2026<br>
+                <strong>Version:</strong> 2.0
+            </div>
+            <div>
+                <a href="/register/" class="btn">Create Account</a>
+                <a href="/login/" class="btn btn-outline">Sign In</a>
+                <a href="/" class="btn btn-outline">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Code - BiasharaSmart Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f1117; --paper: #f8f7f2; --accent: #2d6a4f;
+            --accent-light: #40916c; --accent-pale: #d8f3dc;
+            --gold: #e9c46a; --error: #c1121f; --error-pale: #fce4e4;
+            --muted: #6b7280; --border: #e2e0d8;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--paper);
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 48px 48px;
+            opacity: 0.5;
+            z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            top: -120px;
+            right: -120px;
+            width: 480px;
+            height: 480px;
+            background: radial-gradient(circle, #d8f3dc 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 440px;
+            animation: rise 0.6s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shake {
+            0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)}
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--gold);
+            color: var(--ink);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 5px 12px;
+            border-radius: 2px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 40px;
+            box-shadow:
+                0 1px 2px rgba(0,0,0,0.04),
+                0 8px 32px rgba(0,0,0,0.06),
+                4px 4px 0 0 var(--accent);
+        }
+
+        .icon-wrap {
+            position: relative;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 28px;
+        }
+        .icon-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--accent-pale);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            position: relative;
+            z-index: 1;
+        }
+        .icon-ring {
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            opacity: 0;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+        .icon-ring:nth-child(2) { animation-delay: 0.5s; }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .card-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+        .card-header p {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .phone-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--paper);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 8px 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--ink);
+            margin-bottom: 24px;
+            width: 100%;
+            justify-content: center;
+        }
+        .phone-pill-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .steps-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .step.active { color: var(--accent); }
+        .step.done { color: var(--accent-light); }
+        .step-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+        }
+        .step.active .step-dot {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .step.done .step-dot {
+            background: var(--accent-pale);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .step-line { flex: 1; height: 1px; background: var(--border); max-width: 32px; }
+
+        .alert {
+            display: none;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 11px 14px;
+            border-radius: 3px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .alert.show { display: flex; animation: fade-in 0.2s ease; }
+        .alert.shake { animation: shake 0.4s ease; }
+        .alert-error { background: var(--error-pale); color: var(--error); border-left: 3px solid var(--error); }
+        .alert-success { background: var(--accent-pale); color: var(--accent); border-left: 3px solid var(--accent); }
+
+        .otp-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .otp-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 28px;
+        }
+
+        .otp-input {
+            width: 52px;
+            height: 60px;
+            border: 1.5px solid var(--border);
+            border-radius: 3px;
+            font-size: 22px;
+            font-family: 'DM Mono', monospace;
+            font-weight: 700;
+            text-align: center;
+            color: var(--ink);
+            background: var(--paper);
+            transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, transform 0.1s;
+            caret-color: var(--accent);
+        }
+        .otp-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+            transform: scale(1.05);
+        }
+        .otp-input.filled { border-color: var(--accent); background: var(--accent-pale); color: var(--accent); }
+        .otp-input.error { border-color: var(--error); background: var(--error-pale); color: var(--error); }
+        .otp-sep {
+            display: flex;
+            align-items: center;
+            color: var(--border);
+            font-size: 20px;
+            font-weight: 700;
+            padding: 0 2px;
+            align-self: center;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 13px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            font-family: 'Sora', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-submit::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .btn-submit:hover:not(:disabled) {
+            background: var(--accent-light);
+            box-shadow: 0 4px 12px rgba(45,106,79,0.3);
+            transform: translateY(-1px);
+        }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .resend-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            padding-top: 4px;
+        }
+        .timer-display {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .timer-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+        .timer-dot.expired { background: var(--error); }
+        .resend-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Sora', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            padding: 4px 8px;
+            border-radius: 2px;
+            transition: background 0.15s;
+        }
+        .resend-btn:hover:not(:disabled) { background: var(--accent-pale); }
+        .resend-btn:disabled { color: var(--muted); cursor: not-allowed; }
+
+        .footer-links {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
+        }
+        .footer-links a {
+            font-size: 12px;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+        .footer-links a:hover { color: var(--accent); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="badge">🇰🇪 Kenyan SME Platform</div>
+
+    <div class="card">
+        <div class="icon-wrap">
+            <div class="icon-ring"></div>
+            <div class="icon-ring"></div>
+            <div class="icon-circle">📱</div>
+        </div>
+
+        <div class="card-header">
+            <h1>Verify your code</h1>
+            <p>We sent a 6-digit reset code to your number</p>
+        </div>
+
+        <div class="steps-row">
+            <div class="step done">
+                <div class="step-dot">✓</div>
+                Phone
+            </div>
+            <div class="step-line"></div>
+            <div class="step active">
+                <div class="step-dot">2</div>
+                Verify
+            </div>
+            <div class="step-line"></div>
+            <div class="step">
+                <div class="step-dot">3</div>
+                New Password
+            </div>
+        </div>
+
+        <div class="phone-pill">
+            <span class="phone-pill-dot"></span>
+            <span id="phoneDisplay">{{ phone }}</span>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-error show">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <div id="alertError" class="alert alert-error" role="alert"></div>
+
+        <form method="POST" action="/reset-otp/" id="otpForm">
+            {% csrf_token %}
+            <input type="hidden" name="phone_number" value="{{ phone }}">
+            <input type="hidden" name="otp" id="otpHidden">
+
+            <div class="otp-label">Enter verification code</div>
+
+            <div class="otp-row">
+                <input type="text" class="otp-input" maxlength="1" id="otp1" inputmode="numeric" pattern="[0-9]" autofocus>
+                <input type="text" class="otp-input" maxlength="1" id="otp2" inputmode="numeric" pattern="[0-9]">
+                <input type="text" class="otp-input" maxlength="1" id="otp3" inputmode="numeric" pattern="[0-9]">
+                <span class="otp-sep">—</span>
+                <input type="text" class="otp-input" maxlength="1" id="otp4" inputmode="numeric" pattern="[0-9]">
+                <input type="text" class="otp-input" maxlength="1" id="otp5" inputmode="numeric" pattern="[0-9]">
+                <input type="text" class="otp-input" maxlength="1" id="otp6" inputmode="numeric" pattern="[0-9]">
+            </div>
+
+            <button type="submit" class="btn-submit" id="verifyBtn">
+                <span class="spinner" id="spinner"></span>
+                <span id="btnText">Verify Code</span>
+            </button>
+        </form>
+
+        <div class="resend-row">
+            <div class="timer-display">
+                <span class="timer-dot" id="timerDot"></span>
+                <span id="timerDisplay">02:00</span>
+            </div>
+            <button class="resend-btn" id="resendBtn" disabled onclick="resendOTP()">
+                ↺ Resend code
+            </button>
+        </div>
+    </div>
+
+    <div class="footer-links">
+        <a href="/forgot-password/">← Change phone number</a>
+    </div>
+</div>
+
+<script>
+const phone = "{{ phone }}";
+const otpInputs = Array.from(document.querySelectorAll('.otp-input'));
+
+function getCsrf() {
+    return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+}
+
+otpInputs.forEach((input, idx) => {
+    input.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '').slice(-1);
+        if (this.value) {
+            this.classList.add('filled');
+            this.classList.remove('error');
+            if (idx < otpInputs.length - 1) otpInputs[idx + 1].focus();
+            if (otpInputs.every(i => i.value)) submitOTP();
+        } else {
+            this.classList.remove('filled');
+        }
+    });
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Backspace' && !this.value && idx > 0) {
+            otpInputs[idx - 1].focus();
+            otpInputs[idx - 1].value = '';
+            otpInputs[idx - 1].classList.remove('filled');
+        }
+    });
+    input.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData)
+            .getData('text').replace(/\D/g, '').slice(0, 6);
+        pasted.split('').forEach((char, i) => {
+            if (otpInputs[i]) { otpInputs[i].value = char; otpInputs[i].classList.add('filled'); }
+        });
+        const next = otpInputs[Math.min(pasted.length, 5)];
+        if (next) next.focus();
+        if (pasted.length === 6) submitOTP();
+    });
+});
+
+function getOTP() { return otpInputs.map(i => i.value).join(''); }
+
+function submitOTP() {
+    const otp = getOTP();
+    if (otp.length !== 6) return;
+    document.getElementById('otpHidden').value = otp;
+    const btn = document.getElementById('verifyBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    btn.disabled = true;
+    spinner.style.display = 'block';
+    btnText.textContent = 'Verifying…';
+    document.getElementById('otpForm').submit();
+}
+
+document.getElementById('otpForm').addEventListener('submit', function(e) {
+    const otp = getOTP();
+    if (otp.length !== 6) {
+        e.preventDefault();
+        const el = document.getElementById('alertError');
+        el.textContent = '⚠️ Please enter all 6 digits.';
+        el.classList.add('show');
+        return;
+    }
+    document.getElementById('otpHidden').value = otp;
+    const btn = document.getElementById('verifyBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    btn.disabled = true;
+    spinner.style.display = 'block';
+    btnText.textContent = 'Verifying…';
+});
+
+// Timer
+let timeLeft = 120;
+let timerInterval = null;
+
+function startTimer() {
+    clearInterval(timerInterval);
+    timeLeft = 120;
+    document.getElementById('resendBtn').disabled = true;
+    document.getElementById('timerDot').classList.remove('expired');
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const s = (timeLeft % 60).toString().padStart(2, '0');
+        document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            document.getElementById('timerDisplay').textContent = 'Expired';
+            document.getElementById('timerDot').classList.add('expired');
+            document.getElementById('resendBtn').disabled = false;
+        }
+    }, 1000);
+}
+startTimer();
+
+async function resendOTP() {
+    const btn = document.getElementById('resendBtn');
+    btn.disabled = true;
+    btn.textContent = '↺ Sending…';
+    try {
+        const res = await fetch('/api/auth/resend-otp/', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+            body: JSON.stringify({ phone_number: phone }),
+        });
+        if (res.ok) {
+            startTimer();
+            otpInputs.forEach(i => { i.value = ''; i.classList.remove('filled', 'error'); });
+            otpInputs[0].focus();
+        }
+    } catch(e) { console.error(e); }
+    btn.textContent = '↺ Resend code';
+}
+</script>
+</body>
+</html>
